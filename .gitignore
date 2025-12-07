@@ -1,0 +1,25 @@
+# Fichiers sensibles
+.env
+*.secret
+credentials.*
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+
+# Fichiers temporaires
+*.tmp
+*.log
+*.bak
+
+# Node.js
+node_modules/
+package-lock.json
+
+# Ne pas versionner les settings locaux de Claude
+.claude/settings.local.json
