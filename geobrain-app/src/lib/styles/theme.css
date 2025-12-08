@@ -1,0 +1,221 @@
+/* GeoBrain - Charte graphique Bussigny */
+
+:root {
+  /* Couleurs principales Bussigny */
+  --bleu-bussigny: #366092;
+  --bleu-bussigny-dark: #2a4a73;
+  --bleu-bussigny-light: #4a7ab8;
+
+  /* Gris */
+  --gris-fonce: #444444;
+  --gris-moyen: #666666;
+  --gris-clair: #888888;
+  --gris-tres-clair: #f5f5f5;
+
+  /* Couleurs fonctionnelles */
+  --success: #27ae60;
+  --success-light: #d5f5e3;
+  --warning: #e67e22;
+  --warning-light: #fdebd0;
+  --error: #c0392b;
+  --error-light: #fadbd8;
+  --info: #1a5276;
+  --info-light: #d4e6f1;
+
+  /* Fond et texte */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-sidebar: #2c3e50;
+  --text-primary: #2c3e50;
+  --text-secondary: #666666;
+  --text-muted: #888888;
+  --text-on-dark: #ffffff;
+
+  /* Bordures et ombres */
+  --border-color: #e0e0e0;
+  --border-radius: 8px;
+  --border-radius-sm: 4px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+
+  /* Espacements */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* Typographie */
+  --font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  --font-size-xs: 11px;
+  --font-size-sm: 13px;
+  --font-size-md: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+
+  /* Sidebar */
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 60px;
+}
+
+/* Reset et base */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar personnalisée */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gris-clair);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gris-moyen);
+}
+
+/* Sélection */
+::selection {
+  background: var(--bleu-bussigny);
+  color: white;
+}
+
+/* Liens */
+a {
+  color: var(--bleu-bussigny);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--bleu-bussigny-dark);
+}
+
+/* Boutons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-primary {
+  background: var(--bleu-bussigny);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--bleu-bussigny-dark);
+}
+
+.btn-secondary {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background: var(--gris-tres-clair);
+}
+
+.btn-icon {
+  padding: var(--spacing-sm);
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.btn-icon:hover {
+  background: var(--bg-secondary);
+  color: var(--bleu-bussigny);
+}
+
+/* Inputs */
+input, textarea, select {
+  font-family: inherit;
+  font-size: var(--font-size-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--bleu-bussigny);
+  box-shadow: 0 0 0 3px rgba(54, 96, 146, 0.15);
+}
+
+/* Cards */
+.card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  border-radius: 12px;
+}
+
+.badge-primary {
+  background: var(--bleu-bussigny);
+  color: white;
+}
+
+.badge-success {
+  background: var(--success-light);
+  color: var(--success);
+}
+
+.badge-warning {
+  background: var(--warning-light);
+  color: var(--warning);
+}
+
+.badge-error {
+  background: var(--error-light);
+  color: var(--error);
+}

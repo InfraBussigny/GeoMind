@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a7ab8"/>
+      <stop offset="100%" style="stop-color:#366092"/>
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="48" fill="url(#bg)"/>
+  <circle cx="50" cy="50" r="45" fill="none" stroke="#fff" stroke-width="2" opacity="0.3"/>
+  <!-- Brain icon stylized -->
+  <path d="M50 20 C35 20 25 32 25 45 C25 55 30 62 38 66 L38 75 C38 78 40 80 43 80 L57 80 C60 80 62 78 62 75 L62 66 C70 62 75 55 75 45 C75 32 65 20 50 20" fill="#fff" opacity="0.9"/>
+  <path d="M42 35 Q50 25 58 35" fill="none" stroke="#366092" stroke-width="3" stroke-linecap="round"/>
+  <path d="M38 48 Q50 38 62 48" fill="none" stroke="#366092" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="42" cy="55" r="4" fill="#366092"/>
+  <circle cx="58" cy="55" r="4" fill="#366092"/>
+</svg>

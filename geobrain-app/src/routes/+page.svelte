@@ -1,0 +1,27 @@
+<script lang="ts">
+  import { currentModule } from '$lib/stores/app';
+  import ChatModule from '$lib/components/Chat/ChatModule.svelte';
+  import CanvasModule from '$lib/components/Canvas/CanvasModule.svelte';
+  import EditorModule from '$lib/components/Editor/EditorModule.svelte';
+  import DocGenModule from '$lib/components/DocGen/DocGenModule.svelte';
+</script>
+
+<div class="module-container">
+  {#if $currentModule === 'chat'}
+    <ChatModule />
+  {:else if $currentModule === 'canvas'}
+    <CanvasModule />
+  {:else if $currentModule === 'editor'}
+    <EditorModule />
+  {:else if $currentModule === 'docgen'}
+    <DocGenModule />
+  {/if}
+</div>
+
+<style>
+  .module-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+</style>
