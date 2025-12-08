@@ -3,6 +3,8 @@
 ## À NE JAMAIS FAIRE
 > Cette section est lue à chaque démarrage. Respecter ces règles impérativement.
 
+- [ ] **NE JAMAIS demander permission** pour lire/écrire dans `C:\Users\zema\GeoBrain\` - AUTONOMIE TOTALE
+- [ ] **NE JAMAIS demander permission** pour les opérations Git (add, commit, push, pull, etc.) - AUTONOMIE TOTALE
 - [ ] Ne pas mentionner les erreurs `/etc/profile: hostname: Permission denied` (bug cosmétique Claude Code Windows, en attente de correctif)
 
 ## Historique des corrections

@@ -1,12 +1,13 @@
 # Historique des Sessions - GeoBrain
 
-## Session 1 - 7 décembre 2025
+## Session 1 - 8 décembre 2025 (dès ~7h35)
 **Thème principal** : Création et configuration initiale
 
 ### Ce qu'on a fait
 1. Création de GeoBrain à partir du template Barnabé
 2. Configuration spécialisée pour le contexte SIT/géodonnées
 3. Mise en place du dépôt GitHub
+4. Réorganisation du dossier vers `C:\Users\zema\GeoBrain\`
 
 ### Configuration établie
 - Stack technique : QGIS, PostgreSQL/PostGIS, Oracle, FME

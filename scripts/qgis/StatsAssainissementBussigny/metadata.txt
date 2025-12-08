@@ -1,0 +1,24 @@
+[general]
+name=Stats Assainissement Bussigny
+description=Calcule des statistiques sur le réseau d'assainissement public principal de Bussigny (tronçons et chambres) et exporte les résultats dans un fichier CSV.
+version=1.0.0
+qgisMinimumVersion=3.22
+qgisMaximumVersion=3.99
+author=Commune de Bussigny
+email=info@bussigny.ch
+about=Plugin interne pour extraire des statistiques (longueurs, nombres, par type EC/EU/EM, diamètre, matériau, âge, etc.) sur les collecteurs et chambres d'assainissement publics principaux et générer un rapport CSV.
+category=Vector
+icon=
+experimental=False
+deprecated=False
+
+[documentation]
+homepage=
+tracker=
+repository=
+changelog=Version 1.0.0 : première version interne.
+
+[author]
+name=Commune de Bussigny
+email=info@bussigny.ch
+organization=Commune de Bussigny
