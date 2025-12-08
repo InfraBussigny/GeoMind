@@ -1,5 +1,30 @@
 # Historique des Sessions - GeoBrain
 
+## Session 3 - 8 décembre 2025 (fin d'après-midi)
+**Thème principal** : Résolution problèmes compilation Tauri
+
+### Ce qu'on a fait
+1. Commit et push de tous les fichiers Session 2 sur GitHub (commit 61bd9a1)
+2. Tentative de résolution du problème linker MSVC :
+   - Installation toolchain GNU (`stable-x86_64-pc-windows-gnu`)
+   - Configuration override pour le projet geobrain-app
+3. Nouvelle erreur identifiée : "Accès refusé (os error 5)"
+   - Windows Defender bloque l'exécution des build scripts Rust
+   - Problème de sécurité au niveau du poste de travail
+
+### État actuel
+- **GitHub** : Tout synchronisé
+- **Frontend SvelteKit** : Fonctionnel sur http://localhost:5173
+- **Backend Tauri** : Bloqué par Windows Defender
+
+### À faire prochaine session
+1. **Option A** : Ajouter exclusions Windows Defender pour :
+   - `C:\Users\zema\GeoBrain`
+   - `C:\Users\zema\.cargo`
+2. **Option B** : Migrer vers Electron si pas de droits admin
+
+---
+
 ## Session 2 - 8 décembre 2025 (après-midi)
 **Thème principal** : Projet SDOL + Application GeoBrain Desktop
 
