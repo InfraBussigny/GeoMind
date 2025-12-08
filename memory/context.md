@@ -26,8 +26,86 @@
 - Interlis pour échanges cantonaux
 - GeoPackage pour projets locaux
 
-## Infrastructure
-[À documenter : serveurs, connexions, architecture]
+## Infrastructure SIT Bussigny
+
+### Architecture générale (4 couches)
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ MISE À JOUR & EXPLOITATION                                                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  AutoCAD Map 3D                    │  QGIS Desktop                          │
+│  • Assainissement                  │  • Orthophoto                          │
+│  • Fibre optique                   │  • Nature                              │
+│  • (Électricité)                   │  • Points d'intérêts                   │
+│  • (Eau potable)                   │  • Routes, Travaux spéciaux...         │
+└─────────────────────────────────────────────────────────────────────────────┘
+                    │                                │
+                    ▼                                ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ BASES DE DONNÉES                                                            │
+├──────────────────┬─────────────────────────────────┬────────────────────────┤
+│ SRV-SAI          │ SRV-FME                         │ Serveur SDOL           │
+│ (serveur interne)│ (serveur interne)               │                        │
+│                  │                                 │                        │
+│ ┌──────────┐     │ ┌─────┐    ┌────────────┐      │ ┌────────────┐         │
+│ │  ORACLE  │     │ │ FME │───▶│ PostgreSQL │◀─────┼─│ PostgreSQL │         │
+│ └──────────┘     │ │ MAJ │    │ (Bussigny) │ FME  │ │   (SDOL)   │         │
+│                  │ │ quot│    └────────────┘ MAJ  │ └────────────┘         │
+│                  │ └─────┘                  ponct.│                        │
+└──────────────────┴─────────────────────────────────┴────────────────────────┘
+                                    │                         │
+                                    ▼                         ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ DIFFUSION                                                                   │
+├─────────────────────────────────────┬───────────────────────────────────────┤
+│ Serveur externe Exoscale            │ Serveur SDOL                          │
+│                                     │                                       │
+│ ┌─────────────────────────────┐     │ ┌─────────────────────────────┐       │
+│ │   Géoportail communal       │     │ │  Géoportail intercommunal   │       │
+│ │   QGIS Web Server + QWC2    │     │ │  GeoMapFish (HKD)           │       │
+│ │   OPENGIS                   │     │ │                             │       │
+│ └─────────────────────────────┘     │ └─────────────────────────────┘       │
+└─────────────────────────────────────┴───────────────────────────────────────┘
+                    │                                │
+                    ▼                                ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ CONSULTATION                                                                │
+├─────────────────────────────────────┬───────────────────────────────────────┤
+│      Utilisateurs internes          │       Utilisateurs publics            │
+└─────────────────────────────────────┴───────────────────────────────────────┘
+```
+
+### Serveurs
+| Serveur | Rôle | Localisation |
+|---------|------|--------------|
+| SRV-SAI | Base Oracle (réseaux techniques) | Interne Bussigny |
+| SRV-FME | ETL FME + PostgreSQL/PostGIS | Interne Bussigny |
+| Exoscale | Géoportail communal (QWC2) | Externe (cloud) |
+| SDOL | PostgreSQL + Géoportail intercommunal | Partenaire |
+
+### Bases de données
+| Base | Technologie | Contenu | Connexion QGIS |
+|------|-------------|---------|----------------|
+| Oracle (SRV-SAI) | Oracle Spatial | Assainissement, Fibre, (Élec, Eau) | Via AutoCAD Map 3D |
+| PostgreSQL (Bussigny) | PostGIS | Données SIT communales | `PostGIS_Bussigny` |
+| PostgreSQL (SDOL) | PostGIS | Données intercommunales | Via SDOL |
+
+### Flux de données (FME)
+- **MAJ quotidienne** : Oracle → PostgreSQL (Bussigny) via FME sur SRV-FME
+- **MAJ ponctuelle** : PostgreSQL (SDOL) → PostgreSQL (Bussigny) via FME
+
+### Outils de mise à jour
+| Outil | Données gérées |
+|-------|----------------|
+| AutoCAD Map 3D | Assainissement, Fibre optique, (Électricité, Eau potable) |
+| QGIS Desktop | Orthophoto, Nature, POI, Routes, Travaux spéciaux |
+
+### Diffusion web
+| Plateforme | Technologie | Public |
+|------------|-------------|--------|
+| Géoportail communal | QGIS Server + QWC2 (OPENGIS) | Utilisateurs internes |
+| Géoportail intercommunal | GeoMapFish (HKD) | Utilisateurs publics |
 
 ## Projets actifs
 [À documenter au fil des sessions]
