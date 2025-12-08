@@ -117,22 +117,22 @@ Assistant IA specialise en geodonnees et systemes d'information du territoire (S
 cd C:\Users\VOTRE_NOM
 
 # Cloner le depot
-git clone https://github.com/MarcZermatten/GeoBrain-Bussigny.git
+git clone https://github.com/InfraBussigny/geobrain-bussigny.git GeoBrain
 
 # Entrer dans le dossier
-cd GeoBrain-Bussigny
+cd GeoBrain
 ```
 
 ### Option B : Telecharger le ZIP
 
-1. Aller sur https://github.com/MarcZermatten/GeoBrain-Bussigny
+1. Aller sur https://github.com/InfraBussigny/geobrain-bussigny
 2. Cliquer "Code" > "Download ZIP"
-3. Extraire dans `C:\Users\VOTRE_NOM\GeoBrain-Bussigny`
+3. Extraire dans `C:\Users\VOTRE_NOM\GeoBrain`
 
 ### Configuration Git (premiere fois)
 
 ```bash
-cd C:\Users\VOTRE_NOM\GeoBrain-Bussigny
+cd C:\Users\VOTRE_NOM\GeoBrain
 git config user.name "Votre Nom"
 git config user.email "votre@email.com"
 ```
@@ -180,7 +180,7 @@ Creer le fichier `.claude/settings.local.json` avec ce contenu :
 ### Lancer GeoBrain
 
 ```bash
-cd C:\Users\VOTRE_NOM\GeoBrain-Bussigny
+cd C:\Users\VOTRE_NOM\GeoBrain
 claude
 ```
 
@@ -273,4 +273,4 @@ Verifier que `.claude/settings.local.json` existe et contient les bonnes permiss
 ## Support
 
 - Documentation Claude Code : https://docs.anthropic.com/claude-code
-- Issues : https://github.com/MarcZermatten/GeoBrain-Bussigny/issues
+- Issues : https://github.com/InfraBussigny/geobrain-bussigny/issues
