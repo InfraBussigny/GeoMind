@@ -4,6 +4,7 @@
   import CanvasModule from '$lib/components/Canvas/CanvasModule.svelte';
   import EditorModule from '$lib/components/Editor/EditorModule.svelte';
   import DocGenModule from '$lib/components/DocGen/DocGenModule.svelte';
+  import SettingsModule from '$lib/components/Settings/SettingsModule.svelte';
 </script>
 
 <div class="module-container">
@@ -15,6 +16,8 @@
     <EditorModule />
   {:else if $currentModule === 'docgen'}
     <DocGenModule />
+  {:else if $currentModule === 'settings'}
+    <SettingsModule />
   {/if}
 </div>
 

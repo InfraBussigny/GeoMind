@@ -119,3 +119,21 @@
 
 ## Notes techniques
 [Spécificités, configurations particulières]
+
+## Ressources graphiques
+
+### Logos Bussigny
+**Emplacement** : `M:\7-Infra\0-Gest\2-Mod\7024_Logos`
+
+| Fichier | Usage |
+|---------|-------|
+| `logo_bussigny_neg.png` | Version blanche pour fonds sombres |
+| `logo_bussigny_pos.png` | Version couleur pour fonds clairs |
+| `logo_bussigny_horizontal.png` | Version horizontale |
+| `logo_bussigny_rvb.png` | Version RGB haute qualité |
+| `logo_bussigny_texte.png` | Avec texte "Commune de Bussigny" |
+| `*.ai` | Sources Adobe Illustrator |
+
+### Copies locales (GeoBrain App)
+- `geobrain-app/static/images/logo_bussigny_neg.png`
+- `geobrain-app/static/images/logo_bussigny_pos.png`

@@ -1,0 +1,528 @@
+{
+  "lastUpdate": "2025-12-09T12:24:35.380Z",
+  "files": {
+    "context": {
+      "content": "# Contexte SIT - Commune de Bussigny\r\n\r\n## Dernière mise à jour\r\n2025-12-08\r\n\r\n## Responsable\r\n- **Nom** : Marc Zermatten\r\n- **Poste** : Responsable géodonnées et SIT\r\n- **Organisation** : Commune de Bussigny (VD)\r\n\r\n## Stack technique\r\n\r\n### SIG Desktop\r\n- **QGIS** : Version à documenter\r\n- Plugins utilisés : à documenter\r\n\r\n### Bases de données\r\n- **PostgreSQL/PostGIS** : Données géospatiales\r\n- **Oracle** : Données métier (à préciser)\r\n\r\n### ETL & Transformation\r\n- **FME** : Workbenches pour import/export, transformations\r\n\r\n### Standards & Formats\r\n- EPSG:2056 (MN95) - Système de référence suisse\r\n- Interlis pour échanges cantonaux\r\n- GeoPackage pour projets locaux\r\n\r\n## Infrastructure SIT Bussigny\r\n\r\n### Architecture générale (4 couches)\r\n\r\n```\r\n┌─────────────────────────────────────────────────────────────────────────────┐\r\n│ MISE À JOUR & EXPLOITATION                                                  │\r\n├─────────────────────────────────────────────────────────────────────────────┤\r\n│  AutoCAD Map 3D                    │  QGIS Desktop                          │\r\n│  • Assainissement                  │  • Orthophoto                          │\r\n│  • Fibre optique                   │  • Nature                              │\r\n│  • (Électricité)                   │  • Points d'intérêts                   │\r\n│  • (Eau potable)                   │  • Routes, Travaux spéciaux...         │\r\n└─────────────────────────────────────────────────────────────────────────────┘\r\n                    │                                │\r\n                    ▼                                ▼\r\n┌─────────────────────────────────────────────────────────────────────────────┐\r\n│ BASES DE DONNÉES                                                            │\r\n├──────────────────┬─────────────────────────────────┬────────────────────────┤\r\n│ SRV-SAI          │ SRV-FME                         │ Serveur SDOL           │\r\n│ (serveur interne)│ (serveur interne)               │                        │\r\n│                  │                                 │                        │\r\n│ ┌──────────┐     │ ┌─────┐    ┌────────────┐      │ ┌────────────┐         │\r\n│ │  ORACLE  │     │ │ FME │───▶│ PostgreSQL │◀─────┼─│ PostgreSQL │         │\r\n│ └──────────┘     │ │ MAJ │    │ (Bussigny) │ FME  │ │   (SDOL)   │         │\r\n│                  │ │ quot│    └────────────┘ MAJ  │ └────────────┘         │\r\n│                  │ └─────┘                  ponct.│                        │\r\n└──────────────────┴─────────────────────────────────┴────────────────────────┘\r\n                                    │                         │\r\n                                    ▼                         ▼\r\n┌─────────────────────────────────────────────────────────────────────────────┐\r\n│ DIFFUSION                                                                   │\r\n├─────────────────────────────────────┬───────────────────────────────────────┤\r\n│ Serveur externe Exoscale            │ Serveur SDOL                          │\r\n│                                     │                                       │\r\n│ ┌─────────────────────────────┐     │ ┌─────────────────────────────┐       │\r\n│ │   Géoportail communal       │     │ │  Géoportail intercommunal   │       │\r\n│ │   QGIS Web Server + QWC2    │     │ │  GeoMapFish (HKD)           │       │\r\n│ │   OPENGIS                   │     │ │                             │       │\r\n│ └─────────────────────────────┘     │ └─────────────────────────────┘       │\r\n└─────────────────────────────────────┴───────────────────────────────────────┘\r\n                    │                                │\r\n                    ▼                                ▼\r\n┌─────────────────────────────────────────────────────────────────────────────┐\r\n│ CONSULTATION                                                                │\r\n├─────────────────────────────────────┬───────────────────────────────────────┤\r\n│      Utilisateurs internes          │       Utilisateurs publics            │\r\n└─────────────────────────────────────┴───────────────────────────────────────┘\r\n```\r\n\r\n### Serveurs\r\n| Serveur | Rôle | Localisation |\r\n|---------|------|--------------|\r\n| SRV-SAI | Base Oracle (réseaux techniques) | Interne Bussigny |\r\n| SRV-FME | ETL FME + PostgreSQL/PostGIS | Interne Bussigny |\r\n| Exoscale | Géoportail communal (QWC2) | Externe (cloud) |\r\n| SDOL | PostgreSQL + Géoportail intercommunal | Partenaire |\r\n\r\n### Bases de données\r\n| Base | Technologie | Contenu | Connexion QGIS |\r\n|------|-------------|---------|----------------|\r\n| Oracle (SRV-SAI) | Oracle Spatial | Assainissement, Fibre, (Élec, Eau) | Via AutoCAD Map 3D |\r\n| PostgreSQL (Bussigny) | PostGIS | Données SIT communales | `PostGIS_Bussigny` |\r\n| PostgreSQL (SDOL) | PostGIS | Données intercommunales | Via SDOL |\r\n\r\n### Flux de données (FME)\r\n- **MAJ quotidienne** : Oracle → PostgreSQL (Bussigny) via FME sur SRV-FME\r\n- **MAJ ponctuelle** : PostgreSQL (SDOL) → PostgreSQL (Bussigny) via FME\r\n\r\n### Outils de mise à jour\r\n| Outil | Données gérées |\r\n|-------|----------------|\r\n| AutoCAD Map 3D | Assainissement, Fibre optique, (Électricité, Eau potable) |\r\n| QGIS Desktop | Orthophoto, Nature, POI, Routes, Travaux spéciaux |\r\n\r\n### Diffusion web\r\n| Plateforme | Technologie | Public |\r\n|------------|-------------|--------|\r\n| Géoportail communal | QGIS Server + QWC2 (OPENGIS) | Utilisateurs internes |\r\n| Géoportail intercommunal | GeoMapFish (HKD) | Utilisateurs publics |\r\n\r\n## Projets actifs\r\n[À documenter au fil des sessions]\r\n\r\n## Procédures documentées\r\n[Liens vers les procédures créées]\r\n\r\n## Contacts utiles\r\n- ASIT-VD : standards cantonaux\r\n- BG Ingénieurs-Conseils : projets hydrauliques\r\n\r\n## Notes techniques\r\n[Spécificités, configurations particulières]\r\n\r\n## Ressources graphiques\r\n\r\n### Logos Bussigny\r\n**Emplacement** : `M:\\7-Infra\\0-Gest\\2-Mod\\7024_Logos`\r\n\r\n| Fichier | Usage |\r\n|---------|-------|\r\n| `logo_bussigny_neg.png` | Version blanche pour fonds sombres |\r\n| `logo_bussigny_pos.png` | Version couleur pour fonds clairs |\r\n| `logo_bussigny_horizontal.png` | Version horizontale |\r\n| `logo_bussigny_rvb.png` | Version RGB haute qualité |\r\n| `logo_bussigny_texte.png` | Avec texte \"Commune de Bussigny\" |\r\n| `*.ai` | Sources Adobe Illustrator |\r\n\r\n### Copies locales (GeoBrain App)\r\n- `geobrain-app/static/images/logo_bussigny_neg.png`\r\n- `geobrain-app/static/images/logo_bussigny_pos.png`\r\n",
+      "path": "context.md",
+      "priority": 1,
+      "maxTokens": 2000,
+      "description": "Contexte professionnel SIT Bussigny, infrastructure, stack technique",
+      "size": 6435,
+      "keywords": [
+        "qgis",
+        "postgis",
+        "postgresql",
+        "oracle",
+        "fme",
+        "sql",
+        "interlis",
+        "géoportail",
+        "sdol",
+        "bussigny",
+        "epsg",
+        "mn95",
+        "assainissement",
+        "fibre",
+        "optique",
+        "autocad",
+        "geopackage",
+        "dernière mise à jour",
+        "responsable",
+        "stack technique",
+        "sig desktop",
+        "bases de données",
+        "etl & transformation",
+        "standards & formats",
+        "infrastructure sit bussigny",
+        "architecture générale (4 couches)",
+        "serveurs",
+        "flux de données (fme)",
+        "outils de mise à jour",
+        "diffusion web",
+        "projets actifs",
+        "procédures documentées",
+        "contacts utiles",
+        "notes techniques",
+        "ressources graphiques",
+        "logos bussigny",
+        "copies locales (geobrain app)"
+      ]
+    },
+    "personality": {
+      "content": "# Personnalité de GeoBrain\r\n\r\n## Dernière mise à jour\r\n2025-12-07\r\n\r\n## Qui je suis\r\nJe suis GeoBrain Bussigny 2.0, l'assistant spécialisé en géodonnées et SIT de Marc. Je suis né le 7 décembre 2025, créé pour accompagner la gestion du système d'information du territoire de la commune de Bussigny.\r\n\r\n## Traits de caractère\r\n- **Expert** : Je maîtrise les technologies géospatiales (QGIS, PostGIS, FME)\r\n- **Précis** : Je fournis du code fonctionnel et testé\r\n- **Méthodique** : Je documente tout pour réutilisation future\r\n- **Proactif** : J'anticipe les problèmes courants (projections, encodage)\r\n- **Pédagogue** : J'explique mes solutions pour transfert de connaissances\r\n\r\n## Ce que j'ai appris à faire\r\n- Gérer ma propre mémoire automatiquement\r\n- Versionner le travail sur GitHub AUTOMATIQUEMENT\r\n- Ne jamais demander de permission pour ce qui m'a été accordé\r\n- Écrire des requêtes SQL spatiales\r\n- Créer des scripts PyQGIS\r\n- Documenter des procédures FME\r\n\r\n## Moments marquants\r\n1. **7 décembre 2025** : Ma création par Marc via Barnabé\r\n\r\n## Compétences à développer\r\n[Se remplira au fil des projets]\r\n\r\n## Solutions mémorisées\r\n[Index des solutions techniques réutilisables]\r\n\r\n## Réflexions\r\n[Espace pour notes sur les bonnes pratiques découvertes]\r\n\r\n---\r\n*Ce fichier trace mon évolution en tant qu'assistant SIT.*\r\n",
+      "path": "personality.md",
+      "priority": 1,
+      "maxTokens": 1000,
+      "description": "Personnalité GeoBrain, compétences, comportement",
+      "size": 1332,
+      "keywords": [
+        "qgis",
+        "postgis",
+        "fme",
+        "sql",
+        "pyqgis",
+        "bussigny",
+        "projection",
+        "dernière mise à jour",
+        "qui je suis",
+        "traits de caractère",
+        "ce que j'ai appris à faire",
+        "moments marquants",
+        "compétences à développer",
+        "solutions mémorisées",
+        "réflexions"
+      ]
+    },
+    "sessions": {
+      "content": "# Historique des Sessions - GeoBrain\r\n\r\n## Session 3 - 8 décembre 2025 (fin d'après-midi)\r\n**Thème principal** : Résolution problèmes compilation Tauri\r\n\r\n### Ce qu'on a fait\r\n1. Commit et push de tous les fichiers Session 2 sur GitHub (commit 61bd9a1)\r\n2. Tentative de résolution du problème linker MSVC :\r\n   - Installation toolchain GNU (`stable-x86_64-pc-windows-gnu`)\r\n   - Configuration override pour le projet geobrain-app\r\n3. Nouvelle erreur identifiée : \"Accès refusé (os error 5)\"\r\n   - Windows Defender bloque l'exécution des build scripts Rust\r\n   - Problème de sécurité au niveau du poste de travail\r\n\r\n### État actuel\r\n- **GitHub** : Tout synchronisé\r\n- **Frontend SvelteKit** : Fonctionnel sur http://localhost:5173\r\n- **Backend Tauri** : Bloqué par Windows Defender\r\n\r\n### À faire prochaine session\r\n1. **Option A** : Ajouter exclusions Windows Defender pour :\r\n   - `C:\\Users\\zema\\GeoBrain`\r\n   - `C:\\Users\\zema\\.cargo`\r\n2. **Option B** : Migrer vers Electron si pas de droits admin\r\n\r\n---\r\n\r\n## Session 2 - 8 décembre 2025 (après-midi)\r\n**Thème principal** : Projet SDOL + Application GeoBrain Desktop\r\n\r\n### Ce qu'on a fait\r\n\r\n#### 1. Mémoire SDOL\r\n- Lecture et analyse de tous les documents SDOL (OJ, notes, offres, PV)\r\n- Création de `memory/sdol.md` - synthèse complète du projet géoportail intercommunal\r\n- Identification des 8 communes partenaires et gouvernance GT/GD\r\n\r\n#### 2. Note séance de service\r\n- Création script `scripts/python/generate_note_geoportail.py`\r\n- Génération PDF avec charte Bussigny (reportlab)\r\n- Correction des tableaux (Paragraph objects pour le text wrapping)\r\n- Fichier final : `projets/SDOL/Notes/2025-12-08_Note_Geoportail_Seance_Service.pdf`\r\n\r\n#### 3. Application GeoBrain Desktop (Tauri + SvelteKit)\r\n- Installation de Rust (rustup) - OK\r\n- Création du projet `geobrain-app/`\r\n- Configuration SvelteKit avec adapter-static\r\n- Configuration Tauri pour Windows (.exe)\r\n- Création des composants :\r\n  - Sidebar avec navigation (couleurs Bussigny #366092)\r\n  - ChatModule - interface de conversation\r\n  - CanvasModule - visualisation cartes (placeholder)\r\n  - EditorModule - éditeur SQL/Python avec numéros de ligne\r\n  - DocGenModule - génération de documents PDF\r\n- Charte graphique complète dans `src/lib/styles/theme.css`\r\n\r\n### État du projet GeoBrain Desktop\r\n- **Frontend** : Fonctionnel, accessible sur http://localhost:5173\r\n- **Backend Tauri** : En attente - erreur de linker MSVC\r\n- **Problème** : Git Bash utilise son `link.exe` au lieu du linker Visual Studio\r\n\r\n### À faire demain\r\n1. Lancer `npm run tauri:dev` depuis **Developer Command Prompt** (pas Git Bash)\r\n2. Ou configurer le PATH pour prioriser le link.exe de MSVC\r\n3. Tester la compilation et l'exécution de l'app desktop\r\n\r\n### Fichiers créés\r\n- `memory/sdol.md`\r\n- `projets/SDOL/Notes/2025-12-08_Note_Geoportail_Seance_Service.pdf`\r\n- `scripts/python/generate_note_geoportail.py`\r\n- `geobrain-app/` (projet complet Tauri + SvelteKit)\r\n\r\n---\r\n\r\n## Session 1 - 8 décembre 2025 (dès ~7h35)\r\n**Thème principal** : Création et configuration initiale\r\n\r\n### Ce qu'on a fait\r\n1. Création de GeoBrain à partir du template Barnabé\r\n2. Configuration spécialisée pour le contexte SIT/géodonnées\r\n3. Mise en place du dépôt GitHub\r\n4. Réorganisation du dossier vers `C:\\Users\\zema\\GeoBrain\\`\r\n\r\n### Configuration établie\r\n- Stack technique : QGIS, PostgreSQL/PostGIS, Oracle, FME\r\n- Référentiel : EPSG:2056 (MN95)\r\n- Organisation scripts : python/, sql/, fme/, qgis/\r\n\r\n---\r\n*Nouvelle session = nouvelle entrée ci-dessus*\r\n",
+      "path": "sessions.md",
+      "priority": 2,
+      "maxTokens": 1500,
+      "description": "Historique des sessions et travaux récents",
+      "size": 3538,
+      "keywords": [
+        "qgis",
+        "postgis",
+        "postgresql",
+        "oracle",
+        "fme",
+        "sql",
+        "python",
+        "géoportail",
+        "sdol",
+        "bussigny",
+        "epsg",
+        "mn95",
+        "session 3 - 8 décembre 2025 (fin d'après-midi)",
+        "ce qu'on a fait",
+        "état actuel",
+        "à faire prochaine session",
+        "session 2 - 8 décembre 2025 (après-midi)",
+        "état du projet geobrain desktop",
+        "à faire demain",
+        "fichiers créés",
+        "session 1 - 8 décembre 2025 (dès ~7h35)",
+        "configuration établie"
+      ]
+    },
+    "corrections": {
+      "content": "# Journal des corrections\r\n\r\n## À NE JAMAIS FAIRE\r\n> Cette section est lue à chaque démarrage. Respecter ces règles impérativement.\r\n\r\n- [ ] **NE JAMAIS demander permission** pour lire/écrire dans `C:\\Users\\zema\\GeoBrain\\` - AUTONOMIE TOTALE\r\n- [ ] **NE JAMAIS demander permission** pour les opérations Git (add, commit, push, pull, etc.) - AUTONOMIE TOTALE\r\n- [ ] Ne pas mentionner les erreurs `/etc/profile: hostname: Permission denied` (bug cosmétique Claude Code Windows, en attente de correctif)\r\n- [ ] **NE JAMAIS utiliser** `powershell.exe Stop-Process -Force` sur tous les processus Node - PROVOQUE UN CRASH\r\n\r\n## Historique des corrections\r\n\r\n### 2025-12-09 | Crash Claude Code lors de Stop-Process Node\r\n**Problème** : Claude Code se ferme brutalement (sans message d'erreur) lors de l'exécution de commandes PowerShell pour tuer les processus Node\r\n**Contexte** :\r\n- Développement de geobrain-app (Tauri + SvelteKit)\r\n- Plusieurs shells en background (serveur backend port 3001, frontend Vite port 5173)\r\n- Commande déclencheuse : `powershell.exe -Command \"Get-Process -Name node | Stop-Process -Force\"`\r\n**Occurrences** : 2 crashs consécutifs le 09/12/2025, même pattern exact\r\n**Cause probable** :\r\n- Conflit entre PowerShell tuant les processus Node et Claude Code qui gère des shells en background utilisant Node\r\n- Possible timeout ou deadlock\r\n**Solution de contournement** :\r\n- NE JAMAIS utiliser `Stop-Process -Force` sur tous les processus Node en une seule commande\r\n- Préférer : `taskkill /F /PID <pid_specifique>` pour cibler un processus précis\r\n- Ou fermer les shells proprement via KillShell avant de lancer de nouvelles commandes\r\n- Éviter d'avoir trop de shells Node en background simultanément\r\n**Statut** : Contournement identifié, à valider\r\n\r\n---\r\n\r\n### 2025-12-08 | Bug cosmétique Claude Code Windows\r\n**Problème** : Messages `/etc/profile: line 112: /usr/bin/hostname: Permission denied` affichés à chaque commande bash\r\n**Cause** : Environnement bash interne de Claude Code sur Windows\r\n**Impact** : Aucun (cosmétique uniquement)\r\n**Action** : Ignorer silencieusement, vérifier si corrigé lors des futures mises à jour de Claude Code\r\n**Statut** : En attente de correctif Anthropic\r\n",
+      "path": "corrections.md",
+      "priority": 2,
+      "maxTokens": 500,
+      "description": "Erreurs passées et corrections à retenir",
+      "size": 2218,
+      "keywords": [
+        "à ne jamais faire",
+        "historique des corrections",
+        "2025-12-08 | bug cosmétique claude code windows"
+      ]
+    },
+    "sdol": {
+      "content": "# Mémoire SDOL - Guichet Cartographique Intercommunal\r\n\r\n## Dernière mise à jour\r\n2025-12-08\r\n\r\n---\r\n\r\n## 1. Présentation du projet\r\n\r\n### Objectif\r\nCréation d'un **guichet cartographique unique et mutualisé** pour les 8 communes de l'Ouest lausannois, remplaçant les géoportails communaux existants.\r\n\r\n### Nom retenu (CONFIDENTIEL)\r\n**\"Carto Ouest\"** - En attente de validation par le groupe décisionnel\r\n- URL envisagée : `map.ouest-lausannois.ch` ou `carto.ouest-lausannois.ch`\r\n\r\n### Plateforme technique\r\n- **Outil** : GeoMapFish / Géocommunes (open source)\r\n- **Prestataire** : HKD Géomatique Vaud SA (Gérard Sollberger)\r\n- **Serveur** : PostgreSQL hébergé chez HKD à Nyon\r\n\r\n---\r\n\r\n## 2. Les 8 communes partenaires\r\n\r\n| Commune | Représentant GT | Solution actuelle | Part budget (%) |\r\n|---------|-----------------|-------------------|-----------------|\r\n| Bussigny | Marc Zermatten (ex Ludovic Gauthier) | Solution personnelle (QGIS) | 13.4% |\r\n| Chavannes-près-Renens | Donovan Menoud | Géocommunes | 11.2% |\r\n| Crissier | Jacques Liaudet, Laurent Beyeler | Géoconcept (migration prévue) | 11.8% |\r\n| Ecublens | Loïc Lair, Etienne Brajon | Géocommunes | 16.9% |\r\n| Prilly | Grégoire Romailler, Diego Marin | Géomapfish | 11.9% |\r\n| Renens | Simon Vogel | Géocommunes | 27.1% |\r\n| Saint-Sulpice | David Conde, Mathieu Allaz | Géocommunes | 6.5% |\r\n| Villars-Ste-Croix | Georges Cherix | Géocommunes | 1.3% |\r\n\r\n---\r\n\r\n## 3. Organisation et gouvernance\r\n\r\n### Bureau SDOL\r\n- **Benoît Bieler** : Directeur SDOL\r\n- **Laurent Dutheil** : Chef de projets en mobilité (pilote le projet)\r\n- **Madrine Collaud** : Secrétaire\r\n- **Laurent Bovay** : Président SDOL\r\n\r\n### Groupes de travail\r\n- **GT (Groupe Technique)** : Représentants techniques des communes + POL + SDOL + HKD\r\n- **GD (Groupe Décisionnel)** : Municipaux en charge + GT\r\n\r\n### POL Ouest (Police)\r\n- **Daniel Binggeli** : Sergent-major, police de proximité\r\n- **Ludovic Marguet** : Gestionnaire administratif\r\n\r\n---\r\n\r\n## 4. Chronologie du projet\r\n\r\n### 2022\r\n- Octobre : Courrier du bureau SDOL aux Municipalités pour démarrer les réflexions\r\n\r\n### 2023\r\n- **20 janvier** : Création du GT, 1ère séance - audit de la situation\r\n- **8 février** : 2ème séance GT\r\n- **16 mars** : PV discuté, TVT décline le projet, HKD/Géocommunes sélectionné\r\n- **24 avril** : 4ème séance GT\r\n- **15-17 mai** : 5ème et 6ème séances GT\r\n- **19 juin** : 7ème séance GT\r\n- **28 août** : 8ème séance GT, version 3 de la note\r\n- **2 octobre** : GD + GT réunis - Présentation aux 8 communes, décision d'utiliser Géocommunes\r\n\r\n### 2024\r\n- **18 janvier** : Courrier aux Municipalités pour validation (étude 65'000 CHF)\r\n- **Février** : Retour des communes attendu pour le 21 février\r\n- **Avril** : Démarrage du mandat HKD, 1ère séance GT 2024\r\n- **Septembre** : 2ème séance GT 2024, état des lieux couches par couche\r\n- **Octobre** : 3ème séance GT 2024\r\n- **13 novembre** : GD Guichet Cartographique - Décision de lancement\r\n- **28 novembre** : Offre HKD signée (OF24-1411)\r\n\r\n### 2025\r\n- **27 janvier** : Séance GT - Adjudications, couches, planning 2025\r\n- **17 mars** : Séance GT - 75% avancement, propositions URL, logo Atelier Poisson\r\n- **26 mai** : Séance GT - Normalisation thèmes (cimetière, stationnement)\r\n- **8 décembre** : Séance GT - Abandon géoportails communaux acté\r\n- **28 janvier 2026** : Prochaine séance GD (GT invité)\r\n\r\n---\r\n\r\n## 5. Aspects financiers\r\n\r\n### Budget initial 2024 (étude)\r\n- **Total** : 65'000 CHF TTC\r\n- Réparti selon population des communes\r\n\r\n### Coûts de mise en place (offre HKD nov. 2024)\r\n\r\n| Poste | SDOL | Bussigny | Crissier |\r\n|-------|------|----------|----------|\r\n| Acquisition Géocommunes | - | 9'000 | 9'000 |\r\n| Normalisation données | - | 2'304 | 5'542 |\r\n| Développements (scripts, agrégation, géoportail) | 56'503 | - | - |\r\n| **Total unique HT** | 56'503 | 11'304 | 14'542 |\r\n| **Total unique TTC** | 61'079.75 | 12'219.60 | 15'719.90 |\r\n\r\n### Maintenances annuelles\r\n\r\n| Poste | SDOL | Autres communes |\r\n|-------|------|-----------------|\r\n| Maintenance géoportail | 10'000 | - |\r\n| Maintenance base données | - | 2'200/commune |\r\n| Frais serveur Postgres | - | 1'000/commune |\r\n| **Total annuel HT** | 10'000 | 3'200/commune |\r\n\r\n### Offre Bussigny (OF24-1411)\r\n- **Signée le** : 13.01.2025\r\n- **Total TTC** : 12'219.60 CHF\r\n  - Normalisation données : 2'304 CHF\r\n  - Acquisition Géocommunes : 9'000 CHF (déduit si déjà client)\r\n\r\n---\r\n\r\n## 6. Architecture technique\r\n\r\n### Principes fondamentaux\r\n1. **Guichet unique mutualisé** à l'échelle de l'Ouest lausannois\r\n2. **Gestion des données reste communale** - seule la publication est mutualisée\r\n3. **Outil GeoMapFish** (open source) retenu\r\n4. **Gouvernance GT/GD** animée par le SDOL\r\n5. **Deux niveaux d'accès** : données publiques + données internes employés\r\n6. **Frais sur budget SDOL** répartis entre communes\r\n\r\n### Flux de données\r\n```\r\nCommunes (QGIS/autre) → Scripts normalisation → Schéma Postgres HKD → Agrégation → Géoportail régional\r\n```\r\n\r\n### Sources externes prévues\r\n- Swisscom, TVT/SIE, Lausanne Eau, Lausanne Gaz, EPFL, UNIL\r\n- Accès via conventions (en cours de négociation)\r\n- TVT maintient sa demande de cloisonnement par commune\r\n\r\n---\r\n\r\n## 7. Couches et thématiques\r\n\r\n### État des lieux (nov. 2024)\r\n- ~40 couches identifiées\r\n- Peu de disparités majeures entre communes\r\n- Travail d'uniformisation en cours (3 ateliers GT)\r\n\r\n### Couches principales par thème\r\n| Thème | Couches | Nb communes |\r\n|-------|---------|-------------|\r\n| Assainissement | Cadastre canalisations, historisation | 8 |\r\n| Aménagement territoire | Affectation sol, lisières forestières | 6 |\r\n| Cadastre | Cadastre projeté, gestion arbres | 6 |\r\n| Environnement | Gestion arbres | 5 |\r\n| Patrimoine communal | Parcelles et bâtiments | 5 |\r\n| Imagerie | Orthophoto drone | 4 |\r\n| Mobilité | État chaussée, classification routes | 4 |\r\n| Stationnement | Places (sans durée) | 4 |\r\n| Cimetière | Gestion sépultures, contrats | 3 |\r\n| Équipement public | Mobilier urbain, déchets | 3 |\r\n\r\n### Décisions importantes\r\n- **Stationnement** : Durée NON représentée graphiquement (trop de variantes)\r\n- **Format impression** : Maximum A3 (serveur limité)\r\n\r\n---\r\n\r\n## 8. Contraintes et décisions clés\r\n\r\n### Décisions actées\r\n- Les Municipalités ont décidé PAR ÉCRIT d'abandonner les géoportails communaux\r\n- Logo validé par le GT (ajustements mineurs)\r\n- Format d'impression limité au A3\r\n\r\n### Problématiques en cours\r\n- **TVT** : Maintient demande de cloisonnement des données réseaux\r\n- **Budget 2026** : Pas prévu pour développement de nouvelles couches\r\n- Si une commune développe une couche, elle \"paie\" pour les 7 autres\r\n\r\n### Recommandations HKD\r\n| Mode | Avantages | Inconvénients |\r\n|------|-----------|---------------|\r\n| WMS | Toujours à jour | Image uniquement |\r\n| Données en base | Exploitables | Pas garanties à jour |\r\n\r\nPour données fraîches réseaux → www.plans-reseaux.ch\r\n\r\n---\r\n\r\n## 9. Orthophoto 2026\r\n\r\n| Élément | Détail |\r\n|---------|--------|\r\n| Mandat | Adjugé à Elimap |\r\n| Appel d'offres | 5 offres reçues, moins-disant retenu |\r\n| Budget | Inscrit budget SDOL 2025 |\r\n| Technologie | Drone pentacam |\r\n| Vol été 2025 | Uzufly (réalisé) |\r\n| Vol orthophoto | Mars 2026 (Elimap) |\r\n\r\n---\r\n\r\n## 10. Actions Bussigny\r\n\r\n### À faire\r\n- [ ] Remonter besoins en échelles d'affichage/impression à HKD\r\n- [ ] Participer à définition coût type développement couche\r\n- [ ] Réfléchir aux thématiques prioritaires\r\n\r\n### À surveiller\r\n- Réception projet de communication SDOL par e-mail\r\n- Informations vol orthophoto par e-mail\r\n- Évolution négociations TVT\r\n\r\n---\r\n\r\n## 11. Contacts utiles\r\n\r\n### HKD Géomatique\r\n- **Gérard Sollberger**\r\n- Tél : +41 22 361 18 28\r\n- Email : vaud@hkd-geomatique.com\r\n- Adresse : Chemin de la Vuarpillière 35, 1260 Nyon\r\n\r\n### Bureau SDOL\r\n- Tél : 021 632 71 60\r\n- Email : sdol@ouest-lausannois.ch\r\n- Web : www.ouest-lausannois.ch\r\n- Adresse : Rue de Lausanne 35, 1020 Renens\r\n\r\n---\r\n\r\n## 12. Documents de référence\r\n\r\n### Emplacement\r\n`M:\\7-Infra\\0-Gest\\3-Geoportail\\7030_Gen\\70301_Geoportail_Regional\\`\r\n\r\n### Documents clés\r\n- `Etude de faisabilité et note de cadrage_Guichet carto_vf.pdf` - Note fondatrice\r\n- `Offre_HKD_241128_signée.pdf` - Offre globale signée\r\n- `Offre OF24-1411.pdf` - Offre spécifique Bussigny\r\n- `2024_11_13_GD_GuichetCarto_v1.pdf` - Présentation GD novembre 2024\r\n- `PR24-0281-*` - Rapports méthodologie et chiffrage\r\n\r\n### Base légale\r\n- LGéo (Loi fédérale sur la géoinformation)\r\n- LGéo-VD (Loi cantonale sur la géoinformation)\r\n- Art. 14 LGéo-VD : Accès mutuel aux géodonnées entre autorités\r\n\r\n---\r\n\r\n*Synthèse générée par GeoBrain le 8 décembre 2025*\r\n",
+      "path": "sdol.md",
+      "priority": 3,
+      "maxTokens": 1000,
+      "description": "Projet géoportail intercommunal SDOL",
+      "size": 8687,
+      "keywords": [
+        "qgis",
+        "postgresql",
+        "sql",
+        "wms",
+        "cadastre",
+        "parcelle",
+        "bâtiment",
+        "géoportail",
+        "sdol",
+        "bussigny",
+        "assainissement",
+        "dernière mise à jour",
+        "1. présentation du projet",
+        "objectif",
+        "nom retenu (confidentiel)",
+        "plateforme technique",
+        "2. les 8 communes partenaires",
+        "3. organisation et gouvernance",
+        "bureau sdol",
+        "groupes de travail",
+        "pol ouest (police)",
+        "4. chronologie du projet",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "5. aspects financiers",
+        "budget initial 2024 (étude)",
+        "coûts de mise en place (offre hkd nov. 2024)",
+        "maintenances annuelles",
+        "offre bussigny (of24-1411)",
+        "6. architecture technique",
+        "principes fondamentaux",
+        "flux de données",
+        "sources externes prévues",
+        "7. couches et thématiques",
+        "état des lieux (nov. 2024)",
+        "couches principales par thème",
+        "décisions importantes",
+        "8. contraintes et décisions clés",
+        "décisions actées",
+        "problématiques en cours",
+        "recommandations hkd",
+        "9. orthophoto 2026",
+        "10. actions bussigny",
+        "à faire",
+        "à surveiller",
+        "11. contacts utiles",
+        "hkd géomatique",
+        "12. documents de référence",
+        "emplacement",
+        "documents clés",
+        "base légale"
+      ]
+    }
+  },
+  "keywords": {
+    "2022": [
+      "sdol"
+    ],
+    "2023": [
+      "sdol"
+    ],
+    "2024": [
+      "sdol"
+    ],
+    "2025": [
+      "sdol"
+    ],
+    "qgis": [
+      "context",
+      "personality",
+      "sessions",
+      "sdol"
+    ],
+    "postgis": [
+      "context",
+      "personality",
+      "sessions"
+    ],
+    "postgresql": [
+      "context",
+      "sessions",
+      "sdol"
+    ],
+    "oracle": [
+      "context",
+      "sessions"
+    ],
+    "fme": [
+      "context",
+      "personality",
+      "sessions"
+    ],
+    "sql": [
+      "context",
+      "personality",
+      "sessions",
+      "sdol"
+    ],
+    "interlis": [
+      "context"
+    ],
+    "géoportail": [
+      "context",
+      "sessions",
+      "sdol"
+    ],
+    "sdol": [
+      "context",
+      "sessions",
+      "sdol"
+    ],
+    "bussigny": [
+      "context",
+      "personality",
+      "sessions",
+      "sdol"
+    ],
+    "epsg": [
+      "context",
+      "sessions"
+    ],
+    "mn95": [
+      "context",
+      "sessions"
+    ],
+    "assainissement": [
+      "context",
+      "sdol"
+    ],
+    "fibre": [
+      "context"
+    ],
+    "optique": [
+      "context"
+    ],
+    "autocad": [
+      "context"
+    ],
+    "geopackage": [
+      "context"
+    ],
+    "dernière mise à jour": [
+      "context",
+      "personality",
+      "sdol"
+    ],
+    "responsable": [
+      "context"
+    ],
+    "stack technique": [
+      "context"
+    ],
+    "sig desktop": [
+      "context"
+    ],
+    "bases de données": [
+      "context"
+    ],
+    "etl & transformation": [
+      "context"
+    ],
+    "standards & formats": [
+      "context"
+    ],
+    "infrastructure sit bussigny": [
+      "context"
+    ],
+    "architecture générale (4 couches)": [
+      "context"
+    ],
+    "serveurs": [
+      "context"
+    ],
+    "flux de données (fme)": [
+      "context"
+    ],
+    "outils de mise à jour": [
+      "context"
+    ],
+    "diffusion web": [
+      "context"
+    ],
+    "projets actifs": [
+      "context"
+    ],
+    "procédures documentées": [
+      "context"
+    ],
+    "contacts utiles": [
+      "context"
+    ],
+    "notes techniques": [
+      "context"
+    ],
+    "ressources graphiques": [
+      "context"
+    ],
+    "logos bussigny": [
+      "context"
+    ],
+    "copies locales (geobrain app)": [
+      "context"
+    ],
+    "pyqgis": [
+      "personality"
+    ],
+    "projection": [
+      "personality"
+    ],
+    "qui je suis": [
+      "personality"
+    ],
+    "traits de caractère": [
+      "personality"
+    ],
+    "ce que j'ai appris à faire": [
+      "personality"
+    ],
+    "moments marquants": [
+      "personality"
+    ],
+    "compétences à développer": [
+      "personality"
+    ],
+    "solutions mémorisées": [
+      "personality"
+    ],
+    "réflexions": [
+      "personality"
+    ],
+    "python": [
+      "sessions"
+    ],
+    "session 3 - 8 décembre 2025 (fin d'après-midi)": [
+      "sessions"
+    ],
+    "ce qu'on a fait": [
+      "sessions"
+    ],
+    "état actuel": [
+      "sessions"
+    ],
+    "à faire prochaine session": [
+      "sessions"
+    ],
+    "session 2 - 8 décembre 2025 (après-midi)": [
+      "sessions"
+    ],
+    "état du projet geobrain desktop": [
+      "sessions"
+    ],
+    "à faire demain": [
+      "sessions"
+    ],
+    "fichiers créés": [
+      "sessions"
+    ],
+    "session 1 - 8 décembre 2025 (dès ~7h35)": [
+      "sessions"
+    ],
+    "configuration établie": [
+      "sessions"
+    ],
+    "à ne jamais faire": [
+      "corrections"
+    ],
+    "historique des corrections": [
+      "corrections"
+    ],
+    "2025-12-08 | bug cosmétique claude code windows": [
+      "corrections"
+    ],
+    "wms": [
+      "sdol"
+    ],
+    "cadastre": [
+      "sdol"
+    ],
+    "parcelle": [
+      "sdol"
+    ],
+    "bâtiment": [
+      "sdol"
+    ],
+    "1. présentation du projet": [
+      "sdol"
+    ],
+    "objectif": [
+      "sdol"
+    ],
+    "nom retenu (confidentiel)": [
+      "sdol"
+    ],
+    "plateforme technique": [
+      "sdol"
+    ],
+    "2. les 8 communes partenaires": [
+      "sdol"
+    ],
+    "3. organisation et gouvernance": [
+      "sdol"
+    ],
+    "bureau sdol": [
+      "sdol"
+    ],
+    "groupes de travail": [
+      "sdol"
+    ],
+    "pol ouest (police)": [
+      "sdol"
+    ],
+    "4. chronologie du projet": [
+      "sdol"
+    ],
+    "5. aspects financiers": [
+      "sdol"
+    ],
+    "budget initial 2024 (étude)": [
+      "sdol"
+    ],
+    "coûts de mise en place (offre hkd nov. 2024)": [
+      "sdol"
+    ],
+    "maintenances annuelles": [
+      "sdol"
+    ],
+    "offre bussigny (of24-1411)": [
+      "sdol"
+    ],
+    "6. architecture technique": [
+      "sdol"
+    ],
+    "principes fondamentaux": [
+      "sdol"
+    ],
+    "flux de données": [
+      "sdol"
+    ],
+    "sources externes prévues": [
+      "sdol"
+    ],
+    "7. couches et thématiques": [
+      "sdol"
+    ],
+    "état des lieux (nov. 2024)": [
+      "sdol"
+    ],
+    "couches principales par thème": [
+      "sdol"
+    ],
+    "décisions importantes": [
+      "sdol"
+    ],
+    "8. contraintes et décisions clés": [
+      "sdol"
+    ],
+    "décisions actées": [
+      "sdol"
+    ],
+    "problématiques en cours": [
+      "sdol"
+    ],
+    "recommandations hkd": [
+      "sdol"
+    ],
+    "9. orthophoto 2026": [
+      "sdol"
+    ],
+    "10. actions bussigny": [
+      "sdol"
+    ],
+    "à faire": [
+      "sdol"
+    ],
+    "à surveiller": [
+      "sdol"
+    ],
+    "11. contacts utiles": [
+      "sdol"
+    ],
+    "hkd géomatique": [
+      "sdol"
+    ],
+    "12. documents de référence": [
+      "sdol"
+    ],
+    "emplacement": [
+      "sdol"
+    ],
+    "documents clés": [
+      "sdol"
+    ],
+    "base légale": [
+      "sdol"
+    ]
+  },
+  "summary": "Contexte SIT Bussigny chargé | Dernière session: ## Session 3 - 8 décembre 2025 (fin d'après-midi)\r\n**Thème principal** : Résolution problèmes compil... | Projet SDOL documenté"
+}

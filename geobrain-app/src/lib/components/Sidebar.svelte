@@ -1,11 +1,13 @@
 <script lang="ts">
   import { currentModule, sidebarCollapsed, type ModuleType } from '$lib/stores/app';
+  import GeoBrainLogo from './icons/GeoBrainLogo.svelte';
 
-  const modules: { id: ModuleType; label: string; icon: string }[] = [
-    { id: 'chat', label: 'Assistant', icon: '💬' },
-    { id: 'canvas', label: 'Carte', icon: '🗺️' },
-    { id: 'editor', label: 'Éditeur', icon: '📝' },
-    { id: 'docgen', label: 'Documents', icon: '📄' },
+  const modules: { id: ModuleType; label: string; icon: string; description: string }[] = [
+    { id: 'chat', label: 'Assistant', icon: 'M', description: 'Chat IA' },
+    { id: 'canvas', label: 'Carte', icon: 'C', description: 'Visualisation' },
+    { id: 'editor', label: 'Editeur', icon: 'E', description: 'SQL & Python' },
+    { id: 'docgen', label: 'Documents', icon: 'D', description: 'Generation PDF' },
+    { id: 'settings', label: 'Parametres', icon: 'S', description: 'Configuration' },
   ];
 
   function selectModule(id: ModuleType) {
@@ -18,37 +20,74 @@
 </script>
 
 <aside class="sidebar" class:collapsed={$sidebarCollapsed}>
+  <!-- Logo section -->
   <div class="sidebar-header">
     {#if !$sidebarCollapsed}
-      <div class="logo">
-        <span class="logo-icon">🧠</span>
-        <span class="logo-text">GeoBrain</span>
-      </div>
-      <span class="logo-subtitle">Bussigny SIT</span>
+      <GeoBrainLogo size={42} showText={true} />
     {:else}
-      <span class="logo-icon-only">🧠</span>
+      <GeoBrainLogo size={36} showText={false} />
     {/if}
   </div>
 
+  <!-- Decorative line -->
+  <div class="header-divider">
+    <div class="divider-line"></div>
+    <div class="divider-glow"></div>
+  </div>
+
+  <!-- Navigation -->
   <nav class="sidebar-nav">
     {#each modules as module}
       <button
         class="nav-item"
         class:active={$currentModule === module.id}
-        on:click={() => selectModule(module.id)}
-        title={module.label}
+        onclick={() => selectModule(module.id)}
+        title={$sidebarCollapsed ? module.label : ''}
       >
-        <span class="nav-icon">{module.icon}</span>
+        <div class="nav-icon-wrapper">
+          <span class="nav-icon">{module.icon}</span>
+        </div>
         {#if !$sidebarCollapsed}
-          <span class="nav-label">{module.label}</span>
+          <div class="nav-content">
+            <span class="nav-label">{module.label}</span>
+            <span class="nav-description">{module.description}</span>
+          </div>
+        {/if}
+        {#if $currentModule === module.id}
+          <div class="active-indicator"></div>
         {/if}
       </button>
     {/each}
   </nav>
 
+  <!-- Footer with Bussigny branding -->
   <div class="sidebar-footer">
-    <button class="toggle-btn" on:click={toggleSidebar} title={$sidebarCollapsed ? 'Ouvrir' : 'Réduire'}>
-      <span class="toggle-icon">{$sidebarCollapsed ? '→' : '←'}</span>
+    {#if !$sidebarCollapsed}
+      <div class="bussigny-brand">
+        <img
+          src="/images/logo_bussigny_neg.png"
+          alt="Commune de Bussigny"
+          class="bussigny-logo-img"
+        />
+      </div>
+    {:else}
+      <div class="bussigny-brand-collapsed">
+        <img
+          src="/images/logo_bussigny_neg.png"
+          alt="Bussigny"
+          class="bussigny-logo-small"
+        />
+      </div>
+    {/if}
+
+    <button class="toggle-btn" onclick={toggleSidebar} title={$sidebarCollapsed ? 'Ouvrir le menu' : 'Reduire le menu'}>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+        {#if $sidebarCollapsed}
+          <path d="M6 3l5 5-5 5V3z"/>
+        {:else}
+          <path d="M10 3L5 8l5 5V3z"/>
+        {/if}
+      </svg>
     </button>
   </div>
 </aside>
@@ -57,11 +96,24 @@
   .sidebar {
     width: var(--sidebar-width);
     height: 100vh;
-    background: var(--bg-sidebar);
+    background: linear-gradient(180deg, #1a2634 0%, #2c3e50 50%, #1a2634 100%);
     display: flex;
     flex-direction: column;
     transition: width var(--transition-normal);
     overflow: hidden;
+    position: relative;
+    box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+  }
+
+  .sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 200px;
+    background: linear-gradient(180deg, rgba(54, 96, 146, 0.15) 0%, transparent 100%);
+    pointer-events: none;
   }
 
   .sidebar.collapsed {
@@ -69,112 +121,218 @@
   }
 
   .sidebar-header {
-    padding: var(--spacing-lg);
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    min-height: 80px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-
-  .logo {
+    padding: 20px;
+    min-height: 90px;
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
-  }
-
-  .logo-icon, .logo-icon-only {
-    font-size: 28px;
-  }
-
-  .logo-icon-only {
-    display: flex;
     justify-content: center;
+    position: relative;
+    z-index: 1;
   }
 
-  .logo-text {
-    font-size: var(--font-size-xl);
-    font-weight: 700;
-    color: white;
+  .header-divider {
+    position: relative;
+    height: 2px;
+    margin: 0 16px 8px;
   }
 
-  .logo-subtitle {
-    font-size: var(--font-size-xs);
-    color: var(--bleu-bussigny-light);
-    margin-top: 2px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+  .divider-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  }
+
+  .divider-glow {
+    position: absolute;
+    top: -2px;
+    left: 20%;
+    right: 20%;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, var(--bleu-bussigny), transparent);
+    filter: blur(3px);
+    opacity: 0.6;
   }
 
   .sidebar-nav {
     flex: 1;
-    padding: var(--spacing-md);
+    padding: 12px;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
+    gap: 4px;
+    position: relative;
+    z-index: 1;
   }
 
   .nav-item {
     display: flex;
     align-items: center;
-    gap: var(--spacing-md);
-    padding: var(--spacing-md);
+    gap: 12px;
+    padding: 12px;
     border: none;
     background: transparent;
-    color: rgba(255,255,255,0.7);
-    border-radius: var(--border-radius);
+    color: rgba(255,255,255,0.6);
+    border-radius: 10px;
     cursor: pointer;
     transition: all var(--transition-fast);
     text-align: left;
-    font-size: var(--font-size-md);
+    position: relative;
+    overflow: hidden;
   }
 
   .sidebar.collapsed .nav-item {
     justify-content: center;
-    padding: var(--spacing-md) var(--spacing-sm);
+    padding: 14px 12px;
+  }
+
+  .nav-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
   }
 
   .nav-item:hover {
-    background: rgba(255,255,255,0.1);
     color: white;
+    background: rgba(255,255,255,0.05);
+  }
+
+  .nav-item:hover::before {
+    opacity: 1;
   }
 
   .nav-item.active {
-    background: var(--bleu-bussigny);
     color: white;
+    background: linear-gradient(135deg, var(--bleu-bussigny) 0%, var(--bleu-bussigny-dark) 100%);
+    box-shadow: 0 4px 15px rgba(54, 96, 146, 0.4);
+  }
+
+  .nav-icon-wrapper {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all var(--transition-fast);
+  }
+
+  .nav-item.active .nav-icon-wrapper {
+    background: rgba(255,255,255,0.2);
   }
 
   .nav-icon {
-    font-size: 20px;
-    flex-shrink: 0;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+  }
+
+  .nav-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
   }
 
   .nav-label {
+    font-size: 14px;
+    font-weight: 600;
     white-space: nowrap;
   }
 
+  .nav-description {
+    font-size: 11px;
+    opacity: 0.6;
+    white-space: nowrap;
+  }
+
+  .active-indicator {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 24px;
+    background: white;
+    border-radius: 3px 0 0 3px;
+    box-shadow: 0 0 10px rgba(255,255,255,0.5);
+  }
+
+  .sidebar.collapsed .active-indicator {
+    display: none;
+  }
+
   .sidebar-footer {
-    padding: var(--spacing-md);
+    padding: 16px;
     border-top: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .bussigny-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+  }
+
+  .bussigny-logo-img {
+    max-width: 100%;
+    height: auto;
+    max-height: 50px;
+    object-fit: contain;
+    opacity: 0.9;
+    transition: opacity var(--transition-fast);
+  }
+
+  .bussigny-logo-img:hover {
+    opacity: 1;
+  }
+
+  .bussigny-brand-collapsed {
+    display: flex;
+    justify-content: center;
+    padding: 8px;
+  }
+
+  .bussigny-logo-small {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    opacity: 0.8;
   }
 
   .toggle-btn {
     width: 100%;
-    padding: var(--spacing-sm);
-    border: none;
-    background: rgba(255,255,255,0.1);
-    color: rgba(255,255,255,0.7);
-    border-radius: var(--border-radius-sm);
+    padding: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.6);
+    border-radius: 8px;
     cursor: pointer;
     transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .toggle-btn:hover {
-    background: rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.1);
     color: white;
-  }
-
-  .toggle-icon {
-    font-size: 16px;
+    border-color: rgba(255,255,255,0.2);
   }
 </style>

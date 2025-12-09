@@ -1,5 +1,43 @@
 # Historique des Sessions - GeoBrain
 
+## Session 4 - 9 décembre 2025
+**Thème principal** : Debugging crashs + Amélioration authentification géoportail
+
+### Problème résolu : Crashs Claude Code
+- **Cause identifiée** : Commande `powershell.exe Stop-Process -Force` sur tous les processus Node
+- **Solution** : Documenté dans `corrections.md` - ne jamais utiliser cette commande
+- **Alternative** : Tuer les PID spécifiques via Task Manager ou `taskkill /F /PID <pid>`
+
+### Travail en cours sur le géoportail
+1. **Endpoint `/api/geoportal/themes` ajouté** dans `server/index.js` (ligne ~717-759)
+   - Récupère les thèmes avec ou sans authentification
+   - Retourne `themes`, `isAuthenticated`, `total`
+
+2. **API frontend mise à jour** dans `src/lib/services/api.ts`
+   - Nouveaux types : `GeoportalTheme`, `GeoportalThemesResponse`
+   - Nouvelle fonction : `getGeoportalThemes()`
+
+3. **CanvasModule.svelte modifié** :
+   - Import de `getGeoportalThemes` et types
+   - Variable `themes` maintenant dynamique (plus codée en dur)
+   - Variable `themesLoading` pour l'état de chargement
+   - Mapping `themeIcons` pour les icônes par défaut
+   - Fonction `loadThemes()` appelée au mount et après login/logout
+   - Affichage des thèmes avec indicateur privé 🔒
+   - Styles CSS ajoutés : `.no-themes`, `.loading-indicator`, `.theme-item.private`, `.private-badge`
+
+### État actuel
+- **Code** : Tout modifié et sauvegardé
+- **Serveurs** : Backend bloqué sur port 3001 (ancien processus zombie)
+- **À faire** : Marc doit tuer manuellement les processus Node via Task Manager
+
+### Pour reprendre après redémarrage
+1. Lancer backend : `cd geobrain-app/server && npm start`
+2. Lancer frontend : `cd geobrain-app && npm run dev`
+3. Tester : http://localhost:5173 → onglet Cartes → Login → vérifier si thèmes privés apparaissent
+
+---
+
 ## Session 3 - 8 décembre 2025 (fin d'après-midi)
 **Thème principal** : Résolution problèmes compilation Tauri
 
