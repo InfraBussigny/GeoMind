@@ -36,10 +36,13 @@
 - Possible timeout ou deadlock
 **Solution de contournement** :
 - NE JAMAIS utiliser `Stop-Process -Force` sur tous les processus Node en une seule commande
-- Préférer : `taskkill /F /PID <pid_specifique>` pour cibler un processus précis
+- NE JAMAIS utiliser `taskkill /F /IM node.exe` (tue TOUS les Node y compris Claude Code)
+- **Méthode recommandée** :
+  1. `netstat -ano | findstr :<PORT>` pour trouver le PID sur un port spécifique
+  2. `taskkill /F /PID <pid_specifique>` pour tuer uniquement ce processus
+- Ou utiliser `Ctrl+C` dans le terminal où le serveur tourne
 - Ou fermer les shells proprement via KillShell avant de lancer de nouvelles commandes
-- Éviter d'avoir trop de shells Node en background simultanément
-**Statut** : Contournement identifié, à valider
+**Statut** : Validé - Marc a confirmé que `taskkill /F /IM node.exe` cause aussi le crash
 
 ---
 

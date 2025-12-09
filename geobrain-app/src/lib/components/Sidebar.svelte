@@ -4,7 +4,7 @@
 
   const modules: { id: ModuleType; label: string; icon: string; description: string }[] = [
     { id: 'chat', label: 'Assistant', icon: 'M', description: 'Chat IA' },
-    { id: 'canvas', label: 'Carte', icon: 'C', description: 'Visualisation' },
+    { id: 'canvas', label: 'Cartes', icon: 'C', description: 'Visualisation' },
     { id: 'editor', label: 'Editeur', icon: 'E', description: 'SQL & Python' },
     { id: 'docgen', label: 'Documents', icon: 'D', description: 'Generation PDF' },
     { id: 'settings', label: 'Parametres', icon: 'S', description: 'Configuration' },
