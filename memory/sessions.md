@@ -1,3 +1,65 @@
+## Session 6 - 9 décembre 2025 (fin d'après-midi)
+**Thème principal** : Interface Chat avancée - Streaming, Buffer, Stop
+
+### Ce qu'on a fait
+
+#### 1. Note PDF statistiques parcelles Bussigny
+- Total: 1206 parcelles sur la commune
+- Privées: 1079 (89.5%)
+- DP Communal: 102 (8.5%)
+- DP Cantonal: 25 (2.1%)
+- Source: RF Vaud - Cadastre (filtre `identdn LIKE 'VD0157%'`)
+- Fichier: `projets/Notes/2025-12-09_Statistiques_Parcelles_Bussigny.pdf`
+- Script: `scripts/python/note_parcelles.py`
+
+#### 2. Streaming temps réel dans le Canevas
+- Le code s'affiche caractère par caractère pendant la génération
+- Curseur clignotant bleu (▊) pendant le streaming
+- Auto-scroll automatique du panneau Canevas
+- Blocs de code masqués dans le texte de conversation (uniquement visibles dans Canevas)
+- Création d'un nouvel objet Artifact à chaque chunk pour forcer la réactivité Svelte
+
+#### 3. Buffer de prompts (file d'attente)
+- Envoi de messages pendant que l'IA génère → ajoutés à la queue
+- Edition des messages en attente (icône crayon)
+- Suppression des messages (icône poubelle)
+- Traitement automatique du prochain message après chaque génération
+- Interface: barre de file d'attente au-dessus de l'input
+
+#### 4. Bouton Stop
+- Arrêt immédiat de la génération via AbortController
+- Bouton rouge pulsant remplace le bouton envoyer pendant la génération
+- Message "(Generation interrompue)" ajouté à la réponse
+- Continuation automatique avec le prochain message de la file
+
+#### 5. Auto-scroll conversation
+- `tick().then(() => scrollToBottom())` dans onChunk
+- Double scroll après envoi (immédiat + setTimeout 50ms)
+- `scrollTo()` avec `behavior: 'instant'`
+
+### Fichiers modifiés
+- `geobrain-app/src/lib/components/Chat/ChatModule.svelte`
+  - Buffer prompts (promptQueue, editingPromptId, editingPromptContent)
+  - StreamController pour abort
+  - Fonctions: processMessage, processNextInQueue, stopGeneration, removeFromQueue, startEditingPrompt, savePromptEdit
+  - UI: file d'attente, bouton stop, styles CSS
+- `geobrain-app/src/lib/components/Chat/ArtifactPanel.svelte`
+  - Prop `isStreaming`
+  - `codeContainer` ref avec bind:this
+  - Auto-scroll via $effect
+  - Curseur clignotant CSS
+- `geobrain-app/src/lib/services/api.ts`
+  - Interface `StreamController` avec méthode `abort()`
+  - AbortController dans fetch
+  - Callback `onAborted`
+
+### À tester demain
+- Vérifier le streaming dans le Canevas (texte qui s'écrit)
+- Tester le buffer avec plusieurs messages en file d'attente
+- Tester le bouton stop pendant une longue génération
+
+---
+
 ## Session 5 - 9 décembre 2025 (après-midi)
 **Thème principal** : Implémentation Agent avec outils (Claude Code-like)
 
