@@ -12,6 +12,7 @@ import { fileURLToPath } from 'url';
 import { homedir } from 'os';
 import memory from './memory.js';
 import geoportalProxy from './geoportal-proxy.js';
+import { TOOL_DEFINITIONS, executeTool, AGENT_SYSTEM_PROMPT } from './tools.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -128,12 +129,12 @@ app.get('/api/providers', async (req, res) => {
     let isConfigured = false;
     let authMethod = null;
 
-    if (id === 'claude' && claudeCredentials?.claudeAiOauth) {
-      isConfigured = true;
-      authMethod = 'Claude Code OAuth';
-    } else if (config.providers?.[id]?.apiKey) {
+    if (config.providers?.[id]?.apiKey) {
       isConfigured = true;
       authMethod = 'API Key';
+    } else if (id === 'claude' && claudeCredentials?.claudeAiOauth) {
+      isConfigured = true;
+      authMethod = 'Claude Code OAuth';
     }
 
     return {
@@ -300,11 +301,142 @@ app.post('/api/chat/stream', async (req, res) => {
   res.end();
 });
 
+// Agent chat endpoint with tool execution loop
+app.post('/api/chat/agent', async (req, res) => {
+  const { provider, model, messages } = req.body;
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  try {
+    if (provider !== 'claude') {
+      throw new Error('Agent mode only supported for Claude');
+    }
+
+    const auth = await getClaudeAuth();
+    const systemPrompt = AGENT_SYSTEM_PROMPT;
+
+    // Convertir les messages
+    const claudeMessages = messages.map(m => ({
+      role: m.role === 'user' ? 'user' : 'assistant',
+      content: m.content
+    }));
+
+    let iteration = 0;
+    const MAX_ITERATIONS = 10;
+    let continueLoop = true;
+
+    while (continueLoop && iteration < MAX_ITERATIONS) {
+      iteration++;
+      console.log(`[Agent] Iteration ${iteration}`);
+
+      // Appel à Claude avec les outils
+      const body = {
+        model: model || 'claude-sonnet-4-20250514',
+        max_tokens: 8096,
+        system: systemPrompt,
+        messages: claudeMessages,
+        tools: TOOL_DEFINITIONS
+      };
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'anthropic-version': '2023-06-01',
+          'x-api-key': auth.key || auth.token
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`Claude API error: ${response.status} - ${error}`);
+      }
+
+      const data = await response.json();
+      console.log(`[Agent] Response stop_reason: ${data.stop_reason}`);
+
+      // Traiter la réponse
+      const textContent = data.content.filter(c => c.type === 'text');
+      const toolUses = data.content.filter(c => c.type === 'tool_use');
+
+      // Envoyer le texte au client
+      for (const text of textContent) {
+        res.write(`data: ${JSON.stringify({ type: 'content', content: text.text })}\n\n`);
+      }
+
+      // Si pas d'outils appelés, on termine
+      if (toolUses.length === 0 || data.stop_reason === 'end_turn') {
+        continueLoop = false;
+        break;
+      }
+
+      // Exécuter les outils
+      const toolResults = [];
+      for (const toolUse of toolUses) {
+        // Informer le client qu'on exécute un outil
+        res.write(`data: ${JSON.stringify({
+          type: 'tool_use',
+          tool: toolUse.name,
+          input: toolUse.input
+        })}\n\n`);
+
+        // Exécuter l'outil
+        const result = await executeTool(toolUse.name, toolUse.input);
+
+        // Informer le client du résultat
+        res.write(`data: ${JSON.stringify({
+          type: 'tool_result',
+          tool: toolUse.name,
+          result: result
+        })}\n\n`);
+
+        toolResults.push({
+          type: 'tool_result',
+          tool_use_id: toolUse.id,
+          content: JSON.stringify(result)
+        });
+      }
+
+      // Ajouter la réponse de l'assistant et les résultats d'outils aux messages
+      claudeMessages.push({
+        role: 'assistant',
+        content: data.content
+      });
+
+      claudeMessages.push({
+        role: 'user',
+        content: toolResults
+      });
+    }
+
+    // Signaler la fin
+    res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
+
+  } catch (error) {
+    console.error('[Agent] Error:', error);
+    res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`);
+  }
+
+  res.end();
+});
+
 // ============================================
 // CLAUDE API IMPLEMENTATION
 // ============================================
 
 async function getClaudeAuth() {
+  // Prioriser la clé API sur l'OAuth (l'OAuth Claude Code ne fonctionne pas pour l'API directe)
+  const config = await getGeoBrainConfig();
+  if (config.providers?.claude?.apiKey) {
+    return {
+      type: 'apikey',
+      key: config.providers.claude.apiKey
+    };
+  }
+
   const credentials = await getClaudeCredentials();
   if (credentials?.claudeAiOauth) {
     return {
@@ -315,15 +447,7 @@ async function getClaudeAuth() {
     };
   }
 
-  const config = await getGeoBrainConfig();
-  if (config.providers?.claude?.apiKey) {
-    return {
-      type: 'apikey',
-      key: config.providers.claude.apiKey
-    };
-  }
-
-  throw new Error('Claude not configured. Please run "claude login" or add an API key.');
+  throw new Error('Claude not configured. Please add an API key in ~/.geobrain/config.json');
 }
 
 async function callClaude(model, messages, tools, systemPrompt = null) {

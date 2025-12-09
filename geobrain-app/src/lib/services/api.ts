@@ -84,6 +84,20 @@ export async function sendMessage(
   return response.json();
 }
 
+export interface ToolUseEvent {
+  tool: string;
+  input: any;
+}
+
+export interface ToolResultEvent {
+  tool: string;
+  result: any;
+}
+
+export interface StreamController {
+  abort: () => void;
+}
+
 export async function streamMessage(
   provider: string,
   model: string,
@@ -91,52 +105,102 @@ export async function streamMessage(
   tools?: any[],
   onChunk?: (chunk: string) => void,
   onDone?: () => void,
-  onError?: (error: string) => void
-): Promise<void> {
-  const response = await fetch(`${API_BASE}/chat/stream`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ provider, model, messages, tools })
-  });
+  onError?: (error: string) => void,
+  onToolUse?: (event: ToolUseEvent) => void,
+  onToolResult?: (event: ToolResultEvent) => void,
+  onAborted?: () => void
+): Promise<StreamController> {
+  // Utiliser l'endpoint agent pour Claude (avec outils)
+  const endpoint = provider === 'claude' ? `${API_BASE}/chat/agent` : `${API_BASE}/chat/stream`;
 
-  if (!response.ok) {
-    const error = await response.json();
-    onError?.(error.error || 'Stream request failed');
-    return;
-  }
+  const abortController = new AbortController();
+  let isAborted = false;
 
-  const reader = response.body?.getReader();
-  if (!reader) {
-    onError?.('No response body');
-    return;
-  }
+  const controller: StreamController = {
+    abort: () => {
+      isAborted = true;
+      abortController.abort();
+    }
+  };
 
-  const decoder = new TextDecoder();
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider, model, messages, tools }),
+      signal: abortController.signal
+    });
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
+    if (!response.ok) {
+      const error = await response.json();
+      onError?.(error.error || 'Stream request failed');
+      return controller;
+    }
 
-    const chunk = decoder.decode(value);
-    const lines = chunk.split('\n');
+    const reader = response.body?.getReader();
+    if (!reader) {
+      onError?.('No response body');
+      return controller;
+    }
 
-    for (const line of lines) {
-      if (line.startsWith('data: ')) {
-        try {
-          const data = JSON.parse(line.slice(6));
-          if (data.type === 'content') {
-            onChunk?.(data.content);
-          } else if (data.type === 'done') {
+    const decoder = new TextDecoder();
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          // Stream terminé, s'assurer que onDone est appelé
+          if (!isAborted) {
             onDone?.();
-          } else if (data.type === 'error') {
-            onError?.(data.error);
           }
-        } catch (e) {
-          // Ignore parse errors
+          break;
+        }
+
+        if (isAborted) {
+          reader.cancel();
+          onAborted?.();
+          break;
+        }
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (data.type === 'content') {
+                onChunk?.(data.content);
+              } else if (data.type === 'tool_use') {
+                onToolUse?.({ tool: data.tool, input: data.input });
+              } else if (data.type === 'tool_result') {
+                onToolResult?.({ tool: data.tool, result: data.result });
+              } else if (data.type === 'done') {
+                // Le serveur a envoyé done, mais on attend aussi la fin du stream
+              } else if (data.type === 'error') {
+                onError?.(data.error);
+                return controller;
+              }
+            } catch (e) {
+              // Ignore parse errors
+            }
+          }
         }
       }
+    } catch (e) {
+      if (!isAborted) {
+        onError?.(`Stream error: ${e}`);
+      }
+    }
+  } catch (e: any) {
+    if (e.name === 'AbortError') {
+      onAborted?.();
+    } else {
+      onError?.(`Request error: ${e}`);
     }
   }
+
+  return controller;
 }
 
 // ============================================

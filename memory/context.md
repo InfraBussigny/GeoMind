@@ -107,6 +107,29 @@
 | Géoportail communal | QGIS Server + QWC2 (OPENGIS) | Utilisateurs internes |
 | Géoportail intercommunal | GeoMapFish (HKD) | Utilisateurs publics |
 
+## Feuille de route GeoBrain 2.0
+Référence : `docs/GeoBrain_Specifications_v2.pdf`
+
+### Phases de développement
+| Phase | Modules | Priorité |
+|-------|---------|----------|
+| 1. Fondations | Structure app, Assistant (chat+canevas), Gestion projets | ✅ En cours |
+| 2. Productivité | Ghostwriter, Conversion fichiers, Accès PostgreSQL | ⏳ |
+| 3. Cartographie | Multi-sources, Auth Carto Ouest, QGIS, Chatbot carto | ⏳ |
+| 4. Intégrations | Explorateur fichiers, Tunnels SSH, RDP/VNC | ⏳ |
+| 5. Communications | Outlook, 3CX | ⏳ |
+
+### État actuel (Décembre 2024)
+- ✅ Structure app (Tauri + SvelteKit)
+- ✅ Onglet Cartes (Géoportail Bussigny, Uzuverse)
+- ✅ Sidebar et navigation
+- ✅ Charte graphique Bussigny
+- 🔄 Compilation Tauri via GitHub Actions
+- ⏳ Assistant avec canevas (artifacts)
+- ⏳ Ghostwriter
+- ⏳ Conversion fichiers
+- ⏳ Accès PostgreSQL
+
 ## Projets actifs
 [À documenter au fil des sessions]
 

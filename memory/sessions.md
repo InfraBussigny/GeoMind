@@ -1,3 +1,60 @@
+## Session 5 - 9 décembre 2025 (après-midi)
+**Thème principal** : Implémentation Agent avec outils (Claude Code-like)
+
+### Ce qu'on a fait
+
+#### 1. Système d'outils complet
+Créé `server/tools.js` avec 7 outils au format Claude API :
+- `read_file` - Lecture de fichiers locaux
+- `write_file` - Écriture de fichiers
+- `list_directory` - Liste du contenu d'un répertoire
+- `create_directory` - Création de dossiers
+- `execute_command` - Exécution de commandes shell (avec sécurité)
+- `web_search` - Recherche web via DuckDuckGo
+- `web_fetch` - Récupération de pages web
+
+#### 2. Endpoint Agent dans le backend
+Nouvel endpoint `/api/chat/agent` dans `server/index.js` :
+- Boucle d'exécution d'outils (max 10 itérations)
+- Stream SSE des événements : `tool_use`, `tool_result`, `content`, `done`
+- System prompt GeoBrain intégré
+
+#### 3. Frontend mis à jour
+- `api.ts` : `streamMessage()` utilise automatiquement l'endpoint agent pour Claude
+- `ChatModule.svelte` :
+  - État `toolActivities` pour tracker les outils en cours
+  - UI avec spinner pour outils en exécution
+  - Noms d'outils en français
+  - Formatage intelligent des inputs
+
+#### 4. Corrections diverses
+- Fix erreur 500 : caractères `{}` et `</>` échappés en `{'{}'}` et `{'</>'}`
+- Fix 401 : priorité API key sur OAuth dans `getClaudeAuth()`
+- Fix affichage modèle : fonction `formatModelName()` avec lookup table
+- Fix streaming bloqué : `onDone` appelé quand `done: true`
+
+### État actuel
+- **Backend** : Tourne sur http://localhost:3001 avec outils
+- **Frontend** : Tourne sur http://localhost:5173
+- **Fonctionnel** : L'assistant peut maintenant utiliser les outils
+
+### Pour reprendre
+1. Les serveurs tournent probablement encore, sinon :
+   - `cd geobrain-app/server && npm start`
+   - `cd geobrain-app && npm run dev`
+2. Tester à http://localhost:5173 avec :
+   - "Lis le fichier C:\Users\zema\GeoBrain\CLAUDE.md"
+   - "Liste les fichiers dans C:\Users\zema\GeoBrain"
+   - "Recherche les dernières nouveautés de QGIS"
+
+### Fichiers modifiés
+- `server/tools.js` (nouveau)
+- `server/index.js` (ajout endpoint agent + auth priority fix)
+- `src/lib/services/api.ts` (tool callbacks)
+- `src/lib/components/Chat/ChatModule.svelte` (UI tools + corrections)
+
+---
+
 # Historique des Sessions - GeoBrain
 
 ## Session 4 - 9 décembre 2025
