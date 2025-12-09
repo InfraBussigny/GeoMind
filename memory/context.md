@@ -110,25 +110,89 @@
 ## Feuille de route GeoBrain 2.0
 Référence : `docs/GeoBrain_Specifications_v2.pdf`
 
-### Phases de développement
+### Phases de développement (mise à jour décembre 2025)
+
 | Phase | Modules | Priorité |
 |-------|---------|----------|
-| 1. Fondations | Structure app, Assistant (chat+canevas), Gestion projets | ✅ En cours |
-| 2. Productivité | Ghostwriter, Conversion fichiers, Accès PostgreSQL | ⏳ |
-| 3. Cartographie | Multi-sources, Auth Carto Ouest, QGIS, Chatbot carto | ⏳ |
-| 4. Intégrations | Explorateur fichiers, Tunnels SSH, RDP/VNC | ⏳ |
-| 5. Communications | Outlook, 3CX | ⏳ |
+| 1. Fondations | Structure app, Assistant (chat+canevas), Gestion projets | 🔄 En cours |
+| 2. IA avancée | Sélection auto modèle, Sub-agents, Optimisation coûts | ⏳ |
+| 3. Canevas pro | Édition directe, Streaming char-by-char, Export multi-format, Historique | ⏳ |
+| 4. Mémoire | 3 niveaux (immédiate/session/persistante), Défragmentation, Fusion auto | ⏳ |
+| 5. Productivité | Ghostwriter, Conversion fichiers, Fonctions auto-générées | ⏳ |
+| 6. Données | Accès PostgreSQL, Sources multiples, Parcours/sélection couches | ⏳ |
+| 7. Cartographie | Multi-sources, Auth Carto Ouest, QGIS, Chatbot carto | ⏳ |
+| 8. Intégrations | Explorateur fichiers, Tunnels SSH, RDP/VNC | ⏳ |
+| 9. Communications | Outlook, 3CX | ⏳ |
 
-### État actuel (Décembre 2024)
+### Nouvelles fonctionnalités planifiées (v2.1)
+
+#### 1. Optimisation IA et modèles
+- **Sélection automatique du modèle** selon type de tâche, complexité, coût, délai, précision
+  - Modèles légers → reformulation, traduction simple
+  - Modèles avancés → génération code, analyse complexe
+- **Sub-agents spécialisés** : code Python, UI, base de données, documentation, QA, optimisation
+  - Coordination automatisée (workflow hiérarchique)
+  - Transfert d'état entre agents
+  - Visualisation de l'avancement
+
+#### 2. Canevas avancé
+- **Édition directe** : modification en temps réel, coloration syntaxique
+- **Mode live coding** : modifications caractère par caractère
+  - 🔵 Caractères ajoutés (bleu)
+  - 🔴 Caractères supprimés (rouge)
+  - Total modifié + horodatage
+- **Export multi-format** : PDF, DOCX, TXT, MD, JSON, HTML
+- **Historique des révisions**
+- **Détection auto du langage** : Python, YAML, SQL, Markdown, etc.
+
+#### 3. Mémoire à 3 niveaux
+| Niveau | Contenu | Durée |
+|--------|---------|-------|
+| Immédiate | Conversation courante, contexte direct | Session active |
+| Session | Éléments à conserver jusqu'à reset | Jusqu'à fermeture |
+| Persistante | Réglages, préférences, profils | Permanent |
+
+- Défragmentation automatique
+- Fusion des informations redondantes
+- Purge contrôlée (taille, ancienneté, pertinence)
+
+#### 4. Automatisation intelligente
+- **Détection de patterns** : suggestion de fonctions automatisées pour actions répétitives
+- **Bibliothèque locale** de fonctions réutilisables
+- Exemple : formatage texte répétitif → fonction dédiée
+
+#### 5. Status bar avancée
+Affichage permanent en bas de l'interface :
+- Dossier/projet courant
+- Coût session (tokens)
+- Coût cumulé mois
+- Utilisation vs quotas
+- Modèle IA actif
+- Temps avant reset session
+- Statut système (mémoire/CPU/connexion)
+
+#### 6. Nouvelle direction artistique
+- **Palette** : vert / noir (cyber/digital)
+- **Ambiance** : technique, électrique, glitch
+- **Effets** : transitions glitch, animations "impulsion électrique"
+- **Typo** : monospace modernisé
+- **Mode** : dark theme par défaut
+- Icônes cohérentes, contrastes forts
+
+### État actuel (Décembre 2025)
 - ✅ Structure app (Tauri + SvelteKit)
 - ✅ Onglet Cartes (Géoportail Bussigny, Uzuverse)
 - ✅ Sidebar et navigation
-- ✅ Charte graphique Bussigny
-- 🔄 Compilation Tauri via GitHub Actions
-- ⏳ Assistant avec canevas (artifacts)
-- ⏳ Ghostwriter
-- ⏳ Conversion fichiers
-- ⏳ Accès PostgreSQL
+- ✅ Charte graphique Bussigny (à migrer vers nouvelle DA)
+- ✅ Backend avec outils (read, write, execute, web_search, web_fetch)
+- ✅ Système d'agents basique
+- 🔄 Streaming temps réel dans le canevas
+- 🔄 Buffer de prompts + bouton stop
+- ⏳ Sub-agents spécialisés
+- ⏳ Sélection automatique modèle
+- ⏳ Canevas éditable avec historique
+- ⏳ Status bar
+- ⏳ Nouvelle DA vert/noir
 
 ## Projets actifs
 [À documenter au fil des sessions]
