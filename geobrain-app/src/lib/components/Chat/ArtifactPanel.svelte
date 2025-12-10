@@ -24,10 +24,17 @@
     isStreaming?: boolean;
   }>();
 
-  let isEditing = $state(false);
+  let isEditing = $state(true);
   let editedContent = $state('');
   let copySuccess = $state(false);
   let codeContainer: HTMLPreElement;
+
+  // Initialiser editedContent quand l'artifact change
+  $effect(() => {
+    if (artifact?.content) {
+      editedContent = artifact.content;
+    }
+  });
 
   // Auto-scroll vers le bas pendant le streaming
   $effect(() => {
@@ -202,8 +209,21 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: white;
+    background: var(--noir-surface);
     border-left: 1px solid var(--border-color);
+    position: relative;
+  }
+
+  /* Ligne verte en haut */
+  .artifact-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyber-green), transparent);
+    opacity: 0.6;
   }
 
   .panel-header {
@@ -212,7 +232,7 @@
     align-items: center;
     padding: var(--spacing-md);
     border-bottom: 1px solid var(--border-color);
-    background: var(--bg-secondary);
+    background: var(--noir-card);
   }
 
   .header-info {
@@ -222,21 +242,42 @@
   }
 
   .type-icon {
-    font-size: 24px;
+    font-size: 20px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--noir-elevated);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+  }
+
+  .header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
   }
 
   .header-text h3 {
     margin: 0;
     font-size: var(--font-size-md);
-    color: var(--text-primary);
+    font-family: var(--font-mono);
+    color: var(--cyber-green);
+    text-shadow: 0 0 8px var(--cyber-green-glow);
   }
 
   .type-badge {
-    font-size: var(--font-size-xs);
+    font-size: 10px;
+    font-family: var(--font-mono);
     color: var(--text-muted);
-    background: var(--bg-primary);
+    background: var(--noir-elevated);
     padding: 2px 8px;
-    border-radius: 10px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid var(--border-color);
+    width: fit-content;
   }
 
   .header-actions {
@@ -247,8 +288,8 @@
   .action-btn {
     width: 32px;
     height: 32px;
-    border: none;
-    background: transparent;
+    border: 1px solid var(--border-color);
+    background: var(--noir-elevated);
     color: var(--text-secondary);
     border-radius: var(--border-radius-sm);
     cursor: pointer;
@@ -259,41 +300,51 @@
   }
 
   .action-btn:hover {
-    background: var(--bg-primary);
-    color: var(--bleu-bussigny);
+    background: var(--cyber-green);
+    color: var(--noir-profond);
+    border-color: var(--cyber-green);
+    box-shadow: 0 0 10px var(--cyber-green-glow);
   }
 
   .action-btn.success {
+    background: var(--success-glow);
     color: var(--success);
+    border-color: var(--success);
   }
 
   .action-btn.close-btn:hover {
-    background: var(--error-light);
+    background: var(--error-glow);
     color: var(--error);
+    border-color: var(--error);
+    box-shadow: 0 0 10px var(--error-glow);
   }
 
   .panel-content {
     flex: 1;
     overflow: auto;
     padding: var(--spacing-md);
+    background: var(--noir-profond);
   }
 
   .code-preview {
     margin: 0;
     padding: var(--spacing-md);
-    background: #1e1e1e;
-    color: #d4d4d4;
+    background: var(--noir-card);
+    color: var(--text-primary);
     border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
     font-family: var(--font-mono);
     font-size: var(--font-size-sm);
-    line-height: 1.5;
+    line-height: 1.6;
     overflow-x: auto;
     white-space: pre-wrap;
     word-wrap: break-word;
+    min-height: 200px;
   }
 
   .code-preview code {
     background: none;
+    color: var(--text-primary);
   }
 
   .edit-area {
@@ -302,63 +353,82 @@
     padding: var(--spacing-md);
     font-family: var(--font-mono);
     font-size: var(--font-size-sm);
-    line-height: 1.5;
+    line-height: 1.6;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     resize: none;
-    background: #1e1e1e;
-    color: #d4d4d4;
+    background: var(--noir-card);
+    color: var(--text-primary);
   }
 
   .edit-area:focus {
     outline: none;
-    border-color: var(--bleu-bussigny);
+    border-color: var(--cyber-green);
+    box-shadow: 0 0 15px var(--cyber-green-glow);
   }
 
   .edit-actions {
     display: flex;
     justify-content: flex-end;
     gap: var(--spacing-sm);
-    padding-top: var(--spacing-sm);
+    padding-top: var(--spacing-md);
   }
 
   .btn-primary, .btn-secondary {
     padding: var(--spacing-sm) var(--spacing-md);
-    border: none;
+    border: 1px solid transparent;
     border-radius: var(--border-radius-sm);
     font-size: var(--font-size-sm);
+    font-family: var(--font-mono);
+    font-weight: 500;
     cursor: pointer;
     transition: all var(--transition-fast);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   .btn-primary {
-    background: var(--bleu-bussigny);
-    color: white;
+    background: var(--cyber-green);
+    color: var(--noir-profond);
+    border-color: var(--cyber-green);
+    box-shadow: 0 0 15px var(--cyber-green-glow);
   }
 
   .btn-primary:hover {
-    background: var(--bleu-bussigny-dark);
+    background: var(--cyber-green-light);
+    box-shadow: 0 0 25px var(--cyber-green-glow);
+    transform: translateY(-1px);
   }
 
   .btn-secondary {
-    background: var(--bg-secondary);
-    color: var(--text-primary);
+    background: var(--noir-card);
+    color: var(--text-secondary);
+    border-color: var(--border-color);
   }
 
   .btn-secondary:hover {
-    background: var(--border-color);
+    background: var(--noir-elevated);
+    color: var(--text-primary);
+    border-color: var(--cyber-green);
   }
 
   /* Curseur clignotant pendant le streaming */
   .streaming-cursor {
     display: inline;
-    color: var(--bleu-bussigny);
-    animation: blink 0.8s infinite;
+    color: var(--cyber-green);
+    animation: blink-cyber 0.6s infinite;
     font-weight: bold;
+    text-shadow: 0 0 10px var(--cyber-green-glow);
   }
 
-  @keyframes blink {
-    0%, 50% { opacity: 1; }
-    51%, 100% { opacity: 0; }
+  @keyframes blink-cyber {
+    0%, 50% {
+      opacity: 1;
+      text-shadow: 0 0 15px var(--cyber-green-glow);
+    }
+    51%, 100% {
+      opacity: 0.3;
+      text-shadow: 0 0 5px var(--cyber-green-glow);
+    }
   }
 </style>

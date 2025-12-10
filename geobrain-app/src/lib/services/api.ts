@@ -94,6 +94,17 @@ export interface ToolResultEvent {
   result: any;
 }
 
+export interface ModelSelectedEvent {
+  model: string;
+  reason: string;
+  taskType: string;
+  complexity: number;
+}
+
+export interface AgentsActivatedEvent {
+  agents: string[];
+}
+
 export interface StreamController {
   abort: () => void;
 }
@@ -108,7 +119,9 @@ export async function streamMessage(
   onError?: (error: string) => void,
   onToolUse?: (event: ToolUseEvent) => void,
   onToolResult?: (event: ToolResultEvent) => void,
-  onAborted?: () => void
+  onAborted?: () => void,
+  onModelSelected?: (event: ModelSelectedEvent) => void,
+  onAgentsActivated?: (event: AgentsActivatedEvent) => void
 ): Promise<StreamController> {
   // Utiliser l'endpoint agent pour Claude (avec outils)
   const endpoint = provider === 'claude' ? `${API_BASE}/chat/agent` : `${API_BASE}/chat/stream`;
@@ -177,6 +190,15 @@ export async function streamMessage(
                 onToolResult?.({ tool: data.tool, result: data.result });
               } else if (data.type === 'done') {
                 // Le serveur a envoyé done, mais on attend aussi la fin du stream
+              } else if (data.type === 'model_selected') {
+                onModelSelected?.({
+                  model: data.model,
+                  reason: data.reason,
+                  taskType: data.taskType,
+                  complexity: data.complexity
+                });
+              } else if (data.type === 'agents_activated') {
+                onAgentsActivated?.({ agents: data.agents });
               } else if (data.type === 'error') {
                 onError?.(data.error);
                 return controller;
@@ -335,5 +357,26 @@ export interface GeoportalThemesResponse {
 export async function getGeoportalThemes(): Promise<GeoportalThemesResponse> {
   const response = await fetch(`${API_BASE}/geoportal/themes`);
   if (!response.ok) throw new Error('Failed to get themes');
+  return response.json();
+}
+
+// ============================================
+// USAGE STATS API
+// ============================================
+
+export interface UsageStats {
+  sessionTokens: number;
+  sessionCost: number;
+  sessionRequests: number;
+  sessionStartTime: number;
+  monthlyTokens: number;
+  monthlyCost: number;
+  monthlyLimit: number | null;
+  monthlyRequests: number;
+}
+
+export async function getUsageStats(): Promise<UsageStats> {
+  const response = await fetch(`${API_BASE}/usage`);
+  if (!response.ok) throw new Error('Failed to get usage stats');
   return response.json();
 }

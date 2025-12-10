@@ -106,7 +106,7 @@
               {/if}
             </span>
             {#if $currentProvider === provider.id}
-              <svg class="check" width="14" height="14" viewBox="0 0 14 14" fill="var(--bleu-bussigny)">
+              <svg class="check" width="14" height="14" viewBox="0 0 14 14" fill="var(--cyber-green)">
                 <path d="M11.5 4L5.5 10L2.5 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
               </svg>
             {/if}
@@ -129,7 +129,7 @@
                 <span class="default-badge">Par defaut</span>
               {/if}
               {#if $currentModel === model.id}
-                <svg class="check" width="14" height="14" viewBox="0 0 14 14" fill="var(--bleu-bussigny)">
+                <svg class="check" width="14" height="14" viewBox="0 0 14 14" fill="var(--cyber-green)">
                   <path d="M11.5 4L5.5 10L2.5 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
                 </svg>
               {/if}
@@ -151,7 +151,7 @@
     align-items: center;
     gap: 8px;
     padding: 6px 12px;
-    background: var(--bg-secondary);
+    background: var(--noir-card);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-sm);
     cursor: pointer;
@@ -159,8 +159,9 @@
   }
 
   .selector-button:hover:not(:disabled) {
-    background: white;
-    border-color: var(--bleu-bussigny-light);
+    background: var(--noir-elevated);
+    border-color: var(--cyber-green);
+    box-shadow: 0 0 10px var(--cyber-green-glow);
   }
 
   .selector-button:disabled {
@@ -179,6 +180,7 @@
     font-size: 12px;
     font-weight: 700;
     font-family: var(--font-mono);
+    box-shadow: 0 0 8px currentColor;
   }
 
   .selector-text {
@@ -191,11 +193,13 @@
   .provider-name {
     font-size: 12px;
     font-weight: 600;
+    font-family: var(--font-mono);
     color: var(--text-primary);
   }
 
   .model-name {
     font-size: 10px;
+    font-family: var(--font-mono);
     color: var(--text-muted);
   }
 
@@ -206,6 +210,7 @@
 
   .chevron.open {
     transform: rotate(180deg);
+    color: var(--cyber-green);
   }
 
   .dropdown {
@@ -213,12 +218,23 @@
     top: calc(100% + 4px);
     right: 0;
     min-width: 280px;
-    background: white;
+    background: var(--noir-card);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-lg), 0 0 20px var(--cyber-green-glow);
     z-index: 100;
     overflow: hidden;
+  }
+
+  /* Green line on top of dropdown */
+  .dropdown::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyber-green), transparent);
   }
 
   .dropdown-section {
@@ -229,14 +245,15 @@
     font-size: 10px;
     font-weight: 600;
     text-transform: uppercase;
-    color: var(--text-muted);
+    color: var(--cyber-green);
     padding: 4px 8px;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
+    font-family: var(--font-mono);
   }
 
   .dropdown-divider {
     height: 1px;
-    background: var(--border-color);
+    background: linear-gradient(90deg, transparent, var(--border-color), transparent);
     margin: 0;
   }
 
@@ -246,20 +263,22 @@
     gap: 10px;
     width: 100%;
     padding: 8px;
-    border: none;
+    border: 1px solid transparent;
     background: transparent;
     border-radius: var(--border-radius-sm);
     cursor: pointer;
-    transition: background var(--transition-fast);
+    transition: all var(--transition-fast);
     text-align: left;
   }
 
   .dropdown-item:hover:not(:disabled) {
-    background: var(--bg-secondary);
+    background: var(--noir-elevated);
+    border-color: var(--border-color);
   }
 
   .dropdown-item.active {
-    background: rgba(54, 96, 146, 0.1);
+    background: var(--cyber-green-glow);
+    border-color: var(--cyber-green);
   }
 
   .dropdown-item.disabled {
@@ -290,12 +309,16 @@
 
   .item-name {
     font-size: 13px;
+    font-family: var(--font-mono);
     color: var(--text-primary);
   }
 
   .item-status {
     font-size: 10px;
+    font-family: var(--font-mono);
     color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   .item-status.configured {
@@ -312,13 +335,18 @@
 
   .default-badge {
     font-size: 9px;
-    padding: 1px 6px;
-    background: var(--bg-secondary);
-    border-radius: 8px;
+    padding: 2px 8px;
+    background: var(--noir-elevated);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
     color: var(--text-muted);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   .check {
     flex-shrink: 0;
+    color: var(--cyber-green);
   }
 </style>

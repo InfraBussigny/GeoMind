@@ -1,14 +1,28 @@
 <script lang="ts">
-  import { currentModule, sidebarCollapsed, type ModuleType } from '$lib/stores/app';
-  import GeoBrainLogo from './icons/GeoBrainLogo.svelte';
+  import { currentModule, sidebarCollapsed, visibleModules, appMode, type ModuleType } from '$lib/stores/app';
+  import ThemeToggle from './ThemeToggle.svelte';
 
-  const modules: { id: ModuleType; label: string; icon: string; description: string }[] = [
-    { id: 'chat', label: 'Assistant', icon: 'M', description: 'Chat IA' },
-    { id: 'canvas', label: 'Cartes', icon: 'C', description: 'Visualisation' },
-    { id: 'editor', label: 'Editeur', icon: 'E', description: 'SQL & Python' },
-    { id: 'docgen', label: 'Documents', icon: 'D', description: 'Generation PDF' },
-    { id: 'settings', label: 'Parametres', icon: 'S', description: 'Configuration' },
+  // Définition complète de tous les modules
+  const allModules: { id: ModuleType; label: string; description: string }[] = [
+    { id: 'chat', label: 'Assistant', description: 'Chat IA' },
+    { id: 'canvas', label: 'Cartes', description: 'Visualisation' },
+    { id: 'editor', label: 'Editeur', description: 'SQL & Python' },
+    { id: 'docgen', label: 'Documents', description: 'Generation PDF' },
+    { id: 'settings', label: 'Parametres', description: 'Configuration' },
   ];
+
+  // Modules filtrés selon le mode (standard/expert)
+  $effect(() => {
+    // Si le module actuel n'est plus visible, revenir à 'chat'
+    if (!$visibleModules.includes($currentModule)) {
+      currentModule.set('chat');
+    }
+  });
+
+  // Modules à afficher (filtrés selon visibleModules)
+  let displayedModules = $derived(
+    allModules.filter(m => $visibleModules.includes(m.id))
+  );
 
   function selectModule(id: ModuleType) {
     currentModule.set(id);
@@ -22,11 +36,17 @@
 <aside class="sidebar" class:collapsed={$sidebarCollapsed}>
   <!-- Logo section -->
   <div class="sidebar-header">
-    {#if !$sidebarCollapsed}
-      <GeoBrainLogo size={42} showText={true} />
-    {:else}
-      <GeoBrainLogo size={36} showText={false} />
-    {/if}
+    <a href="/" class="logo-link">
+      <img
+        src="/images/Logo_GeoBrain.png"
+        alt="GeoBrain"
+        class="logo-img"
+        class:collapsed={$sidebarCollapsed}
+      />
+      {#if !$sidebarCollapsed}
+        <span class="logo-subtitle">Multitool SIT</span>
+      {/if}
+    </a>
   </div>
 
   <!-- Decorative line -->
@@ -37,7 +57,7 @@
 
   <!-- Navigation -->
   <nav class="sidebar-nav">
-    {#each modules as module}
+    {#each displayedModules as module}
       <button
         class="nav-item"
         class:active={$currentModule === module.id}
@@ -45,7 +65,50 @@
         title={$sidebarCollapsed ? module.label : ''}
       >
         <div class="nav-icon-wrapper">
-          <span class="nav-icon">{module.icon}</span>
+          <!-- Assistant / Chat -->
+          {#if module.id === 'chat'}
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <!-- Cerveau stylisé avec circuit -->
+              <path d="M12 4C8 4 5 7 5 11c0 2 1 4 2 5l-1 4 4-2c1 0 2 0 2 0 4 0 7-3 7-7s-3-7-7-7z" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="9" cy="10" r="1" fill="currentColor"/>
+              <circle cx="15" cy="10" r="1" fill="currentColor"/>
+              <path d="M9 14c1.5 1.5 4.5 1.5 6 0" stroke-linecap="round"/>
+            </svg>
+          <!-- Cartes / Canvas -->
+          {:else if module.id === 'canvas'}
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <!-- Globe avec grille -->
+              <circle cx="12" cy="12" r="9"/>
+              <ellipse cx="12" cy="12" rx="9" ry="4"/>
+              <line x1="12" y1="3" x2="12" y2="21"/>
+              <path d="M3.5 9h17M3.5 15h17"/>
+              <circle cx="16" cy="7" r="2" fill="currentColor" stroke="none"/>
+            </svg>
+          <!-- Editeur -->
+          {:else if module.id === 'editor'}
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <!-- Terminal/Code -->
+              <rect x="3" y="4" width="18" height="16" rx="2"/>
+              <path d="M7 9l3 3-3 3" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="13" y1="15" x2="17" y2="15" stroke-linecap="round"/>
+            </svg>
+          <!-- Documents / DocGen -->
+          {:else if module.id === 'docgen'}
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <!-- Document avec lignes -->
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="8" y1="13" x2="16" y2="13"/>
+              <line x1="8" y1="17" x2="14" y2="17"/>
+            </svg>
+          <!-- Parametres / Settings -->
+          {:else if module.id === 'settings'}
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <!-- Engrenage -->
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+          {/if}
         </div>
         {#if !$sidebarCollapsed}
           <div class="nav-content">
@@ -60,26 +123,14 @@
     {/each}
   </nav>
 
-  <!-- Footer with Bussigny branding -->
+  <!-- Footer -->
   <div class="sidebar-footer">
-    {#if !$sidebarCollapsed}
-      <div class="bussigny-brand">
-        <img
-          src="/images/logo_bussigny_neg.png"
-          alt="Commune de Bussigny"
-          class="bussigny-logo-img"
-        />
-      </div>
-    {:else}
-      <div class="bussigny-brand-collapsed">
-        <img
-          src="/images/logo_bussigny_neg.png"
-          alt="Bussigny"
-          class="bussigny-logo-small"
-        />
-      </div>
-    {/if}
-
+    <div class="footer-actions">
+      <ThemeToggle />
+      {#if $appMode === 'expert' && !$sidebarCollapsed}
+        <span class="mode-badge">EXPERT</span>
+      {/if}
+    </div>
     <button class="toggle-btn" onclick={toggleSidebar} title={$sidebarCollapsed ? 'Ouvrir le menu' : 'Reduire le menu'}>
       <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
         {#if $sidebarCollapsed}
@@ -96,24 +147,46 @@
   .sidebar {
     width: var(--sidebar-width);
     height: 100vh;
-    background: linear-gradient(180deg, #1a2634 0%, #2c3e50 50%, #1a2634 100%);
+    background: var(--noir-surface);
     display: flex;
     flex-direction: column;
     transition: width var(--transition-normal);
     overflow: hidden;
     position: relative;
-    box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+    border-right: 1px solid var(--border-color);
   }
 
+  /* Effet scanline subtil */
   .sidebar::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 200px;
-    background: linear-gradient(180deg, rgba(54, 96, 146, 0.15) 0%, transparent 100%);
+    bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 255, 136, 0.01) 2px,
+      rgba(0, 255, 136, 0.01) 4px
+    );
     pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Lueur verte en haut */
+  .sidebar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 150px;
+    background: linear-gradient(180deg, var(--cyber-green-glow) 0%, transparent 100%);
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 0;
   }
 
   .sidebar.collapsed {
@@ -130,6 +203,39 @@
     z-index: 1;
   }
 
+  .logo-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+  }
+
+  .logo-img {
+    width: 140px;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 0 10px var(--cyber-green-glow));
+    transition: all var(--transition-fast);
+  }
+
+  .logo-img.collapsed {
+    width: 40px;
+  }
+
+  .logo-img:hover {
+    filter: drop-shadow(0 0 20px var(--cyber-green-glow));
+  }
+
+  .logo-subtitle {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 4px;
+  }
+
   .header-divider {
     position: relative;
     height: 2px;
@@ -142,7 +248,7 @@
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    background: linear-gradient(90deg, transparent, var(--border-color), transparent);
   }
 
   .divider-glow {
@@ -151,8 +257,8 @@
     left: 20%;
     right: 20%;
     height: 4px;
-    background: linear-gradient(90deg, transparent, var(--bleu-bussigny), transparent);
-    filter: blur(3px);
+    background: linear-gradient(90deg, transparent, var(--cyber-green), transparent);
+    filter: blur(4px);
     opacity: 0.6;
   }
 
@@ -171,10 +277,10 @@
     align-items: center;
     gap: 12px;
     padding: 12px;
-    border: none;
+    border: 1px solid transparent;
     background: transparent;
-    color: rgba(255,255,255,0.6);
-    border-radius: 10px;
+    color: var(--text-secondary);
+    border-radius: 8px;
     cursor: pointer;
     transition: all var(--transition-fast);
     text-align: left;
@@ -187,38 +293,34 @@
     padding: 14px 12px;
   }
 
-  .nav-item::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
-    opacity: 0;
-    transition: opacity var(--transition-fast);
-  }
-
   .nav-item:hover {
-    color: white;
-    background: rgba(255,255,255,0.05);
+    color: var(--text-bright);
+    background: var(--bg-hover);
+    border-color: var(--border-color);
   }
 
-  .nav-item:hover::before {
-    opacity: 1;
+  .nav-item:hover .nav-icon-wrapper {
+    border-color: var(--cyber-green);
+    box-shadow: 0 0 10px var(--cyber-green-glow);
+  }
+
+  .nav-item:hover .nav-icon-svg {
+    color: var(--cyber-green);
   }
 
   .nav-item.active {
-    color: white;
-    background: linear-gradient(135deg, var(--bleu-bussigny) 0%, var(--bleu-bussigny-dark) 100%);
-    box-shadow: 0 4px 15px rgba(54, 96, 146, 0.4);
+    color: var(--cyber-green);
+    background: rgba(0, 255, 136, 0.08);
+    border-color: var(--cyber-green);
+    box-shadow: 0 0 20px var(--cyber-green-glow), inset 0 0 20px rgba(0, 255, 136, 0.05);
   }
 
   .nav-icon-wrapper {
     width: 36px;
     height: 36px;
-    border-radius: 8px;
-    background: rgba(255,255,255,0.1);
+    border-radius: 6px;
+    background: var(--noir-card);
+    border: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -227,13 +329,20 @@
   }
 
   .nav-item.active .nav-icon-wrapper {
-    background: rgba(255,255,255,0.2);
+    background: var(--cyber-green);
+    border-color: var(--cyber-green);
+    box-shadow: 0 0 15px var(--cyber-green-glow);
   }
 
-  .nav-icon {
-    font-size: 14px;
-    font-weight: 700;
-    font-family: var(--font-mono);
+  .nav-icon-svg {
+    width: 20px;
+    height: 20px;
+    color: var(--text-secondary);
+    transition: color var(--transition-fast);
+  }
+
+  .nav-item.active .nav-icon-svg {
+    color: var(--noir-profond);
   }
 
   .nav-content {
@@ -244,14 +353,23 @@
   }
 
   .nav-label {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
+    font-family: var(--font-mono);
+    letter-spacing: 0.5px;
     white-space: nowrap;
+    color: var(--text-primary);
+  }
+
+  .nav-item.active .nav-label {
+    color: var(--cyber-green);
   }
 
   .nav-description {
-    font-size: 11px;
-    opacity: 0.6;
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
     white-space: nowrap;
   }
 
@@ -262,9 +380,9 @@
     transform: translateY(-50%);
     width: 3px;
     height: 24px;
-    background: white;
+    background: var(--cyber-green);
     border-radius: 3px 0 0 3px;
-    box-shadow: 0 0 10px rgba(255,255,255,0.5);
+    box-shadow: 0 0 10px var(--cyber-green-glow), 0 0 20px var(--cyber-green-glow);
   }
 
   .sidebar.collapsed .active-indicator {
@@ -273,7 +391,7 @@
 
   .sidebar-footer {
     padding: 16px;
-    border-top: 1px solid rgba(255,255,255,0.1);
+    border-top: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -281,58 +399,50 @@
     z-index: 1;
   }
 
-  .bussigny-brand {
+  .footer-actions {
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 12px;
-    background: rgba(255,255,255,0.05);
-    border-radius: 8px;
+    gap: var(--spacing-sm);
   }
 
-  .bussigny-logo-img {
-    max-width: 100%;
-    height: auto;
-    max-height: 50px;
-    object-fit: contain;
-    opacity: 0.9;
-    transition: opacity var(--transition-fast);
+  .mode-badge {
+    padding: 4px 10px;
+    background: var(--primary-glow);
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    animation: pulse-badge 2s infinite;
   }
 
-  .bussigny-logo-img:hover {
-    opacity: 1;
-  }
-
-  .bussigny-brand-collapsed {
-    display: flex;
-    justify-content: center;
-    padding: 8px;
-  }
-
-  .bussigny-logo-small {
-    width: 32px;
-    height: 32px;
-    object-fit: contain;
-    opacity: 0.8;
+  @keyframes pulse-badge {
+    0%, 100% { box-shadow: 0 0 0 0 var(--primary-glow); }
+    50% { box-shadow: 0 0 10px var(--primary-glow); }
   }
 
   .toggle-btn {
     width: 100%;
     padding: 10px;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.05);
-    color: rgba(255,255,255,0.6);
-    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--noir-card);
+    color: var(--text-secondary);
+    border-radius: 6px;
     cursor: pointer;
     transition: all var(--transition-fast);
     display: flex;
     align-items: center;
     justify-content: center;
+    font-family: var(--font-mono);
   }
 
   .toggle-btn:hover {
-    background: rgba(255,255,255,0.1);
-    color: white;
-    border-color: rgba(255,255,255,0.2);
+    background: var(--bg-hover);
+    color: var(--cyber-green);
+    border-color: var(--cyber-green);
+    box-shadow: 0 0 10px var(--cyber-green-glow);
   }
 </style>

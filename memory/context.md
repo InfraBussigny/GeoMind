@@ -114,15 +114,16 @@ Référence : `docs/GeoBrain_Specifications_v2.pdf`
 
 | Phase | Modules | Priorité |
 |-------|---------|----------|
-| 1. Fondations | Structure app, Assistant (chat+canevas), Gestion projets | 🔄 En cours |
-| 2. IA avancée | Sélection auto modèle, Sub-agents, Optimisation coûts | ⏳ |
-| 3. Canevas pro | Édition directe, Streaming char-by-char, Export multi-format, Historique | ⏳ |
-| 4. Mémoire | 3 niveaux (immédiate/session/persistante), Défragmentation, Fusion auto | ⏳ |
-| 5. Productivité | Ghostwriter, Conversion fichiers, Fonctions auto-générées | ⏳ |
-| 6. Données | Accès PostgreSQL, Sources multiples, Parcours/sélection couches | ⏳ |
-| 7. Cartographie | Multi-sources, Auth Carto Ouest, QGIS, Chatbot carto | ⏳ |
-| 8. Intégrations | Explorateur fichiers, Tunnels SSH, RDP/VNC | ⏳ |
-| 9. Communications | Outlook, 3CX | ⏳ |
+| 1. Fondations | Structure app, Assistant (chat+canevas), Gestion projets | ✅ Fait |
+| 2. IA avancée | Sélection auto modèle, Sub-agents, Optimisation coûts | ✅ Fait |
+| 3. UI/UX | Thème clair/sombre, Mode Standard/Expert, Easter egg activation | ✅ Fait |
+| 4. Canevas pro | Édition directe, Streaming char-by-char, Export multi-format, Historique | ⏳ |
+| 5. Mémoire | 3 niveaux (immédiate/session/persistante), Défragmentation, Fusion auto | ⏳ |
+| 6. Productivité | Ghostwriter, Conversion fichiers, Fonctions auto-générées | ⏳ |
+| 7. Données | Accès PostgreSQL, Sources multiples, Parcours/sélection couches | ⏳ |
+| 8. Cartographie | Multi-sources, Auth Carto Ouest, QGIS, Chatbot carto | ⏳ |
+| 9. Intégrations | Explorateur fichiers, Tunnels SSH, RDP/VNC | ⏳ |
+| 10. Communications | Outlook, 3CX | ⏳ |
 
 ### Nouvelles fonctionnalités planifiées (v2.1)
 
@@ -171,28 +172,79 @@ Affichage permanent en bas de l'interface :
 - Temps avant reset session
 - Statut système (mémoire/CPU/connexion)
 
-#### 6. Nouvelle direction artistique
-- **Palette** : vert / noir (cyber/digital)
-- **Ambiance** : technique, électrique, glitch
-- **Effets** : transitions glitch, animations "impulsion électrique"
-- **Typo** : monospace modernisé
-- **Mode** : dark theme par défaut
-- Icônes cohérentes, contrastes forts
+#### 6. Thèmes et Modes d'interface
 
-### État actuel (Décembre 2025)
-- ✅ Structure app (Tauri + SvelteKit)
-- ✅ Onglet Cartes (Géoportail Bussigny, Uzuverse)
-- ✅ Sidebar et navigation
-- ✅ Charte graphique Bussigny (à migrer vers nouvelle DA)
-- ✅ Backend avec outils (read, write, execute, web_search, web_fetch)
-- ✅ Système d'agents basique
-- 🔄 Streaming temps réel dans le canevas
-- 🔄 Buffer de prompts + bouton stop
-- ⏳ Sub-agents spécialisés
-- ⏳ Sélection automatique modèle
-- ⏳ Canevas éditable avec historique
-- ⏳ Status bar
-- ⏳ Nouvelle DA vert/noir
+##### Mode clair / Mode sombre
+- **Thème clair** : par défaut, sobre et professionnel
+- **Thème sombre** : palette cyber vert/noir, ambiance technique
+- **Sélecteur** : toggle accessible dans l'interface
+- **Persistance** : préférence sauvegardée
+
+##### Mode Standard vs Expert (Easter Egg)
+- **Mode Standard** (par défaut) :
+  - Interface simplifiée
+  - Onglets visibles : Assistant, Cartes
+  - Fonctionnalités avancées masquées
+  - Thème clair par défaut
+
+- **Mode Expert** (secret) :
+  - Tous les onglets : Assistant, Cartes, Éditeur, Documents, etc.
+  - Fonctionnalités avancées activées (sub-agents, outils système, etc.)
+  - Passage automatique en mode sombre (modifiable via sélecteur)
+  - Status bar complète avec infos techniques
+
+- **Activation secrète** :
+  - Trigger : dire à l'assistant une phrase type "On passe aux choses sérieuses"
+  - Phrases alternatives possibles : "Mode expert", "Unlock", "Power mode"
+  - Animation de transition (effet "unlock")
+  - L'assistant confirme l'activation avec une réponse appropriée
+
+- **Désactivation** :
+  - Phrase type "Mode normal" ou via settings cachés
+  - Retour au mode standard + thème clair
+
+#### 7. Easter Eggs (à développer)
+
+##### Idées potentielles
+- **Konami Code** : Séquence de touches (↑↑↓↓←→←→BA) déclenche un effet visuel
+- **Matrix Mode** : Taper "follow the white rabbit" → effet pluie de caractères verts
+- **GeoBrain Birthday** : Animation spéciale le jour de création du projet
+- **Secret commands** : Commandes cachées dans le chat ("/coffee", "/credits", "/about")
+- **Achievement system** : Badges cachés pour des actions spécifiques (1000 messages, première requête SQL, etc.)
+- **Thèmes secrets** : Palettes de couleurs cachées (rétro, synthwave, etc.)
+- **Voice lines** : Sons/notifications easter egg pour certaines actions
+
+##### Règles de design
+- Ne jamais impacter l'UX principale
+- Découverte = récompense, pas frustration
+- Documentés nulle part (vraiment secrets)
+- Fun mais professionnels
+
+### État actuel (10 décembre 2025)
+
+#### Fait ✅
+- Structure app (Tauri + SvelteKit)
+- Onglet Cartes (Géoportail Bussigny, Uzuverse)
+- Sidebar et navigation
+- Backend avec outils (read, write, execute, web_search, web_fetch)
+- Système d'agents avec boucle d'exécution
+- **Sélection automatique du modèle** (Haiku/Sonnet/Opus selon complexité)
+- **7 Sub-agents spécialisés** (Code, SQL, FME, QGIS, Doc, QA, Optimize)
+- Buffer de prompts (file d'attente)
+- Bouton Stop avec AbortController
+- **Thème clair (défaut) / sombre** avec sélecteur
+- **Mode Standard / Expert** (easter egg activation)
+- Passage auto en mode sombre lors de l'activation expert
+
+#### En cours 🔄
+- Streaming temps réel dans le canevas (backend OK, frontend à tester)
+- Mode édition par défaut dans le canevas
+
+#### À faire ⏳
+- Canevas éditable avec historique
+- Status bar avancée
+- Export multi-format
+- Intégration backend dans Tauri (sidecar)
 
 ## Projets actifs
 [À documenter au fil des sessions]

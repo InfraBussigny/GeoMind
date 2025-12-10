@@ -26,6 +26,7 @@
 		"vite": "^7.2.2"
 	},
 	"dependencies": {
-		"@tauri-apps/api": "^2.9.1"
+		"@tauri-apps/api": "^2.9.1",
+		"monaco-editor": "^0.55.1"
 	}
 }

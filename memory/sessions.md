@@ -1,3 +1,98 @@
+## Session 8 - 10 décembre 2025
+**Thème principal** : Phase 3 UI/UX - Thèmes et Mode Expert
+
+### Ce qu'on a fait
+
+#### 1. Système de thèmes clair/sombre
+- **theme.css** : Refonte complète avec variables CSS
+  - Variables communes (espacements, typo, transitions)
+  - Thème clair par défaut (bleu Bussigny #0066a1, fonds clairs)
+  - Thème sombre (cyber vert #00ff88, fonds noirs)
+  - Application via `data-theme="light"` ou `data-theme="dark"` sur html
+- **+layout.svelte** : Synchronisation thème/store via `$effect`
+
+#### 2. Mode Standard/Expert
+- **app.ts** : Nouveau système de stores
+  - `theme` store avec persistance localStorage
+  - `appMode` store (standard/expert)
+  - `visibleModules` derived store (filtre les modules selon le mode)
+  - Phrases d'activation/désactivation de l'easter egg
+  - Fonction `checkExpertActivation()` pour détecter les triggers
+- **Sidebar.svelte** : Affiche uniquement les modules visibles
+  - En standard : Assistant, Cartes
+  - En expert : Assistant, Cartes, Éditeur, Documents, Paramètres
+  - Badge "EXPERT" pulsant quand mode expert actif
+
+#### 3. Easter egg d'activation
+- **ChatModule.svelte** : Détection des phrases secrètes
+  - "On passe aux choses sérieuses", "mode expert", "unlock", etc.
+  - Message personnalisé de l'assistant lors de l'activation
+  - Passage automatique en mode sombre lors de l'activation
+  - Phrases de désactivation : "mode normal", "mode standard", etc.
+
+#### 4. Sélecteur de thème
+- **ThemeToggle.svelte** : Nouveau composant
+  - Icône soleil (clair) / lune (sombre)
+  - Intégré dans le footer de la Sidebar
+  - Animation de rotation au survol
+
+### Fichiers modifiés/créés
+- `src/lib/styles/theme.css` - Refonte complète
+- `src/lib/stores/app.ts` - Ajout theme, appMode, visibleModules
+- `src/routes/+layout.svelte` - Application du thème
+- `src/lib/components/Sidebar.svelte` - Modules dynamiques + ThemeToggle
+- `src/lib/components/ThemeToggle.svelte` (nouveau)
+- `src/lib/components/Chat/ChatModule.svelte` - Easter egg detection
+
+### État actuel
+- Frontend : http://localhost:5173
+- Backend : http://localhost:3001
+- Phase 3 UI/UX : **Terminée**
+
+### Pour tester
+1. Ouvrir l'app → Mode clair par défaut, seulement Assistant et Cartes
+2. Dire "On passe aux choses sérieuses" → Mode expert + sombre
+3. Cliquer sur le toggle soleil/lune pour changer de thème
+4. Dire "mode normal" → Retour mode standard
+
+---
+
+## Session 7 - 10 décembre 2025
+**Thème principal** : Corrections streaming, stop, modèle par défaut + Phase 2 IA avancée
+
+### Phase 2 IA avancée (terminée)
+1. **Sélection automatique du modèle** (`model-selector.js`)
+   - Analyse de la complexité du message
+   - Haiku pour tâches simples, Sonnet pour complexes
+   - Détection de patterns (code, analyse, etc.)
+
+2. **7 Sub-agents spécialisés** (`sub-agents.js`)
+   - Code, SQL/PostGIS, FME, QGIS, Documentation, QA, Optimisation
+   - Activation automatique selon le contexte
+   - Prompts système enrichis
+
+3. **api.ts** : Nouveaux événements `model_selected` et `agents_activated`
+
+### Corrections effectuées
+1. **ArtifactPanel.svelte** :
+   - `isEditing = $state(true)` - mode édition par défaut
+   - Ajout `$effect` pour initialiser `editedContent` quand artifact change
+
+2. **app.ts (store)** :
+   - `currentModel` changé de `claude-sonnet-4-20250514` vers `claude-3-5-haiku-20241022`
+
+3. **server/index.js** :
+   - Haiku comme modèle par défaut
+   - VRAI streaming activé (`stream: true` dans l'appel API Claude)
+   - Gestion abort client : `req.on('close')` + `AbortController`
+   - Parser complet du stream SSE Claude (content_block_start, content_block_delta, etc.)
+
+4. **Bug corrigé** : EditorChat.svelte importait `selectedProvider/selectedModel` au lieu de `currentProvider/currentModel`
+
+5. **Nouveau composant** : `JsonNode.svelte` créé pour remplacer le snippet (fix erreur $state dans snippet)
+
+---
+
 ## Session 6 - 9 décembre 2025 (fin d'après-midi)
 **Thème principal** : Interface Chat avancée - Streaming, Buffer, Stop
 

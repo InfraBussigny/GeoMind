@@ -13,6 +13,8 @@ import { homedir } from 'os';
 import memory from './memory.js';
 import geoportalProxy from './geoportal-proxy.js';
 import { TOOL_DEFINITIONS, executeTool, AGENT_SYSTEM_PROMPT } from './tools.js';
+import { selectModel, MODELS } from './model-selector.js';
+import { orchestrate, generateEnrichedSystemPrompt, identifyRelevantAgents, listAgents } from './sub-agents.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -68,9 +70,9 @@ const PROVIDERS = {
   claude: {
     name: 'Claude (Anthropic)',
     models: [
-      { id: 'claude-sonnet-4-20250514', name: 'Claude Sonnet 4', default: true },
+      { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', default: true },
+      { id: 'claude-sonnet-4-20250514', name: 'Claude Sonnet 4' },
       { id: 'claude-opus-4-20250514', name: 'Claude Opus 4' },
-      { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku' },
     ],
     authType: 'oauth', // Utilise les credentials Claude Code existants
     baseUrl: 'https://api.anthropic.com/v1'
@@ -301,13 +303,63 @@ app.post('/api/chat/stream', async (req, res) => {
   res.end();
 });
 
-// Agent chat endpoint with tool execution loop
+// ============================================
+// MODEL SELECTION & SUB-AGENTS ENDPOINTS
+// ============================================
+
+// Endpoint pour sélection automatique du modèle
+app.post('/api/model/select', async (req, res) => {
+  try {
+    const { provider, message, conversationHistory, options } = req.body;
+    const result = selectModel(provider || 'claude', message, conversationHistory || [], options || {});
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Endpoint pour lister les sub-agents disponibles
+app.get('/api/agents', (req, res) => {
+  res.json({
+    agents: listAgents(),
+    total: listAgents().length
+  });
+});
+
+// Endpoint pour orchestrer les sub-agents
+app.post('/api/agents/orchestrate', async (req, res) => {
+  try {
+    const { message, options } = req.body;
+    const plan = orchestrate(message, options || {});
+    res.json(plan);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Agent chat endpoint with tool execution loop and REAL streaming
 app.post('/api/chat/agent', async (req, res) => {
-  const { provider, model, messages } = req.body;
+  const { provider, model, messages, autoSelectModel } = req.body;
 
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
+
+  // Gestion de l'abort par le client
+  let isAborted = false;
+  let currentAbortController = null;
+  let responseStarted = false;
+
+  req.on('close', () => {
+    // Ne considérer comme abort que si on a commencé à répondre
+    if (responseStarted && !res.writableEnded) {
+      console.log('[Agent] Client disconnected - aborting');
+      isAborted = true;
+      if (currentAbortController) {
+        currentAbortController.abort();
+      }
+    }
+  });
 
   try {
     if (provider !== 'claude') {
@@ -315,7 +367,43 @@ app.post('/api/chat/agent', async (req, res) => {
     }
 
     const auth = await getClaudeAuth();
-    const systemPrompt = AGENT_SYSTEM_PROMPT;
+
+    // Récupérer le dernier message utilisateur pour l'analyse
+    const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content || '';
+
+    // Sélection automatique du modèle si activée
+    let selectedModelId = model;
+    let modelSelectionInfo = null;
+
+    if (autoSelectModel !== false) {
+      const selection = selectModel('claude', lastUserMessage, messages);
+      selectedModelId = selection.model;
+      modelSelectionInfo = selection;
+      console.log(`[Agent] Auto-selected model: ${selectedModelId} (${selection.reason})`);
+
+      // Envoyer l'info de sélection au client
+      res.write(`data: ${JSON.stringify({
+        type: 'model_selected',
+        model: selectedModelId,
+        reason: selection.reason,
+        taskType: selection.taskType,
+        complexity: selection.complexity
+      })}\n\n`);
+    }
+
+    // Identifier les sub-agents pertinents et enrichir le prompt
+    const relevantAgents = identifyRelevantAgents(lastUserMessage);
+    const systemPrompt = relevantAgents.length > 0
+      ? generateEnrichedSystemPrompt(relevantAgents)
+      : AGENT_SYSTEM_PROMPT;
+
+    if (relevantAgents.length > 0) {
+      console.log(`[Agent] Activated sub-agents: ${relevantAgents.join(', ')}`);
+      res.write(`data: ${JSON.stringify({
+        type: 'agents_activated',
+        agents: relevantAgents
+      })}\n\n`);
+    }
 
     // Convertir les messages
     const claudeMessages = messages.map(m => ({
@@ -327,17 +415,21 @@ app.post('/api/chat/agent', async (req, res) => {
     const MAX_ITERATIONS = 10;
     let continueLoop = true;
 
-    while (continueLoop && iteration < MAX_ITERATIONS) {
+    while (continueLoop && iteration < MAX_ITERATIONS && !isAborted) {
       iteration++;
       console.log(`[Agent] Iteration ${iteration}`);
 
-      // Appel à Claude avec les outils
+      // Créer un AbortController pour cette requête
+      currentAbortController = new AbortController();
+
+      // Appel à Claude avec STREAMING
       const body = {
-        model: model || 'claude-sonnet-4-20250514',
+        model: selectedModelId || 'claude-3-5-haiku-20241022',
         max_tokens: 8096,
         system: systemPrompt,
         messages: claudeMessages,
-        tools: TOOL_DEFINITIONS
+        tools: TOOL_DEFINITIONS,
+        stream: true  // ACTIVER LE STREAMING
       };
 
       const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -347,7 +439,8 @@ app.post('/api/chat/agent', async (req, res) => {
           'anthropic-version': '2023-06-01',
           'x-api-key': auth.key || auth.token
         },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
+        signal: currentAbortController.signal
       });
 
       if (!response.ok) {
@@ -355,20 +448,92 @@ app.post('/api/chat/agent', async (req, res) => {
         throw new Error(`Claude API error: ${response.status} - ${error}`);
       }
 
-      const data = await response.json();
-      console.log(`[Agent] Response stop_reason: ${data.stop_reason}`);
+      // Parser le stream SSE de Claude
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
 
-      // Traiter la réponse
-      const textContent = data.content.filter(c => c.type === 'text');
-      const toolUses = data.content.filter(c => c.type === 'tool_use');
+      let fullContent = [];  // Pour reconstruire la réponse complète
+      let currentText = '';
+      let currentToolUse = null;
+      let toolUses = [];
 
-      // Envoyer le texte au client
-      for (const text of textContent) {
-        res.write(`data: ${JSON.stringify({ type: 'content', content: text.text })}\n\n`);
+      try {
+        while (!isAborted) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (isAborted) break;
+            if (!line.startsWith('data: ')) continue;
+            if (line === 'data: [DONE]') continue;
+
+            try {
+              const data = JSON.parse(line.slice(6));
+
+              // Traiter les différents types d'événements
+              if (data.type === 'content_block_start') {
+                if (data.content_block?.type === 'text') {
+                  currentText = '';
+                } else if (data.content_block?.type === 'tool_use') {
+                  currentToolUse = {
+                    id: data.content_block.id,
+                    name: data.content_block.name,
+                    input: ''
+                  };
+                }
+              } else if (data.type === 'content_block_delta') {
+                if (data.delta?.type === 'text_delta' && data.delta.text) {
+                  // STREAMING TEMPS RÉEL - envoyer chaque morceau au client
+                  currentText += data.delta.text;
+                  responseStarted = true;
+                  res.write(`data: ${JSON.stringify({ type: 'content', content: data.delta.text })}\n\n`);
+                } else if (data.delta?.type === 'input_json_delta' && currentToolUse) {
+                  currentToolUse.input += data.delta.partial_json || '';
+                }
+              } else if (data.type === 'content_block_stop') {
+                if (currentToolUse) {
+                  // Parser l'input JSON de l'outil
+                  try {
+                    currentToolUse.input = JSON.parse(currentToolUse.input);
+                  } catch (e) {
+                    currentToolUse.input = {};
+                  }
+                  toolUses.push(currentToolUse);
+                  fullContent.push({ type: 'tool_use', ...currentToolUse });
+                  currentToolUse = null;
+                } else if (currentText) {
+                  fullContent.push({ type: 'text', text: currentText });
+                }
+              } else if (data.type === 'message_stop') {
+                // Message terminé
+              } else if (data.type === 'message_delta') {
+                // Peut contenir stop_reason
+                if (data.delta?.stop_reason === 'end_turn') {
+                  continueLoop = false;
+                }
+              }
+            } catch (e) {
+              // Ignore parse errors
+            }
+          }
+        }
+      } catch (e) {
+        if (e.name === 'AbortError') {
+          console.log('[Agent] Request aborted');
+          break;
+        }
+        throw e;
       }
 
+      if (isAborted) break;
+
+      console.log(`[Agent] Got ${toolUses.length} tool calls`);
+
       // Si pas d'outils appelés, on termine
-      if (toolUses.length === 0 || data.stop_reason === 'end_turn') {
+      if (toolUses.length === 0) {
         continueLoop = false;
         break;
       }
@@ -376,6 +541,8 @@ app.post('/api/chat/agent', async (req, res) => {
       // Exécuter les outils
       const toolResults = [];
       for (const toolUse of toolUses) {
+        if (isAborted) break;
+
         // Informer le client qu'on exécute un outil
         res.write(`data: ${JSON.stringify({
           type: 'tool_use',
@@ -400,10 +567,12 @@ app.post('/api/chat/agent', async (req, res) => {
         });
       }
 
+      if (isAborted) break;
+
       // Ajouter la réponse de l'assistant et les résultats d'outils aux messages
       claudeMessages.push({
         role: 'assistant',
-        content: data.content
+        content: fullContent
       });
 
       claudeMessages.push({
@@ -412,12 +581,16 @@ app.post('/api/chat/agent', async (req, res) => {
       });
     }
 
-    // Signaler la fin
-    res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
+    // Signaler la fin (seulement si pas aborted)
+    if (!isAborted) {
+      res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
+    }
 
   } catch (error) {
-    console.error('[Agent] Error:', error);
-    res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`);
+    if (!isAborted) {
+      console.error('[Agent] Error:', error);
+      res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`);
+    }
   }
 
   res.end();
@@ -761,6 +934,116 @@ app.post('/api/tools/execute-command', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message, stderr: error.stderr });
   }
+});
+
+// ============================================
+// USAGE STATS API
+// ============================================
+
+// Store pour les stats de session (en mémoire)
+const sessionStats = {
+  startTime: Date.now(),
+  tokenCount: 0,
+  cost: 0,
+  requests: 0
+};
+
+// Tarifs approximatifs par modèle ($ per 1M tokens input/output moyenné)
+const MODEL_COSTS = {
+  'claude-sonnet-4-20250514': 0.003,
+  'claude-opus-4-20250514': 0.015,
+  'claude-3-5-haiku-20241022': 0.00025,
+  'gpt-4o': 0.005,
+  'gpt-4o-mini': 0.00015,
+  'mistral-large-latest': 0.003,
+  'deepseek-chat': 0.0001
+};
+
+// Fonction pour tracker l'usage (appelée après chaque requête)
+function trackUsage(model, inputTokens, outputTokens) {
+  const totalTokens = (inputTokens || 0) + (outputTokens || 0);
+  sessionStats.tokenCount += totalTokens;
+  sessionStats.requests++;
+
+  // Calculer le coût approximatif
+  const costPerToken = MODEL_COSTS[model] || 0.001;
+  sessionStats.cost += (totalTokens / 1000000) * costPerToken * 1000000; // Simplification
+}
+
+app.get('/api/usage', async (req, res) => {
+  try {
+    const config = await getGeoBrainConfig();
+    const monthlyLimit = config.monthlyTokenLimit || null;
+
+    // Récupérer les stats mensuelles depuis le fichier (si existant)
+    let monthlyStats = { tokens: 0, cost: 0, requests: 0 };
+    const statsPath = join(homedir(), '.geobrain', 'usage-stats.json');
+
+    try {
+      if (existsSync(statsPath)) {
+        const data = await readFile(statsPath, 'utf-8');
+        const stats = JSON.parse(data);
+        const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+
+        if (stats.month === currentMonth) {
+          monthlyStats = stats;
+        }
+      }
+    } catch (e) {
+      // Ignore, use defaults
+    }
+
+    res.json({
+      sessionTokens: sessionStats.tokenCount,
+      sessionCost: sessionStats.cost,
+      sessionRequests: sessionStats.requests,
+      sessionStartTime: sessionStats.startTime,
+      monthlyTokens: monthlyStats.tokens + sessionStats.tokenCount,
+      monthlyCost: monthlyStats.cost + sessionStats.cost,
+      monthlyLimit: monthlyLimit,
+      monthlyRequests: monthlyStats.requests + sessionStats.requests
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Sauvegarder les stats mensuelles
+async function saveMonthlyStats() {
+  try {
+    const statsPath = join(homedir(), '.geobrain', 'usage-stats.json');
+    const currentMonth = new Date().toISOString().slice(0, 7);
+
+    let monthlyStats = { month: currentMonth, tokens: 0, cost: 0, requests: 0 };
+
+    if (existsSync(statsPath)) {
+      const data = await readFile(statsPath, 'utf-8');
+      const existing = JSON.parse(data);
+      if (existing.month === currentMonth) {
+        monthlyStats = existing;
+      }
+    }
+
+    monthlyStats.tokens += sessionStats.tokenCount;
+    monthlyStats.cost += sessionStats.cost;
+    monthlyStats.requests += sessionStats.requests;
+
+    const dir = dirname(statsPath);
+    if (!existsSync(dir)) {
+      await mkdir(dir, { recursive: true });
+    }
+
+    await writeFile(statsPath, JSON.stringify(monthlyStats, null, 2));
+  } catch (e) {
+    console.error('Error saving monthly stats:', e);
+  }
+}
+
+// Sauvegarder les stats à l'arrêt du serveur
+process.on('SIGINT', async () => {
+  console.log('\nSaving usage stats...');
+  await saveMonthlyStats();
+  process.exit(0);
 });
 
 // ============================================

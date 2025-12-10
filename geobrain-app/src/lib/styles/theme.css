@@ -1,44 +1,9 @@
-/* GeoBrain - Charte graphique Bussigny */
+/* GeoBrain - Système de thèmes Clair/Sombre */
 
+/* ========================================
+   VARIABLES COMMUNES (non liées au thème)
+   ======================================== */
 :root {
-  /* Couleurs principales Bussigny */
-  --bleu-bussigny: #366092;
-  --bleu-bussigny-dark: #2a4a73;
-  --bleu-bussigny-light: #4a7ab8;
-
-  /* Gris */
-  --gris-fonce: #444444;
-  --gris-moyen: #666666;
-  --gris-clair: #888888;
-  --gris-tres-clair: #f5f5f5;
-
-  /* Couleurs fonctionnelles */
-  --success: #27ae60;
-  --success-light: #d5f5e3;
-  --warning: #e67e22;
-  --warning-light: #fdebd0;
-  --error: #c0392b;
-  --error-light: #fadbd8;
-  --info: #1a5276;
-  --info-light: #d4e6f1;
-
-  /* Fond et texte */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --bg-sidebar: #2c3e50;
-  --text-primary: #2c3e50;
-  --text-secondary: #666666;
-  --text-muted: #888888;
-  --text-on-dark: #ffffff;
-
-  /* Bordures et ombres */
-  --border-color: #e0e0e0;
-  --border-radius: 8px;
-  --border-radius-sm: 4px;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-  --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
-
   /* Espacements */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
@@ -47,22 +12,208 @@
   --spacing-xl: 32px;
 
   /* Typographie */
-  --font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  --font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
   --font-size-xs: 11px;
-  --font-size-sm: 13px;
-  --font-size-md: 14px;
-  --font-size-lg: 16px;
-  --font-size-xl: 20px;
-  --font-size-2xl: 24px;
+  --font-size-sm: 12px;
+  --font-size-md: 13px;
+  --font-size-lg: 15px;
+  --font-size-xl: 18px;
+  --font-size-2xl: 22px;
 
   /* Transitions */
   --transition-fast: 150ms ease;
   --transition-normal: 250ms ease;
+  --transition-slow: 400ms ease;
+
+  /* Rayons de bordure */
+  --border-radius: 8px;
+  --border-radius-sm: 4px;
+  --border-radius-lg: 12px;
 
   /* Sidebar */
   --sidebar-width: 260px;
   --sidebar-collapsed-width: 60px;
+}
+
+/* ========================================
+   THEME CLAIR (par défaut)
+   Sobre et professionnel
+   ======================================== */
+:root, [data-theme="light"] {
+  /* Couleurs principales - Bleu Bussigny */
+  --primary: #0066a1;
+  --primary-dark: #004d7a;
+  --primary-light: #3399cc;
+  --primary-glow: rgba(0, 102, 161, 0.2);
+
+  /* Accents */
+  --accent-cyan: #0891b2;
+  --accent-purple: #7c3aed;
+  --accent-pink: #db2777;
+  --accent-orange: #ea580c;
+
+  /* Fonds - Tons clairs */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-tertiary: #ffffff;
+  --bg-sidebar: #ffffff;
+  --bg-hover: #e2e8f0;
+  --bg-active: #cbd5e1;
+
+  /* Texte - Haute lisibilité */
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --text-on-dark: #ffffff;
+  --text-on-primary: #ffffff;
+  --text-accent: var(--primary);
+  --text-bright: #0f172a;
+  --text-label: #64748b;
+
+  /* Bordures */
+  --border-color: #e2e8f0;
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-focus: var(--primary);
+
+  /* Ombres douces */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-glow: 0 0 0 3px var(--primary-glow);
+  --shadow-glow-sm: 0 0 0 2px var(--primary-glow);
+
+  /* Couleurs fonctionnelles */
+  --success: #16a34a;
+  --success-dark: #15803d;
+  --success-glow: rgba(22, 163, 74, 0.2);
+  --success-light: rgba(22, 163, 74, 0.1);
+  --warning: #d97706;
+  --warning-dark: #b45309;
+  --warning-glow: rgba(217, 119, 6, 0.2);
+  --warning-light: rgba(217, 119, 6, 0.1);
+  --error: #dc2626;
+  --error-dark: #b91c1c;
+  --error-glow: rgba(220, 38, 38, 0.2);
+  --error-light: rgba(220, 38, 38, 0.1);
+  --info: #0284c7;
+  --info-dark: #0369a1;
+  --info-glow: rgba(2, 132, 199, 0.2);
+  --info-light: rgba(2, 132, 199, 0.1);
+
+  /* Legacy aliases */
+  --cyber-green: var(--primary);
+  --cyber-green-dark: var(--primary-dark);
+  --cyber-green-light: var(--primary-light);
+  --cyber-green-glow: var(--primary-glow);
+  --noir-profond: var(--bg-primary);
+  --noir-surface: var(--bg-secondary);
+  --noir-card: var(--bg-tertiary);
+  --noir-elevated: var(--bg-hover);
+  --gris-cyber: var(--border-color);
+  --gris-medium: #cbd5e1;
+  --gris-light: #94a3b8;
+  --gris-muted: #64748b;
+  --border-glow: var(--primary);
+  --bleu-bussigny: var(--primary);
+  --bleu-bussigny-dark: var(--primary-dark);
+  --bleu-bussigny-light: var(--primary-light);
+  --gris-fonce: var(--border-color);
+  --gris-moyen: #cbd5e1;
+  --gris-clair: #94a3b8;
+  --gris-tres-clair: var(--bg-hover);
+}
+
+/* ========================================
+   THEME SOMBRE (Cyber Vert/Noir)
+   Mode expert / technique
+   ======================================== */
+[data-theme="dark"] {
+  /* Couleurs principales - Cyber Green */
+  --primary: #00ff88;
+  --primary-dark: #00cc6a;
+  --primary-light: #33ffaa;
+  --primary-glow: rgba(0, 255, 136, 0.4);
+
+  /* Accents cyber */
+  --accent-cyan: #00d4ff;
+  --accent-purple: #a855f7;
+  --accent-pink: #ff0080;
+  --accent-orange: #ff6b00;
+
+  /* Fonds - Noirs profonds */
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-tertiary: #1a1a24;
+  --bg-sidebar: #12121a;
+  --bg-hover: #22222e;
+  --bg-active: #2a2a38;
+
+  /* Texte - Haute lisibilité sur fond sombre */
+  --text-primary: #f0f0f5;
+  --text-secondary: #c0c0cc;
+  --text-muted: #8a8a9a;
+  --text-on-dark: #ffffff;
+  --text-on-primary: #0a0a0f;
+  --text-accent: var(--primary);
+  --text-bright: #ffffff;
+  --text-label: #b0b0c0;
+
+  /* Bordures */
+  --border-color: #2a2a38;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-focus: var(--primary);
+
+  /* Ombres cyber */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 20px var(--primary-glow);
+  --shadow-glow-sm: 0 0 10px var(--primary-glow);
+
+  /* Couleurs fonctionnelles - Plus vives */
+  --success: #00ff88;
+  --success-dark: #00cc6a;
+  --success-glow: rgba(0, 255, 136, 0.3);
+  --success-light: rgba(0, 255, 136, 0.15);
+  --warning: #ffaa00;
+  --warning-dark: #cc8800;
+  --warning-glow: rgba(255, 170, 0, 0.3);
+  --warning-light: rgba(255, 170, 0, 0.15);
+  --error: #ff3366;
+  --error-dark: #cc2952;
+  --error-glow: rgba(255, 51, 102, 0.3);
+  --error-light: rgba(255, 51, 102, 0.15);
+  --info: #00d4ff;
+  --info-dark: #00a8cc;
+  --info-glow: rgba(0, 212, 255, 0.3);
+  --info-light: rgba(0, 212, 255, 0.15);
+
+  /* Legacy aliases */
+  --cyber-green: var(--primary);
+  --cyber-green-dark: var(--primary-dark);
+  --cyber-green-light: var(--primary-light);
+  --cyber-green-glow: var(--primary-glow);
+  --noir-profond: var(--bg-primary);
+  --noir-surface: var(--bg-secondary);
+  --noir-card: var(--bg-tertiary);
+  --noir-elevated: var(--bg-hover);
+  --gris-cyber: var(--border-color);
+  --gris-medium: #3a3a4a;
+  --gris-light: #5a5a6a;
+  --gris-muted: #7a7a8a;
+  --border-glow: var(--primary);
+  --bleu-bussigny: var(--primary);
+  --bleu-bussigny-dark: var(--primary-dark);
+  --bleu-bussigny-light: var(--primary-light);
+  --gris-fonce: var(--border-color);
+  --gris-moyen: #3a3a4a;
+  --gris-clair: #5a5a6a;
+  --gris-tres-clair: var(--bg-hover);
+
+  /* Police monospace pour mode expert */
+  --font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
 }
 
 /* Reset et base */
@@ -78,144 +229,435 @@ html, body {
   font-size: var(--font-size-md);
   color: var(--text-primary);
   background-color: var(--bg-primary);
-  line-height: 1.5;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar personnalisée */
+/* Scrollbar cyber */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
+  background: var(--noir-surface);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--gris-clair);
+  background: var(--gris-cyber);
   border-radius: 4px;
+  border: 1px solid var(--border-subtle);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--gris-moyen);
+  background: var(--gris-medium);
+  border-color: var(--cyber-green);
+  box-shadow: var(--shadow-glow-sm);
 }
 
-/* Sélection */
+/* Selection cyber */
 ::selection {
-  background: var(--bleu-bussigny);
-  color: white;
+  background: var(--cyber-green);
+  color: var(--noir-profond);
 }
 
 /* Liens */
 a {
-  color: var(--bleu-bussigny);
+  color: var(--cyber-green);
   text-decoration: none;
-  transition: color var(--transition-fast);
+  transition: all var(--transition-fast);
 }
 
 a:hover {
-  color: var(--bleu-bussigny-dark);
+  color: var(--cyber-green-light);
+  text-shadow: 0 0 8px var(--cyber-green-glow);
 }
 
-/* Boutons */
+/* ========================================
+   BOUTONS CYBER
+   ======================================== */
+
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-sm) var(--spacing-md);
-  font-size: var(--font-size-md);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
   font-weight: 500;
-  border: none;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border: 1px solid transparent;
   border-radius: var(--border-radius-sm);
   cursor: pointer;
   transition: all var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  transition: left 0.4s ease;
+}
+
+.btn:hover::before {
+  left: 100%;
 }
 
 .btn-primary {
-  background: var(--bleu-bussigny);
-  color: white;
+  background: linear-gradient(135deg, var(--cyber-green-dark), var(--cyber-green));
+  color: var(--noir-profond);
+  border-color: var(--cyber-green);
+  box-shadow: 0 0 15px var(--cyber-green-glow);
 }
 
 .btn-primary:hover {
-  background: var(--bleu-bussigny-dark);
+  background: var(--cyber-green);
+  box-shadow: 0 0 25px var(--cyber-green-glow), inset 0 0 20px rgba(0,0,0,0.2);
+  transform: translateY(-1px);
 }
 
 .btn-secondary {
-  background: var(--bg-secondary);
+  background: var(--noir-card);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
 }
 
 .btn-secondary:hover {
-  background: var(--gris-tres-clair);
+  background: var(--noir-elevated);
+  border-color: var(--cyber-green);
+  color: var(--cyber-green);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-ghost:hover {
+  background: var(--bg-hover);
+  border-color: var(--cyber-green);
+  color: var(--cyber-green);
 }
 
 .btn-icon {
   padding: var(--spacing-sm);
   background: transparent;
   color: var(--text-secondary);
+  border: none;
 }
 
 .btn-icon:hover {
-  background: var(--bg-secondary);
-  color: var(--bleu-bussigny);
+  background: var(--bg-hover);
+  color: var(--cyber-green);
 }
 
-/* Inputs */
+.btn-danger {
+  background: var(--error);
+  color: white;
+  border-color: var(--error);
+}
+
+.btn-danger:hover {
+  background: var(--error-dark);
+  box-shadow: 0 0 15px var(--error-glow);
+}
+
+/* ========================================
+   INPUTS CYBER
+   ======================================== */
+
 input, textarea, select {
-  font-family: inherit;
+  font-family: var(--font-mono);
   font-size: var(--font-size-md);
   padding: var(--spacing-sm) var(--spacing-md);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
-  background: var(--bg-primary);
+  background: var(--noir-card);
   color: var(--text-primary);
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition: all var(--transition-fast);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--text-muted);
 }
 
 input:focus, textarea:focus, select:focus {
   outline: none;
-  border-color: var(--bleu-bussigny);
-  box-shadow: 0 0 0 3px rgba(54, 96, 146, 0.15);
+  border-color: var(--cyber-green);
+  box-shadow: 0 0 0 3px var(--cyber-green-glow), var(--shadow-glow-sm);
+  background: var(--noir-elevated);
 }
 
-/* Cards */
+/* ========================================
+   CARDS CYBER
+   ======================================== */
+
 .card {
-  background: var(--bg-primary);
+  background: var(--noir-card);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   padding: var(--spacing-lg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
+  position: relative;
 }
 
-/* Badges */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyber-green), transparent);
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+/* ========================================
+   BADGES CYBER
+   ======================================== */
+
 .badge {
   display: inline-flex;
   align-items: center;
   padding: 2px 8px;
+  font-family: var(--font-mono);
   font-size: var(--font-size-xs);
-  font-weight: 500;
-  border-radius: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-radius: 4px;
+  border: 1px solid transparent;
 }
 
 .badge-primary {
-  background: var(--bleu-bussigny);
-  color: white;
+  background: var(--cyber-green-glow);
+  color: var(--cyber-green);
+  border-color: var(--cyber-green);
 }
 
 .badge-success {
-  background: var(--success-light);
+  background: var(--success-glow);
   color: var(--success);
+  border-color: var(--success);
 }
 
 .badge-warning {
-  background: var(--warning-light);
+  background: var(--warning-glow);
   color: var(--warning);
+  border-color: var(--warning);
 }
 
 .badge-error {
-  background: var(--error-light);
+  background: var(--error-glow);
   color: var(--error);
+  border-color: var(--error);
+}
+
+.badge-info {
+  background: var(--info-glow);
+  color: var(--info);
+  border-color: var(--info);
+}
+
+/* ========================================
+   EFFETS GLITCH
+   ======================================== */
+
+@keyframes glitch {
+  0% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-2px, 2px);
+  }
+  40% {
+    transform: translate(-2px, -2px);
+  }
+  60% {
+    transform: translate(2px, 2px);
+  }
+  80% {
+    transform: translate(2px, -2px);
+  }
+  100% {
+    transform: translate(0);
+  }
+}
+
+@keyframes glitch-skew {
+  0% {
+    transform: skew(0deg);
+  }
+  20% {
+    transform: skew(2deg);
+  }
+  40% {
+    transform: skew(-1deg);
+  }
+  60% {
+    transform: skew(1deg);
+  }
+  80% {
+    transform: skew(-2deg);
+  }
+  100% {
+    transform: skew(0deg);
+  }
+}
+
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--cyber-green-glow);
+  }
+  50% {
+    box-shadow: 0 0 20px var(--cyber-green-glow), 0 0 30px var(--cyber-green-glow);
+  }
+}
+
+@keyframes text-flicker {
+  0%, 100% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 1;
+  }
+  93% {
+    opacity: 0.8;
+  }
+  94% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 0.6;
+  }
+  96% {
+    opacity: 1;
+  }
+}
+
+@keyframes border-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Classes utilitaires glitch */
+.glitch-text {
+  animation: text-flicker 4s infinite;
+}
+
+.glitch-hover:hover {
+  animation: glitch 0.3s ease;
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
+
+/* ========================================
+   EFFETS ELECTRIQUES
+   ======================================== */
+
+.electric-border {
+  position: relative;
+}
+
+.electric-border::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  background: linear-gradient(90deg, var(--cyber-green), var(--accent-cyan), var(--cyber-green));
+  background-size: 200% 200%;
+  border-radius: inherit;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+  animation: border-flow 3s linear infinite;
+}
+
+.electric-border:hover::after {
+  opacity: 1;
+}
+
+/* Ligne de scan */
+.scanline-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.scanline-effect::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(to bottom, transparent, var(--cyber-green-glow), transparent);
+  animation: scanline 3s linear infinite;
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+.text-cyber { color: var(--cyber-green); }
+.text-cyan { color: var(--accent-cyan); }
+.text-purple { color: var(--accent-purple); }
+.text-pink { color: var(--accent-pink); }
+.text-muted { color: var(--text-muted); }
+
+.bg-surface { background: var(--noir-surface); }
+.bg-card { background: var(--noir-card); }
+.bg-elevated { background: var(--noir-elevated); }
+
+.glow-text {
+  text-shadow: 0 0 10px var(--cyber-green-glow);
+}
+
+.glow-box {
+  box-shadow: var(--shadow-glow);
+}
+
+/* Bordure animee */
+.animated-border {
+  background: linear-gradient(var(--noir-card), var(--noir-card)) padding-box,
+              linear-gradient(90deg, var(--cyber-green), var(--accent-cyan), var(--accent-purple), var(--cyber-green)) border-box;
+  background-size: 100% 100%, 300% 100%;
+  border: 1px solid transparent;
+  animation: border-flow 4s linear infinite;
 }

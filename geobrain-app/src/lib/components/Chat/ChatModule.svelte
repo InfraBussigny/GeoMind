@@ -7,9 +7,12 @@
     currentModel,
     providers,
     backendConnected,
+    appMode,
+    theme,
+    checkExpertActivation,
     type Message
   } from '$lib/stores/app';
-  import { getProviders, streamMessage, type ToolUseEvent, type ToolResultEvent, type StreamController } from '$lib/services/api';
+  import { getProviders, streamMessage, type ToolUseEvent, type ToolResultEvent, type StreamController, type ModelSelectedEvent, type AgentsActivatedEvent } from '$lib/services/api';
   import ProviderSelector from './ProviderSelector.svelte';
   import ArtifactPanel, { type Artifact, type ArtifactType } from './ArtifactPanel.svelte';
 
@@ -41,9 +44,98 @@
   let editingPromptContent = $state('');
   let currentStreamController = $state<StreamController | null>(null);
 
+  // Infos de sélection auto de modèle et sub-agents
+  let selectedModelInfo = $state<ModelSelectedEvent | null>(null);
+  let activeAgents = $state<string[]>([]);
+
+  // Mapping des noms d'agents pour l'affichage
+  const agentNames: Record<string, string> = {
+    'code': 'Code',
+    'sql': 'SQL/PostGIS',
+    'fme': 'FME',
+    'qgis': 'QGIS',
+    'doc': 'Documentation',
+    'qa': 'QA/Review',
+    'optimize': 'Optimisation'
+  };
+
   onMount(async () => {
     await checkBackendAndLoadProviders();
   });
+
+  // Gérer le changement de mode expert (easter egg)
+  async function handleExpertModeChange(action: 'activate' | 'deactivate', originalMessage: string) {
+    // Ajouter le message de l'utilisateur
+    const userMessage: Message = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: originalMessage,
+      timestamp: new Date()
+    };
+    messages.update(m => [...m, userMessage]);
+
+    await tick();
+    scrollToBottom();
+
+    // Petit délai pour l'effet dramatique
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Créer le message de réponse de l'assistant
+    const assistantMessageId = crypto.randomUUID();
+    let responseContent: string;
+
+    if (action === 'activate') {
+      appMode.activateExpert();
+      responseContent = `**Mode Expert activé**
+
+Bienvenue dans les coulisses, Marc. J'ai déverrouillé l'accès complet aux outils avancés :
+
+• **Éditeur** - SQL, Python, FME et scripts
+• **Documents** - Génération PDF et rapports
+• **Paramètres** - Configuration système
+
+Le mode sombre a été activé automatiquement pour une meilleure concentration. Tu peux le changer via le sélecteur de thème.
+
+*"On passe aux choses sérieuses"* - Message reçu 5/5.`;
+    } else {
+      appMode.deactivateExpert();
+      theme.set('light'); // Retour au mode clair
+      const is22 = originalMessage.trim() === '22' || originalMessage.toLowerCase().includes('22');
+      responseContent = is22
+        ? `**22, v'la les flics !** 🚔
+
+Mode professionnel réactivé. Interface sobre et présentable.
+
+Les modules avancés sont maintenant masqués. Tu gardes accès à :
+• **Assistant** - Chat IA
+• **Cartes** - Visualisation cartographique
+
+*Rien à voir ici, circulez...*`
+        : `**Mode Professionnel activé**
+
+Interface simplifiée restaurée. Les modules avancés sont maintenant masqués.
+
+Tu gardes accès à :
+• **Assistant** - Chat IA
+• **Cartes** - Visualisation cartographique
+
+Pour réactiver le mode expert, tu sais quoi dire...`;
+    }
+
+    const assistantMessage: Message = {
+      id: assistantMessageId,
+      role: 'assistant',
+      content: responseContent,
+      timestamp: new Date(),
+      provider: 'system',
+      model: 'GeoBrain'
+    };
+
+    messages.update(m => [...m, assistantMessage]);
+
+    await tick();
+    scrollToBottom();
+  }
 
   async function checkBackendAndLoadProviders() {
     try {
@@ -85,6 +177,15 @@
 
   // Traiter un message (soit direct, soit depuis la queue)
   async function processMessage(content: string) {
+    // Vérifier si le message contient une phrase d'activation du mode expert
+    const expertAction = checkExpertActivation(content);
+
+    if (expertAction) {
+      // Gérer l'activation/désactivation du mode expert
+      handleExpertModeChange(expertAction, content);
+      return;
+    }
+
     const userMessage: Message = {
       id: crypto.randomUUID(),
       role: 'user',
@@ -183,6 +284,16 @@
           streamingArtifact = null;
           streamingContent = '';
           processNextInQueue();
+        },
+        // onModelSelected
+        (event) => {
+          selectedModelInfo = event;
+          console.log(`[Chat] Model auto-selected: ${event.model} (${event.taskType})`);
+        },
+        // onAgentsActivated
+        (event) => {
+          activeAgents = event.agents;
+          console.log(`[Chat] Sub-agents activated: ${event.agents.join(', ')}`);
         }
       );
     } catch (error) {
@@ -202,6 +313,8 @@
     isLoading.set(false);
     toolActivities = [];
     currentStreamController = null;
+    selectedModelInfo = null;
+    activeAgents = [];
   }
 
   // Traiter le prochain message dans la queue
@@ -537,11 +650,7 @@
       {#if $messages.length === 0}
         <div class="welcome-message">
           <div class="welcome-icon">
-            <svg width="80" height="80" viewBox="0 0 100 100" fill="none">
-              <circle cx="50" cy="50" r="45" fill="var(--bleu-bussigny)" opacity="0.1"/>
-              <circle cx="50" cy="50" r="35" fill="var(--bleu-bussigny)" opacity="0.2"/>
-              <text x="50" y="58" text-anchor="middle" font-size="32" fill="var(--bleu-bussigny)">GB</text>
-            </svg>
+            <img src="/images/Logo_GeoBrain.png" alt="GeoBrain" class="welcome-logo" />
           </div>
           <h2>Bienvenue dans GeoBrain</h2>
           <p>Assistant IA pour les geodonnees et le SIT de Bussigny</p>
@@ -587,6 +696,32 @@
             </div>
           </div>
         {/each}
+
+        {#if selectedModelInfo || activeAgents.length > 0}
+          <div class="ai-info-bar">
+            {#if selectedModelInfo}
+              <div class="model-info" class:simple={selectedModelInfo.taskType === 'simple'} class:complex={selectedModelInfo.taskType === 'complex'} class:critical={selectedModelInfo.taskType === 'critical'}>
+                <span class="info-icon">
+                  {#if selectedModelInfo.taskType === 'simple'}
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                  {:else if selectedModelInfo.taskType === 'critical'}
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 22h20L12 2zm0 4l7.5 14h-15L12 6z"/></svg>
+                  {:else}
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                  {/if}
+                </span>
+                <span class="info-label">{selectedModelInfo.taskType === 'simple' ? 'Haiku' : selectedModelInfo.taskType === 'critical' ? 'Sonnet+' : 'Sonnet'}</span>
+              </div>
+            {/if}
+            {#if activeAgents.length > 0}
+              <div class="agents-info">
+                {#each activeAgents as agentId}
+                  <span class="agent-badge">{agentNames[agentId] || agentId}</span>
+                {/each}
+              </div>
+            {/if}
+          </div>
+        {/if}
 
         {#if toolActivities.length > 0}
           <div class="tool-activities">
@@ -829,6 +964,7 @@
     flex-shrink: 0;
     height: 100%;
     animation: slideIn 0.2s ease-out;
+    border-left: 1px solid var(--border-color);
   }
 
   @keyframes slideIn {
@@ -845,7 +981,7 @@
   .chat-header {
     padding: var(--spacing-md) var(--spacing-lg);
     border-bottom: 1px solid var(--border-color);
-    background: white;
+    background: var(--noir-surface);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -859,24 +995,32 @@
 
   .header-left h1 {
     font-size: var(--font-size-lg);
-    color: var(--bleu-bussigny);
+    font-family: var(--font-mono);
+    color: var(--cyber-green);
     margin: 0;
+    text-shadow: 0 0 10px var(--cyber-green-glow);
   }
 
   .status {
     font-size: var(--font-size-xs);
-    padding: 2px 8px;
-    border-radius: 10px;
+    font-family: var(--font-mono);
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   .status.connected {
-    background: var(--success-light);
+    background: var(--success-glow);
     color: var(--success);
+    border-color: var(--success);
   }
 
   .status.disconnected {
-    background: var(--error-light);
+    background: var(--error-glow);
     color: var(--error);
+    border-color: var(--error);
   }
 
   .header-right {
@@ -889,12 +1033,14 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    padding: 4px 10px;
-    background: var(--bleu-bussigny);
-    color: white;
-    border-radius: 12px;
+    padding: 4px 12px;
+    background: var(--cyber-green);
+    color: var(--noir-profond);
+    border-radius: 4px;
     font-size: var(--font-size-xs);
-    font-weight: 600;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    box-shadow: 0 0 15px var(--cyber-green-glow);
   }
 
   .artifact-counter svg {
@@ -904,8 +1050,8 @@
 
   .clear-btn {
     padding: var(--spacing-sm);
-    border: none;
-    background: transparent;
+    border: 1px solid var(--border-color);
+    background: var(--noir-card);
     color: var(--text-muted);
     border-radius: var(--border-radius-sm);
     cursor: pointer;
@@ -913,7 +1059,8 @@
   }
 
   .clear-btn:hover {
-    background: var(--bg-secondary);
+    background: var(--error-glow);
+    border-color: var(--error);
     color: var(--error);
   }
 
@@ -924,6 +1071,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);
+    background: var(--noir-profond);
   }
 
   .welcome-message {
@@ -934,36 +1082,58 @@
   }
 
   .welcome-icon {
-    margin-bottom: var(--spacing-md);
-  }
-
-  .welcome-message h2 {
-    color: var(--bleu-bussigny);
-    margin-bottom: var(--spacing-sm);
-    font-size: var(--font-size-xl);
-  }
-
-  .welcome-message > p {
-    color: var(--text-secondary);
     margin-bottom: var(--spacing-lg);
   }
 
+  .welcome-logo {
+    width: 120px;
+    height: auto;
+    filter: drop-shadow(0 0 20px var(--cyber-green-glow));
+  }
+
+  .welcome-message h2 {
+    color: var(--cyber-green);
+    margin-bottom: var(--spacing-sm);
+    font-size: var(--font-size-2xl);
+    font-family: var(--font-mono);
+    text-shadow: 0 0 15px var(--cyber-green-glow);
+    font-weight: 700;
+  }
+
+  .welcome-message > p {
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-lg);
+    font-size: var(--font-size-md);
+  }
+
   .backend-warning {
-    background: var(--warning-light);
+    background: var(--noir-card);
     border: 1px solid var(--warning);
     border-radius: var(--border-radius);
     padding: var(--spacing-lg);
     text-align: left;
+    box-shadow: 0 0 20px var(--warning-glow);
+  }
+
+  .backend-warning p {
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .backend-warning strong {
+    color: var(--warning);
   }
 
   .backend-warning code {
     display: block;
-    background: rgba(0,0,0,0.1);
+    background: var(--noir-profond);
     padding: var(--spacing-sm) var(--spacing-md);
     border-radius: var(--border-radius-sm);
     margin-top: var(--spacing-sm);
     font-family: var(--font-mono);
     font-size: var(--font-size-sm);
+    color: var(--cyber-green);
+    border: 1px solid var(--border-color);
   }
 
   .suggestions {
@@ -975,18 +1145,22 @@
 
   .suggestion {
     padding: var(--spacing-sm) var(--spacing-md);
-    background: var(--bg-secondary);
+    background: var(--noir-card);
     border: 1px solid var(--border-color);
-    border-radius: 20px;
+    border-radius: 6px;
     cursor: pointer;
     font-size: var(--font-size-sm);
+    font-family: var(--font-mono);
+    color: var(--text-primary);
     transition: all var(--transition-fast);
   }
 
   .suggestion:hover {
-    background: var(--bleu-bussigny);
-    color: white;
-    border-color: var(--bleu-bussigny);
+    background: var(--cyber-green);
+    color: var(--noir-profond);
+    border-color: var(--cyber-green);
+    box-shadow: 0 0 15px var(--cyber-green-glow);
+    font-weight: 600;
   }
 
   .message {
@@ -1003,20 +1177,24 @@
   .message-avatar {
     width: 36px;
     height: 36px;
-    border-radius: 50%;
-    background: var(--bg-secondary);
+    border-radius: 6px;
+    background: var(--noir-card);
+    border: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
-    font-weight: 600;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: var(--font-mono);
     flex-shrink: 0;
     color: var(--text-secondary);
   }
 
   .message.assistant .message-avatar {
-    background: var(--bleu-bussigny);
-    color: white;
+    background: var(--cyber-green);
+    border-color: var(--cyber-green);
+    color: var(--noir-profond);
+    box-shadow: 0 0 10px var(--cyber-green-glow);
   }
 
   .provider-icon {
@@ -1024,18 +1202,18 @@
   }
 
   .message-content {
-    background: var(--bg-secondary);
+    background: var(--noir-card);
     padding: var(--spacing-md);
     border-radius: var(--border-radius);
-    border-top-left-radius: 4px;
+    border: 1px solid var(--border-color);
     min-width: 100px;
   }
 
   .message.user .message-content {
-    background: var(--bleu-bussigny);
-    color: white;
-    border-top-left-radius: var(--border-radius);
-    border-top-right-radius: 4px;
+    background: var(--cyber-green);
+    color: var(--noir-profond);
+    border-color: var(--cyber-green);
+    box-shadow: 0 0 15px var(--cyber-green-glow);
   }
 
   .message-header {
@@ -1047,43 +1225,59 @@
 
   .model-badge {
     font-size: 10px;
-    background: rgba(0,0,0,0.1);
-    padding: 1px 6px;
-    border-radius: 8px;
-    text-transform: capitalize;
+    font-family: var(--font-mono);
+    background: var(--noir-elevated);
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent-cyan);
+    border: 1px solid var(--border-color);
   }
 
   .message.user .model-badge {
-    background: rgba(255,255,255,0.2);
+    background: rgba(0,0,0,0.2);
+    color: var(--noir-profond);
+    border-color: rgba(0,0,0,0.3);
   }
 
   .message-time {
     font-size: var(--font-size-xs);
     color: var(--text-muted);
+    font-family: var(--font-mono);
   }
 
   .message.user .message-time {
-    color: rgba(255,255,255,0.7);
+    color: rgba(0,0,0,0.5);
   }
 
   .message-text {
     white-space: pre-wrap;
-    line-height: 1.5;
+    line-height: 1.6;
     word-break: break-word;
   }
 
   .message-text :global(.inline-code) {
-    background: rgba(0,0,0,0.1);
-    padding: 1px 4px;
+    background: var(--noir-elevated);
+    padding: 2px 6px;
     border-radius: 3px;
     font-family: var(--font-mono);
     font-size: 0.9em;
+    color: var(--cyber-green);
+    border: 1px solid var(--border-color);
+  }
+
+  .message.user .message-text :global(.inline-code) {
+    background: rgba(0,0,0,0.2);
+    color: var(--noir-profond);
+    border-color: rgba(0,0,0,0.3);
   }
 
   .message-text :global(.code-block) {
     margin: var(--spacing-sm) 0;
     border-radius: var(--border-radius-sm);
     overflow: hidden;
+    border: 1px solid var(--border-color);
   }
 
   .message-text :global(.code-header) {
@@ -1091,29 +1285,33 @@
     justify-content: space-between;
     align-items: center;
     padding: 6px 12px;
-    background: #2d2d2d;
-    color: #888;
-    font-size: 12px;
+    background: var(--noir-elevated);
+    color: var(--text-muted);
+    font-size: 11px;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
   }
 
   .message-text :global(.code-copy-btn) {
     padding: 2px 8px;
-    background: #444;
-    color: #ccc;
-    border: none;
+    background: var(--noir-card);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     cursor: pointer;
-    font-size: 11px;
+    font-size: 10px;
+    font-family: var(--font-mono);
   }
 
   .message-text :global(.code-copy-btn:hover) {
-    background: #555;
-    color: white;
+    background: var(--cyber-green);
+    color: var(--noir-profond);
+    border-color: var(--cyber-green);
   }
 
   .message-text :global(.code-block pre) {
-    background: #1e1e1e;
-    color: #d4d4d4;
+    background: var(--noir-profond);
+    color: var(--text-primary);
     padding: var(--spacing-md);
     margin: 0;
     overflow-x: auto;
@@ -1124,29 +1322,30 @@
     padding: 0;
     color: inherit;
     font-family: var(--font-mono);
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .typing-indicator {
     display: flex;
-    gap: 4px;
+    gap: 6px;
     padding: 4px 0;
   }
 
   .typing-indicator span {
     width: 8px;
     height: 8px;
-    background: var(--gris-clair);
-    border-radius: 50%;
+    background: var(--cyber-green);
+    border-radius: 2px;
     animation: typing 1.4s infinite;
+    box-shadow: 0 0 6px var(--cyber-green-glow);
   }
 
   .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
   .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
 
   @keyframes typing {
-    0%, 60%, 100% { transform: translateY(0); }
-    30% { transform: translateY(-6px); }
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-6px); opacity: 1; }
   }
 
   /* Barre d'artifacts */
@@ -1155,19 +1354,23 @@
     align-items: center;
     gap: var(--spacing-sm);
     padding: var(--spacing-sm) var(--spacing-lg);
-    background: var(--bg-secondary);
+    background: var(--noir-surface);
     border-top: 1px solid var(--border-color);
     overflow-x: auto;
   }
 
   .artifacts-label {
     font-size: var(--font-size-sm);
-    color: var(--bleu-bussigny);
+    color: var(--cyber-green);
     font-weight: 600;
+    font-family: var(--font-mono);
     flex-shrink: 0;
     padding: 4px 12px;
-    background: rgba(54, 96, 146, 0.1);
-    border-radius: 8px;
+    background: var(--cyber-green-glow);
+    border: 1px solid var(--cyber-green);
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
   }
 
   .artifacts-list {
@@ -1181,9 +1384,9 @@
     align-items: center;
     gap: var(--spacing-sm);
     padding: 8px 14px;
-    background: white;
-    border: 2px solid var(--border-color);
-    border-radius: 12px;
+    background: var(--noir-card);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
     cursor: pointer;
     transition: all var(--transition-fast);
     white-space: nowrap;
@@ -1191,51 +1394,53 @@
   }
 
   .artifact-chip:hover {
-    border-color: var(--bleu-bussigny);
-    background: rgba(54, 96, 146, 0.05);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-color: var(--cyber-green);
+    background: var(--noir-elevated);
+    box-shadow: 0 0 15px var(--cyber-green-glow);
   }
 
   .artifact-chip.active {
-    background: var(--bleu-bussigny);
-    color: white;
-    border-color: var(--bleu-bussigny);
+    background: var(--cyber-green);
+    color: var(--noir-profond);
+    border-color: var(--cyber-green);
+    box-shadow: 0 0 20px var(--cyber-green-glow);
   }
 
   .artifact-chip.streaming {
-    border-color: var(--bleu-bussigny);
-    animation: pulse 1.5s infinite;
+    border-color: var(--accent-cyan);
+    animation: pulse-cyber 1.5s infinite;
   }
 
-  @keyframes pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(54, 96, 146, 0.4); }
-    50% { box-shadow: 0 0 0 6px rgba(54, 96, 146, 0); }
+  @keyframes pulse-cyber {
+    0%, 100% { box-shadow: 0 0 0 0 var(--cyber-green-glow); }
+    50% { box-shadow: 0 0 15px var(--cyber-green-glow); }
   }
 
   .chip-icon-wrapper {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    background: var(--bg-secondary);
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    background: var(--noir-elevated);
+    border: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
   }
 
-  .chip-icon-wrapper.sql { background: #e3f2fd; color: #1565c0; }
-  .chip-icon-wrapper.python { background: #fff3e0; color: #e65100; }
-  .chip-icon-wrapper.json { background: #f3e5f5; color: #7b1fa2; }
+  .chip-icon-wrapper.sql { background: var(--info-glow); color: var(--accent-cyan); border-color: var(--accent-cyan); }
+  .chip-icon-wrapper.python { background: var(--warning-glow); color: var(--warning); border-color: var(--warning); }
+  .chip-icon-wrapper.json { background: rgba(168, 85, 247, 0.2); color: var(--accent-purple); border-color: var(--accent-purple); }
 
   .artifact-chip.active .chip-icon-wrapper {
-    background: rgba(255,255,255,0.2);
-    color: white;
+    background: rgba(0,0,0,0.2);
+    color: var(--noir-profond);
+    border-color: rgba(0,0,0,0.3);
   }
 
   .chip-svg {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
   }
 
   .chip-text {
@@ -1246,10 +1451,11 @@
   }
 
   .chip-lang {
-    font-size: 10px;
-    font-weight: 600;
+    font-size: 9px;
+    font-weight: 700;
+    font-family: var(--font-mono);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
     opacity: 0.7;
   }
 
@@ -1264,21 +1470,21 @@
   .input-container {
     padding: var(--spacing-md) var(--spacing-lg);
     border-top: 1px solid var(--border-color);
-    background: white;
+    background: var(--noir-surface);
   }
 
   .input-wrapper {
     display: flex;
     gap: var(--spacing-sm);
-    background: var(--bg-secondary);
+    background: var(--noir-card);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     padding: var(--spacing-sm);
   }
 
   .input-wrapper:focus-within {
-    border-color: var(--bleu-bussigny);
-    box-shadow: 0 0 0 3px rgba(54, 96, 146, 0.1);
+    border-color: var(--cyber-green);
+    box-shadow: 0 0 15px var(--cyber-green-glow);
   }
 
   .input-wrapper textarea {
@@ -1289,9 +1495,14 @@
     padding: var(--spacing-sm);
     border: none;
     background: transparent;
-    font-family: inherit;
+    font-family: var(--font-mono);
     font-size: var(--font-size-md);
+    color: var(--text-primary);
     outline: none;
+  }
+
+  .input-wrapper textarea::placeholder {
+    color: var(--text-muted);
   }
 
   .input-wrapper textarea:disabled {
@@ -1302,8 +1513,8 @@
     width: 40px;
     height: 40px;
     border: none;
-    background: var(--bleu-bussigny);
-    color: white;
+    background: var(--cyber-green);
+    color: var(--noir-profond);
     border-radius: var(--border-radius-sm);
     cursor: pointer;
     display: flex;
@@ -1311,15 +1522,20 @@
     justify-content: center;
     transition: all var(--transition-fast);
     flex-shrink: 0;
+    box-shadow: 0 0 15px var(--cyber-green-glow);
   }
 
   .send-btn:hover:not(:disabled) {
-    background: var(--bleu-bussigny-dark);
+    background: var(--cyber-green-light);
+    box-shadow: 0 0 25px var(--cyber-green-glow);
+    transform: scale(1.05);
   }
 
   .send-btn:disabled {
-    background: var(--gris-clair);
+    background: var(--gris-cyber);
+    color: var(--text-muted);
     cursor: not-allowed;
+    box-shadow: none;
   }
 
   .stop-btn {
@@ -1339,13 +1555,13 @@
   }
 
   .stop-btn:hover {
-    background: #c0392b;
+    background: var(--error-dark);
     transform: scale(1.05);
   }
 
   @keyframes pulse-stop {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); }
-    50% { box-shadow: 0 0 0 6px rgba(231, 76, 60, 0); }
+    0%, 100% { box-shadow: 0 0 0 0 var(--error-glow); }
+    50% { box-shadow: 0 0 15px var(--error-glow); }
   }
 
   .input-footer {
@@ -1358,17 +1574,19 @@
   .model-info {
     font-size: var(--font-size-xs);
     color: var(--text-muted);
+    font-family: var(--font-mono);
   }
 
   .queue-info {
     font-size: var(--font-size-xs);
-    color: var(--bleu-bussigny);
+    color: var(--cyber-green);
     font-weight: 500;
+    font-family: var(--font-mono);
   }
 
   /* File d'attente des prompts */
   .prompt-queue {
-    background: var(--bg-secondary);
+    background: var(--noir-card);
     border-top: 1px solid var(--border-color);
     padding: var(--spacing-sm) var(--spacing-lg);
   }
@@ -1380,7 +1598,10 @@
   .queue-label {
     font-size: var(--font-size-sm);
     font-weight: 600;
-    color: var(--bleu-bussigny);
+    font-family: var(--font-mono);
+    color: var(--accent-cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   .queue-items {
@@ -1394,10 +1615,10 @@
     align-items: center;
     gap: var(--spacing-sm);
     padding: var(--spacing-sm);
-    background: white;
+    background: var(--noir-elevated);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-sm);
-    border-left: 3px solid var(--bleu-bussigny);
+    border-left: 3px solid var(--accent-cyan);
   }
 
   .queue-index {
@@ -1406,11 +1627,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--bleu-bussigny);
-    color: white;
-    border-radius: 50%;
+    background: var(--accent-cyan);
+    color: var(--noir-profond);
+    border-radius: 4px;
     font-size: var(--font-size-xs);
-    font-weight: 600;
+    font-weight: 700;
+    font-family: var(--font-mono);
     flex-shrink: 0;
   }
 
@@ -1426,10 +1648,12 @@
   .queue-edit-input {
     flex: 1;
     padding: var(--spacing-xs);
-    border: 1px solid var(--bleu-bussigny);
+    border: 1px solid var(--accent-cyan);
     border-radius: var(--border-radius-sm);
-    font-family: inherit;
+    font-family: var(--font-mono);
     font-size: var(--font-size-sm);
+    background: var(--noir-card);
+    color: var(--text-primary);
     resize: none;
   }
 
@@ -1441,8 +1665,8 @@
   .queue-btn {
     width: 28px;
     height: 28px;
-    border: none;
-    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    background: var(--noir-card);
     color: var(--text-secondary);
     border-radius: var(--border-radius-sm);
     cursor: pointer;
@@ -1453,31 +1677,95 @@
   }
 
   .queue-btn:hover {
-    background: var(--border-color);
+    background: var(--noir-elevated);
   }
 
   .queue-btn.edit:hover {
-    color: var(--bleu-bussigny);
+    color: var(--accent-cyan);
+    border-color: var(--accent-cyan);
   }
 
   .queue-btn.delete:hover {
-    background: var(--error-light);
+    background: var(--error-glow);
     color: var(--error);
+    border-color: var(--error);
   }
 
   .queue-btn.save {
-    background: var(--success-light);
+    background: var(--success-glow);
     color: var(--success);
+    border-color: var(--success);
   }
 
   .queue-btn.save:hover {
     background: var(--success);
-    color: white;
+    color: var(--noir-profond);
   }
 
   .queue-btn.cancel:hover {
-    background: var(--error-light);
+    background: var(--error-glow);
     color: var(--error);
+    border-color: var(--error);
+  }
+
+  /* AI Info Bar (Model selection + Agents) */
+  .ai-info-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-xs) var(--spacing-md);
+    margin-left: 48px;
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .model-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .model-info.simple {
+    background: rgba(0, 200, 150, 0.15);
+    color: #00c896;
+  }
+
+  .model-info.complex {
+    background: rgba(100, 150, 255, 0.15);
+    color: #6496ff;
+  }
+
+  .model-info.critical {
+    background: rgba(255, 150, 50, 0.15);
+    color: #ff9632;
+  }
+
+  .info-icon {
+    display: flex;
+    align-items: center;
+  }
+
+  .info-label {
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .agents-info {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .agent-badge {
+    padding: 2px 8px;
+    background: rgba(150, 100, 255, 0.15);
+    color: #9664ff;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
   }
 
   /* Tool Activities */
@@ -1494,16 +1782,17 @@
     align-items: center;
     gap: var(--spacing-sm);
     padding: var(--spacing-xs) var(--spacing-sm);
-    background: var(--bg-secondary);
+    background: var(--noir-card);
+    border: 1px solid var(--border-color);
     border-radius: var(--border-radius-sm);
     font-size: var(--font-size-sm);
-    border-left: 3px solid var(--gris-clair);
+    border-left: 3px solid var(--gris-light);
     transition: all var(--transition-fast);
   }
 
   .tool-activity.running {
-    border-left-color: var(--bleu-bussigny);
-    background: rgba(54, 96, 146, 0.05);
+    border-left-color: var(--accent-cyan);
+    background: var(--info-glow);
   }
 
   .tool-activity.done {
@@ -1527,8 +1816,8 @@
   .spinner {
     width: 14px;
     height: 14px;
-    border: 2px solid var(--gris-clair);
-    border-top-color: var(--bleu-bussigny);
+    border: 2px solid var(--gris-cyber);
+    border-top-color: var(--accent-cyan);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
@@ -1547,6 +1836,7 @@
   .tool-name {
     font-weight: 500;
     color: var(--text-primary);
+    font-family: var(--font-mono);
   }
 
   .tool-input {

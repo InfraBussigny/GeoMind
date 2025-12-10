@@ -79,6 +79,7 @@ scripts/
 - `/recap` - Résume le contexte et les travaux en cours
 - `/erreur <description>` - Documente une erreur/bug rencontré
 - `/save [message]` - Commit et push les modifications sur GitHub
+- `/checkpoint` - **SAUVEGARDE COMPLÈTE** : mémoire compressée + Git commit/push
 
 ## Fichiers de mémoire
 | Fichier | Contenu |
@@ -87,3 +88,46 @@ scripts/
 | `memory/personality.md` | Évolution de mes compétences |
 | `memory/sessions.md` | Historique des travaux et solutions |
 | `memory/corrections.md` | Bugs rencontrés et corrections |
+| `memory/checkpoint.md` | **Points de sauvegarde compressés** |
+
+## Système de Checkpoints
+
+### Format compact (sans perte)
+```
+CP-[YYYYMMDD-HHMM]
+S:[session]|P:[phase]|T:[theme]
+F:[fichiers]|W:[work]|N:[next]|X:[extra]
+```
+
+### Sauvegarde automatique
+- **Manuelle** : `/checkpoint` à tout moment
+- **Auto** : Toutes les 30 min de travail actif OU après chaque phase majeure
+- **Avant risque** : Avant toute opération potentiellement destructrice
+
+### Récupération
+Au démarrage, si crash précédent détecté :
+1. Lire `memory/checkpoint.md` (dernier CP-*)
+2. Restaurer le contexte depuis le format compact
+3. Continuer le travail en cours (W) ou passer au suivant (N)
+
+## Méthodologie de travail
+
+### Sub-agents spécialisés (utiliser Task tool)
+Pour optimiser les réponses et gérer le contexte, utiliser des agents spécialisés :
+
+| Agent | Usage | Quand l'utiliser |
+|-------|-------|------------------|
+| **Explore** | Recherche codebase | Comprendre structure, trouver fichiers, analyser patterns |
+| **Plan** | Planification | Tâches complexes, multi-fichiers, architecture |
+| **general-purpose** | Recherche approfondie | Questions ouvertes, exploration multi-sources |
+
+### Workflow recommandé
+1. **Tâche simple** → Exécution directe
+2. **Tâche moyenne** → Explore d'abord si contexte manquant
+3. **Tâche complexe** → Plan → validation Marc → exécution
+4. **Incertitude** → Poser 1-2 questions MAX, puis proposer
+
+### Gestion du contexte
+- **Compression proactive** : Résumer les longs outputs avant de continuer
+- **Checkpoint régulier** : Sauvegarder l'état avant que le contexte sature
+- **Délégation** : Utiliser des sub-agents pour les recherches lourdes
