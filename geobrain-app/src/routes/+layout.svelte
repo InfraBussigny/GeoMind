@@ -5,6 +5,13 @@
   import GlitchEngine from '$lib/components/GlitchEngine.svelte';
   import { theme, appMode } from '$lib/stores/app';
   import { browser } from '$app/environment';
+  import { onMount } from 'svelte';
+  import { initializeMemory } from '$lib/services/memory';
+
+  // Initialiser le système de mémoire au montage
+  onMount(() => {
+    initializeMemory();
+  });
 
   let { children } = $props();
 
@@ -16,14 +23,15 @@
   });
 
   // Synchronisation automatique : chaque mode a son thème associé
-  // standard → light, expert → dark, god → god
+  // standard → light, expert → dark, god → god, bfsa → bfsa
   $effect(() => {
     if (!browser) return;
 
     const modeToTheme = {
       standard: 'light',
       expert: 'dark',
-      god: 'god'
+      god: 'god',
+      bfsa: 'bfsa'
     } as const;
 
     const expectedTheme = modeToTheme[$appMode];
@@ -36,7 +44,7 @@
 </script>
 
 <svelte:head>
-  <title>GeoBrain - Bussigny SIT</title>
+  <title>{$appMode === 'bfsa' ? 'GeoBFSA - Nyon' : 'GeoBrain - Bussigny SIT'}</title>
 </svelte:head>
 
 <!-- Moteur de glitch pour le God Mode -->
@@ -48,7 +56,7 @@
     <main class="main-content">
       {@render children()}
     </main>
-    <StatusBar currentProject="GeoBrain Bussigny" />
+    <StatusBar currentProject={$appMode === 'bfsa' ? 'GeoBFSA Nyon' : 'GeoBrain Bussigny'} />
   </div>
 </div>
 

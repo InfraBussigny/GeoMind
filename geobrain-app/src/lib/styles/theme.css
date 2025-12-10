@@ -304,6 +304,233 @@
 }
 
 /* ========================================
+   THEME BFSA - Bovard & Fritsché SA
+   Style corporate professionnel - https://bfing.ch/
+   Blanc/Gris/Rouge-Bordeaux/Bleu
+   ======================================== */
+[data-theme="bfsa"] {
+  /* Couleurs Bovard & Fritsché */
+  --bfsa-red: #e30613;
+  --bfsa-red-dark: #b8050f;
+  --bfsa-red-light: #ff3040;
+  --bfsa-blue: #1863DC;
+  --bfsa-blue-dark: #1250b0;
+  --bfsa-gray-dark: #212121;
+  --bfsa-gray-medium: #4e4b66;
+  --bfsa-gray-light: #D0D5D2;
+
+  /* Primary = Rouge BFSA */
+  --primary: var(--bfsa-red);
+  --primary-dark: var(--bfsa-red-dark);
+  --primary-light: var(--bfsa-red-light);
+  --primary-glow: rgba(227, 6, 19, 0.25);
+
+  /* Accents */
+  --accent-cyan: var(--bfsa-blue);
+  --accent-purple: #6b5b95;
+  --accent-pink: var(--bfsa-red);
+  --accent-orange: #ea580c;
+
+  /* Fonds - Tons clairs professionnels */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-tertiary: #ffffff;
+  --bg-sidebar: #f8f9fa;
+  --bg-hover: #eef0f2;
+  --bg-active: #e1e5e9;
+
+  /* Texte - Gris foncé professionnel */
+  --text-primary: var(--bfsa-gray-dark);
+  --text-secondary: var(--bfsa-gray-medium);
+  --text-muted: #7a7a8a;
+  --text-on-dark: #ffffff;
+  --text-on-primary: #ffffff;
+  --text-accent: var(--bfsa-red);
+  --text-bright: #000000;
+  --text-label: #64748b;
+
+  /* Bordures */
+  --border-color: var(--bfsa-gray-light);
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-focus: var(--bfsa-red);
+
+  /* Ombres douces */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.12);
+  --shadow-glow: 0 0 0 3px var(--primary-glow);
+  --shadow-glow-sm: 0 0 0 2px var(--primary-glow);
+
+  /* Couleurs fonctionnelles */
+  --success: #16a34a;
+  --success-dark: #15803d;
+  --success-glow: rgba(22, 163, 74, 0.2);
+  --success-light: rgba(22, 163, 74, 0.1);
+  --warning: #d97706;
+  --warning-dark: #b45309;
+  --warning-glow: rgba(217, 119, 6, 0.2);
+  --warning-light: rgba(217, 119, 6, 0.1);
+  --error: var(--bfsa-red);
+  --error-dark: var(--bfsa-red-dark);
+  --error-glow: rgba(227, 6, 19, 0.2);
+  --error-light: rgba(227, 6, 19, 0.1);
+  --info: var(--bfsa-blue);
+  --info-dark: var(--bfsa-blue-dark);
+  --info-glow: rgba(24, 99, 220, 0.2);
+  --info-light: rgba(24, 99, 220, 0.1);
+
+  /* Legacy aliases pour compatibilité */
+  --cyber-green: var(--bfsa-red);
+  --cyber-green-dark: var(--bfsa-red-dark);
+  --cyber-green-light: var(--bfsa-red-light);
+  --cyber-green-glow: var(--primary-glow);
+  --noir-profond: var(--bg-primary);
+  --noir-surface: var(--bg-secondary);
+  --noir-card: var(--bg-tertiary);
+  --noir-elevated: var(--bg-hover);
+  --gris-cyber: var(--border-color);
+  --gris-medium: #b0b0b8;
+  --gris-light: #c8c8d0;
+  --gris-muted: #909098;
+  --border-glow: var(--bfsa-red);
+
+  /* Police sans-serif professionnelle */
+  --font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ========================================
+   BFSA MODE - Styles spécifiques
+   ======================================== */
+
+/* Sidebar BFSA */
+[data-theme="bfsa"] .sidebar {
+  border-right: 1px solid var(--bfsa-gray-light);
+  background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+/* Logo avec effet rouge */
+[data-theme="bfsa"] .logo-img {
+  filter: drop-shadow(0 2px 4px rgba(227, 6, 19, 0.2));
+}
+
+/* Subtitle BFSA */
+[data-theme="bfsa"] .logo-subtitle {
+  color: var(--bfsa-gray-medium);
+  font-weight: 500;
+}
+
+/* Nav items actifs */
+[data-theme="bfsa"] .nav-item.active {
+  background: linear-gradient(135deg, rgba(227, 6, 19, 0.08), rgba(24, 99, 220, 0.05));
+  border-color: var(--bfsa-red);
+  box-shadow: 0 2px 8px rgba(227, 6, 19, 0.15);
+}
+
+[data-theme="bfsa"] .nav-item.active .nav-icon-wrapper {
+  background: linear-gradient(135deg, var(--bfsa-red), var(--bfsa-red-dark));
+  border-color: var(--bfsa-red);
+}
+
+[data-theme="bfsa"] .nav-item.active .nav-label {
+  color: var(--bfsa-red);
+  font-weight: 600;
+}
+
+[data-theme="bfsa"] .active-indicator {
+  background: var(--bfsa-red);
+  box-shadow: 0 0 8px rgba(227, 6, 19, 0.4);
+}
+
+/* Badge BFSA mode */
+[data-theme="bfsa"] .mode-badge.bfsa {
+  background: linear-gradient(135deg, var(--bfsa-red), var(--bfsa-blue)) !important;
+  color: white !important;
+  box-shadow: 0 2px 8px rgba(227, 6, 19, 0.3);
+}
+
+/* Selection text */
+[data-theme="bfsa"] ::selection {
+  background: var(--bfsa-red);
+  color: white;
+}
+
+/* Scrollbar BFSA */
+[data-theme="bfsa"] ::-webkit-scrollbar-thumb {
+  background: var(--bfsa-gray-light);
+  border-radius: 4px;
+}
+
+[data-theme="bfsa"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--bfsa-red);
+}
+
+/* Boutons BFSA */
+[data-theme="bfsa"] .btn-primary {
+  background: linear-gradient(135deg, var(--bfsa-red), var(--bfsa-red-dark));
+  border-color: var(--bfsa-red);
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(227, 6, 19, 0.25);
+}
+
+[data-theme="bfsa"] .btn-primary:hover {
+  background: linear-gradient(135deg, var(--bfsa-red-dark), var(--bfsa-red));
+  box-shadow: 0 4px 12px rgba(227, 6, 19, 0.35);
+  transform: translateY(-1px);
+}
+
+/* Bouton secondaire BFSA (bleu) */
+[data-theme="bfsa"] .btn-secondary {
+  background: white;
+  color: var(--bfsa-blue);
+  border: 1px solid var(--bfsa-blue);
+}
+
+[data-theme="bfsa"] .btn-secondary:hover {
+  background: var(--bfsa-blue);
+  color: white;
+}
+
+/* Inputs focus BFSA */
+[data-theme="bfsa"] input:focus,
+[data-theme="bfsa"] textarea:focus {
+  border-color: var(--bfsa-blue);
+  box-shadow: 0 0 0 3px rgba(24, 99, 220, 0.15);
+}
+
+/* Messages assistant BFSA */
+[data-theme="bfsa"] .message-assistant {
+  border-left: 3px solid var(--bfsa-red);
+  background: #fafafa;
+}
+
+/* Cards BFSA */
+[data-theme="bfsa"] .card {
+  border: 1px solid var(--bfsa-gray-light);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="bfsa"] .card:hover {
+  border-color: var(--bfsa-red);
+  box-shadow: 0 4px 16px rgba(227, 6, 19, 0.1);
+}
+
+/* Divider BFSA */
+[data-theme="bfsa"] .divider-glow {
+  background: linear-gradient(90deg, transparent, var(--bfsa-red), var(--bfsa-blue), transparent);
+  height: 2px;
+}
+
+/* Links BFSA */
+[data-theme="bfsa"] a {
+  color: var(--bfsa-blue);
+}
+
+[data-theme="bfsa"] a:hover {
+  color: var(--bfsa-red);
+}
+
+/* ========================================
    GOD MODE - Effets glitch CSS de base
    (Les effets aléatoires sont gérés par JS)
    ======================================== */

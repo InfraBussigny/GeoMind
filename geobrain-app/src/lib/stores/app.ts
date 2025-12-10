@@ -10,8 +10,8 @@ export const sidebarCollapsed = writable(false);
 // THEME & MODE SYSTEM
 // ============================================
 
-export type ThemeMode = 'light' | 'dark' | 'god';
-export type AppMode = 'standard' | 'expert' | 'god';
+export type ThemeMode = 'light' | 'dark' | 'god' | 'bfsa';
+export type AppMode = 'standard' | 'expert' | 'god' | 'bfsa';
 
 // Définition des permissions par mode
 export interface ModePermissions {
@@ -84,6 +84,30 @@ export const MODE_PERMISSIONS: Record<AppMode, ModePermissions> = {
     canUseGeoportal: true,
     dangerousCommandsNeedConfirm: false,  // Full power
     allowedTools: ['*']  // Tous les outils
+  },
+  bfsa: {
+    // Mode BFSA = mêmes permissions que expert (mode professionnel)
+    canRead: true,
+    canWrite: true,
+    sandboxOnly: false,
+    canExecute: true,
+    canAccessSecrets: false,
+    canQueryDB: true,
+    canModifyDB: true,
+    canDeleteFiles: true,
+    canUseGeoportal: true,
+    dangerousCommandsNeedConfirm: true,
+    allowedTools: [
+      'read_file',
+      'list_directory',
+      'write_file',
+      'create_directory',
+      'execute_command',
+      'web_search',
+      'web_fetch',
+      'sql_query',
+      'sql_execute'
+    ]
   }
 };
 
@@ -177,6 +201,10 @@ function createAppModeStore() {
       savePreference('geobrain-mode', 'god');
       set('god');
     },
+    activateBfsa: () => {
+      savePreference('geobrain-mode', 'bfsa');
+      set('bfsa');
+    },
     deactivateToStandard: () => {
       savePreference('geobrain-mode', 'standard');
       set('standard');
@@ -198,8 +226,8 @@ export const appMode = createAppModeStore();
 
 // Derived: liste des modules visibles selon le mode
 export const visibleModules = derived(appMode, ($mode) => {
-  if ($mode === 'expert' || $mode === 'god') {
-    // Expert et God: tous les modules
+  if ($mode === 'expert' || $mode === 'god' || $mode === 'bfsa') {
+    // Expert, God et BFSA: tous les modules
     return ['chat', 'canvas', 'editor', 'docgen', 'connections', 'settings'] as ModuleType[];
   }
   // Mode standard: seulement Assistant et Cartes
@@ -264,10 +292,37 @@ export const GOD_DEACTIVATION_PHRASES = [
   'su exit'
 ];
 
+// Mode BFSA - Bovard & Fritsché SA (thème corporate)
+export const BFSA_ACTIVATION_PHRASES = [
+  'mode bfsa',
+  'bfsa mode',
+  'bovard',
+  'fritsche',
+  'fritsché',
+  'bovard et fritsche',
+  'bovard & fritsche',
+  'bfing',
+  'mode géomètre',
+  'mode geometre',
+  'nyon',
+  'route de saint-cergue'
+];
+
+export const BFSA_DEACTIVATION_PHRASES = [
+  'exit bfsa',
+  'quit bfsa',
+  'sortir bfsa',
+  'quitter bfsa',
+  'mode expert',
+  'retour expert',
+  'back to expert'
+];
+
 // Type de changement de mode détecté
 export type ModeChangeAction =
   | 'activate_expert'
   | 'activate_god'
+  | 'activate_bfsa'
   | 'deactivate_to_standard'
   | 'deactivate_to_expert'
   | null;
@@ -284,7 +339,22 @@ export function checkModeActivation(message: string, currentMode: AppMode): Mode
     return null; // Déjà en god mode
   }
 
-  // 2. Vérifier désactivation depuis God mode
+  // 2. Vérifier mode BFSA
+  if (BFSA_ACTIVATION_PHRASES.some(phrase => normalized.includes(phrase))) {
+    if (currentMode !== 'bfsa') {
+      return 'activate_bfsa';
+    }
+    return null; // Déjà en mode BFSA
+  }
+
+  // 3. Vérifier désactivation depuis BFSA
+  if (currentMode === 'bfsa') {
+    if (BFSA_DEACTIVATION_PHRASES.some(phrase => normalized.includes(phrase))) {
+      return 'deactivate_to_expert';
+    }
+  }
+
+  // 4. Vérifier désactivation depuis God mode
   if (currentMode === 'god') {
     if (GOD_DEACTIVATION_PHRASES.some(phrase => normalized.includes(phrase))) {
       return 'deactivate_to_expert';
@@ -294,15 +364,15 @@ export function checkModeActivation(message: string, currentMode: AppMode): Mode
     }
   }
 
-  // 3. Vérifier activation Expert
+  // 5. Vérifier activation Expert
   if (EXPERT_ACTIVATION_PHRASES.some(phrase => normalized.includes(phrase))) {
     if (currentMode === 'standard') {
       return 'activate_expert';
     }
-    return null; // Déjà en expert ou god
+    return null; // Déjà en expert ou god ou bfsa
   }
 
-  // 4. Vérifier désactivation Expert → Standard
+  // 6. Vérifier désactivation Expert → Standard
   if (EXPERT_DEACTIVATION_PHRASES.some(phrase => normalized.includes(phrase))) {
     if (currentMode === 'expert') {
       return 'deactivate_to_standard';

@@ -117,13 +117,14 @@ Référence : `docs/GeoBrain_Specifications_v2.pdf`
 | 1. Fondations | Structure app, Assistant (chat+canevas), Gestion projets | ✅ Fait |
 | 2. IA avancée | Sélection auto modèle, Sub-agents, Optimisation coûts | ✅ Fait |
 | 3. UI/UX | Thème clair/sombre, Mode Standard/Expert, Easter egg activation | ✅ Fait |
-| 4. Canevas pro | Édition directe, Streaming char-by-char, Export multi-format, Historique | ⏳ |
-| 5. Mémoire | 3 niveaux (immédiate/session/persistante), Défragmentation, Fusion auto | ⏳ |
-| 6. Productivité | Ghostwriter, Conversion fichiers, Fonctions auto-générées | ⏳ |
-| 7. Données | Accès PostgreSQL, Sources multiples, Parcours/sélection couches | ⏳ |
-| 8. Cartographie | Multi-sources, Auth Carto Ouest, QGIS, Chatbot carto | ⏳ |
-| 9. Intégrations | Explorateur fichiers, Tunnels SSH, RDP/VNC | ⏳ |
-| 10. Communications | Outlook, 3CX | ⏳ |
+| 4. Canevas pro | Édition directe, Streaming char-by-char, Export multi-format, Historique | ✅ Fait |
+| 5. Mémoire | 3 niveaux (immédiate/session/persistante), Défragmentation, Fusion auto | ✅ Fait |
+| 6. Productivité | Ghostwriter, Conversion fichiers, Fonctions auto-générées | ✅ Fait |
+| 7. Données | Accès PostgreSQL, Sources multiples, Parcours/sélection couches | ✅ Fait |
+| 8. Cartographie | Multi-sources, Auth Carto Ouest, QGIS, Chatbot carto | ✅ Fait |
+| 9. Intégrations | Explorateur fichiers, Tunnels SSH, RDP/VNC | ✅ Fait |
+| 10. Communications | Outlook, 3CX | ✅ Fait |
+| 11. Multi-IA | Gemini, Login Claude Pro, Modèles locaux (Ollama/LM Studio) | ⏳ |
 
 ### Nouvelles fonctionnalités planifiées (v2.1)
 
@@ -219,6 +220,52 @@ Affichage permanent en bas de l'interface :
 - Découverte = récompense, pas frustration
 - Documentés nulle part (vraiment secrets)
 - Fun mais professionnels
+
+#### 8. Phase 11 - Multi-IA (planifiée)
+
+##### Fournisseurs cloud
+| Fournisseur | Modèles | Authentification |
+|-------------|---------|------------------|
+| **Anthropic** | Claude 3.5 Sonnet, Claude 3 Opus, Haiku | API Key + Login Claude Pro |
+| **Google** | Gemini 1.5 Pro, Gemini 1.5 Flash | API Key Google AI Studio |
+| **OpenAI** | GPT-4o, GPT-4o-mini | API Key OpenAI |
+
+##### Login Claude Pro (abonnement)
+- OAuth avec compte claude.ai
+- Utilise les quotas de l'abonnement Pro
+- Pas de coûts API supplémentaires
+- Avantage : accès à Claude 3.5 Sonnet sans limites API
+
+##### Modèles locaux (offline)
+| Solution | Avantages | Modèles recommandés |
+|----------|-----------|---------------------|
+| **Ollama** | Simple, CLI, multi-OS | Llama 3.1 8B/70B, Mistral, CodeLlama |
+| **LM Studio** | GUI, téléchargement facile | Tous formats GGUF |
+| **LocalAI** | API compatible OpenAI | Drop-in replacement |
+
+##### Architecture multi-provider
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    GeoBrain AI Router                       │
+├─────────────────────────────────────────────────────────────┤
+│  Sélection automatique selon:                               │
+│  - Type de tâche (code, SQL, texte, analyse)               │
+│  - Coût (gratuit local → API payante)                      │
+│  - Disponibilité (fallback si provider down)               │
+│  - Préférence utilisateur                                   │
+└─────────────────────────────────────────────────────────────┘
+         │              │              │              │
+    ┌────▼────┐    ┌────▼────┐    ┌────▼────┐    ┌────▼────┐
+    │ Claude  │    │ Gemini  │    │  GPT-4  │    │ Ollama  │
+    │  API    │    │   API   │    │   API   │    │ (local) │
+    └─────────┘    └─────────┘    └─────────┘    └─────────┘
+```
+
+##### Workflow recommandé
+1. **Tâches simples/rapides** → Modèle local (Llama 8B) - gratuit
+2. **Code/SQL** → Claude Sonnet ou GPT-4o - meilleur pour code
+3. **Analyse longue** → Gemini 1.5 Pro (1M tokens context)
+4. **Tâches critiques** → Claude Opus ou GPT-4o
 
 ### État actuel (10 décembre 2025)
 

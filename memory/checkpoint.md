@@ -4,6 +4,63 @@ Format: `CP-[DATE-HEURE]` | S=Session | P=Phase | T=Thème | F=Fichiers | W=Work
 
 ---
 
+## CP-20251210-2230
+S:12-final|P:phases-9-10-complete|T:SSH+Communications
+F:ssh.ts,SSHTerminal.svelte,communications.ts,CommunicationsPanel.svelte
+W:Phase9 SSH complet(stores+tunnels+SFTP+terminal)+Phase10 Communications(Outlook+3CX+notifications)
+N:Phase11 Multi-IA (Gemini/Claude Pro/Ollama)
+X:10/11 phases terminées | Serveurs 3001+5177
+
+### Session 12 (fin) - Phases 9-10 complètes
+
+**Phase 9 - Intégrations SSH** (`src/lib/services/ssh.ts` ~400 lignes):
+- Types: SSHConnection, SSHTunnel (local/remote/dynamic), SFTPEntry, TerminalSession
+- sshStore + tunnelsStore avec persistence localStorage
+- API functions: testSSHConnection(), connectSSH(), disconnectSSH(), executeSSHCommand()
+- Tunnels: startTunnel(), stopTunnel()
+- SFTP: sftpList(), sftpDownload(), sftpUpload(), sftpDelete()
+- PREDEFINED_CONNECTIONS: SRV-FME, SRV-SAI, Exoscale
+- TUNNEL_TEMPLATES: PostgreSQL (15432→5432), Oracle (11521→1521), QGIS Server
+
+**SSHTerminal.svelte** (~550 lignes):
+- Sidebar: Liste connexions avec status dot
+- 3 onglets: Terminal / SFTP / Tunnels
+- Terminal: historique commandes (↑↓), prompt $, output coloré (cmd/output/error)
+- SFTP: navigateur fichiers, parent, rafraîchir
+- Tunnels: formulaire création, templates, start/stop
+
+**Phase 10 - Communications** (`src/lib/services/communications.ts` ~500 lignes):
+- Types: EmailMessage, CalendarEvent, CallRecord, ActiveCall, PhoneExtension
+- outlookStore: OAuth config, user, unreadCount
+- threeCXStore: config, extension, activeCalls, missedCalls
+- notificationsStore: add/markRead/clear
+- API Outlook: getEmails(), sendEmail(), markEmailRead(), getCalendarEvents()
+- API 3CX: connect3CX(), makeCall(), endCall(), holdCall(), transferCall(), getCallHistory()
+- Polling 60s pour unread/missed counts
+- Utils: formatPhoneNumber() (Swiss), formatCallDuration(), formatEmailDate()
+
+**CommunicationsPanel.svelte** (~700 lignes):
+- 4 onglets: Emails / Calendrier / Téléphone / Notifications
+- Emails: liste, preview, detail, compose modal
+- Calendrier: liste événements 7 jours
+- Téléphone: dialer, appels actifs, historique, status extension
+- Notifications: liste, marquer lu, effacer
+
+### Roadmap complète
+| Phase | État |
+|-------|------|
+| 1-3 | ✅ Fondations, IA, UI/UX |
+| 4 | ✅ Canevas Pro (hljs, historique, export) |
+| 5 | ✅ Mémoire 3 niveaux + defrag |
+| 6 | ✅ Ghostwriter + Converter + FunctionsLibrary |
+| 7 | ✅ Données (SchemaBrowser, QueryBuilder) |
+| 8 | ✅ Cartographie (mapSources, LayerPanel) |
+| 9 | ✅ Intégrations SSH |
+| 10 | ✅ Communications (Outlook, 3CX) |
+| 11 | ⏳ Multi-IA (Gemini/Claude Pro/Ollama) |
+
+---
+
 ## CP-20251210-2050
 S:12-suite|P:fondations-complete|T:Robustesse-backend+fixes
 F:server/index.js(global-error-handlers),connections.js(pg-error-handler),sessions.md

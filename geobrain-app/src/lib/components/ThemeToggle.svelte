@@ -6,10 +6,8 @@
     const currentTheme = $theme;
     const currentMode = $appMode;
 
-    // En God mode, on ne permet pas de quitter le thème god via le toggle
-    // (il faut sortir du god mode)
-    if (currentMode === 'god') {
-      // En god mode, le toggle bascule entre god et dark (mais reste visuellement god)
+    // En God mode ou BFSA, on ne permet pas de changer le thème via le toggle
+    if (currentMode === 'god' || currentMode === 'bfsa') {
       return;
     }
 
@@ -24,6 +22,7 @@
   // Tooltip dynamique
   function getTooltip(t: ThemeMode, m: string): string {
     if (m === 'god') return 'Thème God mode actif';
+    if (m === 'bfsa') return 'Thème BFSA actif';
     return t === 'light' ? 'Passer en mode sombre' : 'Passer en mode clair';
   }
 </script>
@@ -32,11 +31,19 @@
   class="theme-toggle"
   class:expert={$appMode === 'expert'}
   class:god={$appMode === 'god'}
+  class:bfsa={$appMode === 'bfsa'}
   onclick={toggleTheme}
   title={getTooltip($theme, $appMode)}
-  disabled={$appMode === 'god'}
+  disabled={$appMode === 'god' || $appMode === 'bfsa'}
 >
-  {#if $theme === 'god' || $appMode === 'god'}
+  {#if $appMode === 'bfsa'}
+    <!-- Icône BFSA - compas géomètre -->
+    <svg class="icon bfsa-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M12 3v18M3 12h18"/>
+      <circle cx="12" cy="12" r="3" fill="currentColor"/>
+    </svg>
+  {:else if $theme === 'god' || $appMode === 'god'}
     <!-- Icône God mode - crâne/skull stylisé -->
     <svg class="icon god-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
       <circle cx="12" cy="10" r="7"/>
@@ -132,6 +139,16 @@
   .god-icon {
     color: #FF00FF;
     animation: god-icon-glow 1.5s ease-in-out infinite;
+  }
+
+  .bfsa-icon {
+    color: #e30613;
+  }
+
+  .theme-toggle.bfsa {
+    background: linear-gradient(135deg, rgba(227, 6, 19, 0.1), rgba(24, 99, 220, 0.1));
+    border-color: #e30613;
+    cursor: not-allowed;
   }
 
   @keyframes god-icon-glow {

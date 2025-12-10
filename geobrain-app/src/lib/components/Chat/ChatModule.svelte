@@ -130,6 +130,24 @@ Bienvenue dans les coulisses, Marc.
 Interface sombre activée. On passe aux choses sérieuses.`;
         break;
 
+      case 'activate_bfsa':
+        appMode.activateBfsa();
+        responseContent = `**Mode BFSA activé**
+
+Interface Bovard & Fritsché SA.
+
+**Bureau d'ingénieurs géomètres**
+Route de Saint-Cergue 23, 1260 Nyon
+
+**Outils disponibles :**
+• Éditeur SQL, Python, FME
+• Génération de documents PDF
+• Connexions bases de données
+• Configuration système
+
+*Travaux fonciers, géométriques et génie civil.*`;
+        break;
+
       case 'deactivate_to_expert':
         appMode.deactivateToExpert();
         responseContent = `**Retour au mode avancé**

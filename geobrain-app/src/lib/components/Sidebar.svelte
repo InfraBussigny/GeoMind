@@ -38,14 +38,26 @@
   <!-- Logo section -->
   <div class="sidebar-header">
     <a href="/" class="logo-link">
-      <img
-        src="/images/Logo_GeoBrain.png"
-        alt="GeoBrain"
-        class="logo-img"
-        class:collapsed={$sidebarCollapsed}
-      />
-      {#if !$sidebarCollapsed}
-        <span class="logo-subtitle">Multitool SIT</span>
+      {#if $appMode === 'bfsa'}
+        <img
+          src="/images/logo_bfsa.png"
+          alt="GeoBFSA"
+          class="logo-img bfsa-logo"
+          class:collapsed={$sidebarCollapsed}
+        />
+        {#if !$sidebarCollapsed}
+          <span class="logo-subtitle bfsa-title">GEOBFSA</span>
+        {/if}
+      {:else}
+        <img
+          src="/images/Logo_GeoBrain.png"
+          alt="GeoBrain"
+          class="logo-img"
+          class:collapsed={$sidebarCollapsed}
+        />
+        {#if !$sidebarCollapsed}
+          <span class="logo-subtitle">Multitool SIT</span>
+        {/if}
       {/if}
     </a>
   </div>
@@ -140,6 +152,8 @@
       <ThemeToggle />
       {#if $appMode === 'god' && !$sidebarCollapsed}
         <span class="mode-badge god">GOD</span>
+      {:else if $appMode === 'bfsa' && !$sidebarCollapsed}
+        <span class="mode-badge bfsa">BFSA</span>
       {:else if $appMode === 'expert' && !$sidebarCollapsed}
         <span class="mode-badge expert">EXPERT</span>
       {/if}
@@ -247,6 +261,28 @@
     text-transform: uppercase;
     letter-spacing: 2px;
     margin-top: 4px;
+  }
+
+  /* Style spécifique BFSA */
+  .logo-img.bfsa-logo {
+    width: 80px;
+    filter: drop-shadow(0 2px 8px rgba(227, 6, 19, 0.3));
+  }
+
+  .logo-img.bfsa-logo.collapsed {
+    width: 32px;
+  }
+
+  .logo-img.bfsa-logo:hover {
+    filter: drop-shadow(0 2px 12px rgba(227, 6, 19, 0.5));
+  }
+
+  .logo-subtitle.bfsa-title {
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: var(--bfsa-red, #e30613);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   }
 
   .header-divider {
@@ -444,6 +480,15 @@
     text-shadow: none;
   }
 
+  .mode-badge.bfsa {
+    background: linear-gradient(135deg, #e30613, #1863DC);
+    color: white;
+    font-weight: bold;
+    border: 1px solid #e30613;
+    animation: pulse-badge-bfsa 2s infinite;
+    text-shadow: none;
+  }
+
   @keyframes pulse-badge-expert {
     0%, 100% { box-shadow: 0 0 0 0 var(--primary-glow); }
     50% { box-shadow: 0 0 10px var(--primary-glow); }
@@ -461,6 +506,15 @@
     66% {
       box-shadow: 0 0 10px rgba(255, 255, 0, 0.6), 0 0 20px rgba(255, 0, 255, 0.5);
       filter: hue-rotate(-30deg);
+    }
+  }
+
+  @keyframes pulse-badge-bfsa {
+    0%, 100% {
+      box-shadow: 0 0 5px rgba(227, 6, 19, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 12px rgba(227, 6, 19, 0.6), 0 0 20px rgba(24, 99, 220, 0.3);
     }
   }
 
