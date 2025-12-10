@@ -124,7 +124,7 @@ Référence : `docs/GeoBrain_Specifications_v2.pdf`
 | 8. Cartographie | Multi-sources, Auth Carto Ouest, QGIS, Chatbot carto | ✅ Fait |
 | 9. Intégrations | Explorateur fichiers, Tunnels SSH, RDP/VNC | ✅ Fait |
 | 10. Communications | Outlook, 3CX | ✅ Fait |
-| 11. Multi-IA | Gemini, Login Claude Pro, Modèles locaux (Ollama/LM Studio) | ⏳ |
+| 11. Multi-IA | Gemini, Login Claude Pro, Modèles locaux (Ollama/LM Studio) | ✅ Fait |
 
 ### Nouvelles fonctionnalités planifiées (v2.1)
 
