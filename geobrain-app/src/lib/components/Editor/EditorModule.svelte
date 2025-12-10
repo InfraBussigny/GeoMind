@@ -144,13 +144,10 @@ ORDER BY
   }
 
   // Toolbar actions
-  function formatCode() {
-    monacoRef?.format();
-  }
-
   async function saveFile() {
+    bottomCollapsed = false;
     if (!currentFilePath) {
-      consoleOutput = [...consoleOutput, '[INFO] Aucun fichier selectionne'];
+      consoleOutput = [...consoleOutput, '[INFO] Aucun fichier selectionne. Ouvrez un fichier depuis l\'explorateur d\'abord.'];
       return;
     }
 
@@ -170,50 +167,247 @@ ORDER BY
 
   async function runCode() {
     consoleOutput = [...consoleOutput, `[EXEC] Execution ${currentLanguage}...`];
+    // Ouvre le panneau output pour montrer les résultats
+    bottomCollapsed = false;
 
     try {
-      const { executeCommand } = await import('$lib/services/api');
-
       if (currentLanguage === 'sql') {
-        // For SQL, we could connect to PostGIS
-        consoleOutput = [...consoleOutput, '[INFO] Execution SQL (simulation)'];
-        // Simulate SQL results
-        sqlResults = {
-          columns: [
-            { key: 'egrid', label: 'EGRID', type: 'string' },
-            { key: 'numero', label: 'Numero', type: 'string' },
-            { key: 'surface', label: 'Surface', type: 'number' },
-            { key: 'distance', label: 'Distance (m)', type: 'number' },
-          ],
-          data: [
-            { egrid: 'CH123456789', numero: '1234', surface: 2500, distance: 45.2 },
-            { egrid: 'CH987654321', numero: '5678', surface: 1800, distance: 123.5 },
-            { egrid: 'CH456789123', numero: '9012', surface: 3200, distance: 234.8 },
-          ]
-        };
-        consoleOutput = [...consoleOutput, `[OK] 3 resultats trouves`];
+        // Exécute SQL via la connexion active
+        const { executeSQL, getActiveConnection } = await import('$lib/services/api');
+        const activeConn = await getActiveConnection();
+
+        if (!activeConn) {
+          consoleOutput = [...consoleOutput, '[ERREUR] Aucune connexion DB active. Allez dans Parametres > Connexions pour configurer.'];
+          return;
+        }
+
+        consoleOutput = [...consoleOutput, `[INFO] Connexion: ${activeConn.name}`];
+        const result = await executeSQL(activeConn.id, editorValue);
+
+        if (result.success && result.rows) {
+          // Convertir en format tableau
+          const columns = result.fields?.map((f: any) => ({
+            key: f.name,
+            label: f.name,
+            type: f.dataTypeID === 23 ? 'number' : 'string'
+          })) || [];
+
+          sqlResults = { columns, data: result.rows };
+          consoleOutput = [...consoleOutput, `[OK] ${result.rows.length} resultat(s) trouve(s)`];
+        } else {
+          consoleOutput = [...consoleOutput, `[ERREUR] ${result.error || 'Erreur inconnue'}`];
+        }
       } else if (currentLanguage === 'python') {
-        // Execute Python script
+        const { executeCommand } = await import('$lib/services/api');
         const result = await executeCommand(`python -c "${editorValue.replace(/"/g, '\\"').replace(/\n/g, ';')}"`);
         if (result.success) {
           consoleOutput = [...consoleOutput, result.output || '[OK] Script execute'];
         } else {
           consoleOutput = [...consoleOutput, `[ERREUR] ${result.error}`];
         }
+      } else if (currentLanguage === 'javascript') {
+        // Exécute JS dans le navigateur (sandbox)
+        try {
+          const fn = new Function(editorValue);
+          const result = fn();
+          consoleOutput = [...consoleOutput, `[OK] Resultat: ${JSON.stringify(result, null, 2) || 'undefined'}`];
+        } catch (e) {
+          consoleOutput = [...consoleOutput, `[ERREUR] ${e}`];
+        }
       } else {
-        consoleOutput = [...consoleOutput, `[INFO] Execution ${currentLanguage} non implementee`];
+        consoleOutput = [...consoleOutput, `[INFO] Execution ${currentLanguage} non implementee. Langages supportes: SQL, Python, JavaScript`];
       }
     } catch (e) {
       consoleOutput = [...consoleOutput, `[ERREUR] ${e}`];
     }
   }
 
+  // Templates pour chaque langage
+  const codeTemplates: Record<string, { content: string; ext: string }> = {
+    sql: {
+      content: `-- Requete SQL exemple
+-- Connexion: srv-fme / PostgreSQL
+
+SELECT
+    p.identdn,
+    p.numero,
+    p.surface_rf,
+    ST_Area(p.geometry) as surface_calc
+FROM
+    bdco.bdco_parcelle p
+WHERE
+    p.surface_rf > 1000
+ORDER BY
+    p.surface_rf DESC
+LIMIT 10;`,
+      ext: 'sql'
+    },
+    python: {
+      content: `# Script Python exemple
+# -*- coding: utf-8 -*-
+
+import os
+import json
+
+def main():
+    """Fonction principale"""
+    print("Hello GeoBrain!")
+
+    # Exemple de lecture de fichier
+    data_path = "C:/Users/zema/GeoBrain/data"
+    print(f"Dossier de donnees: {data_path}")
+
+if __name__ == "__main__":
+    main()`,
+      ext: 'py'
+    },
+    javascript: {
+      content: `// Script JavaScript exemple
+
+const config = {
+    apiUrl: 'http://localhost:3001/api',
+    timeout: 5000
+};
+
+async function fetchData(endpoint) {
+    try {
+        const response = await fetch(\`\${config.apiUrl}/\${endpoint}\`);
+        const data = await response.json();
+        console.log('Donnees recues:', data);
+        return data;
+    } catch (error) {
+        console.error('Erreur:', error);
+    }
+}
+
+// Test
+fetchData('connections');`,
+      ext: 'js'
+    },
+    typescript: {
+      content: `// Script TypeScript exemple
+
+interface Config {
+    apiUrl: string;
+    timeout: number;
+}
+
+const config: Config = {
+    apiUrl: 'http://localhost:3001/api',
+    timeout: 5000
+};
+
+async function fetchData<T>(endpoint: string): Promise<T | null> {
+    try {
+        const response = await fetch(\`\${config.apiUrl}/\${endpoint}\`);
+        return await response.json() as T;
+    } catch (error) {
+        console.error('Erreur:', error);
+        return null;
+    }
+}
+
+export { fetchData, config };`,
+      ext: 'ts'
+    },
+    json: {
+      content: `{
+    "nom": "Exemple",
+    "type": "configuration",
+    "parametres": {
+        "actif": true,
+        "valeur": 42
+    },
+    "liste": ["item1", "item2", "item3"]
+}`,
+      ext: 'json'
+    },
+    shell: {
+      content: `#!/bin/bash
+# Script shell exemple
+
+echo "GeoBrain - Script Shell"
+
+# Variables
+DATA_DIR="C:/Users/zema/GeoBrain/data"
+BACKUP_DIR="C:/Users/zema/GeoBrain/backup"
+
+# Fonction de backup
+backup_data() {
+    echo "Backup en cours..."
+    cp -r "$DATA_DIR" "$BACKUP_DIR/$(date +%Y%m%d)"
+    echo "Backup termine"
+}
+
+# Execution
+backup_data`,
+      ext: 'sh'
+    },
+    xml: {
+      content: `<?xml version="1.0" encoding="UTF-8"?>
+<!-- Document XML exemple -->
+<configuration>
+    <settings>
+        <param name="debug" value="true"/>
+        <param name="logLevel" value="INFO"/>
+    </settings>
+    <datasources>
+        <source id="main" type="postgresql">
+            <host>srv-fme</host>
+            <port>5432</port>
+            <database>geobrain</database>
+        </source>
+    </datasources>
+</configuration>`,
+      ext: 'xml'
+    },
+    markdown: {
+      content: `# Document Markdown
+
+## Introduction
+Ceci est un exemple de document Markdown.
+
+## Liste
+- Item 1
+- Item 2
+- Item 3
+
+## Code
+\`\`\`sql
+SELECT * FROM table LIMIT 10;
+\`\`\`
+
+## Tableau
+| Colonne 1 | Colonne 2 |
+|-----------|-----------|
+| Valeur A  | Valeur B  |`,
+      ext: 'md'
+    },
+    plaintext: {
+      content: `Document texte exemple
+=====================
+
+Ecrivez votre contenu ici...`,
+      ext: 'txt'
+    }
+  };
+
   function newFile() {
+    const template = codeTemplates[currentLanguage] || codeTemplates.plaintext;
+    const newContent = template.content;
+    const fileName = `nouveau-fichier.${template.ext}`;
+
     currentFilePath = null;
-    editorValue = '';
-    currentLanguage = 'plaintext';
+    editorValue = newContent;
     isDirty = false;
-    currentFile.set('nouveau-fichier');
+    currentFile.set(fileName);
+    bottomCollapsed = false;
+
+    // Force la mise à jour de Monaco
+    if (monacoRef) {
+      monacoRef.setValue(newContent);
+    }
+    consoleOutput = [...consoleOutput, `[OK] Nouveau fichier ${currentLanguage.toUpperCase()} cree.`];
   }
 
   // Toggle panels
@@ -242,12 +436,6 @@ ORDER BY
 
       <div class="separator"></div>
 
-      <select bind:value={currentLanguage} class="language-select">
-        {#each languages as lang}
-          <option value={lang.value}>{lang.label}</option>
-        {/each}
-      </select>
-
       {#if currentFilePath}
         <span class="current-file" class:dirty={isDirty}>
           {currentFilePath.split('/').pop() || currentFilePath.split('\\').pop()}
@@ -257,25 +445,25 @@ ORDER BY
     </div>
 
     <div class="toolbar-center">
-      <button class="toolbar-btn" onclick={newFile} title="Nouveau fichier">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="12" y1="18" x2="12" y2="12"/>
-          <line x1="9" y1="15" x2="15" y2="15"/>
-        </svg>
-        Nouveau
-      </button>
+      <!-- Sélecteur de langage + bouton Nouveau côte à côte -->
+      <div class="new-file-group">
+        <select bind:value={currentLanguage} class="language-select" title="Langage">
+          {#each languages as lang}
+            <option value={lang.value}>{lang.label}</option>
+          {/each}
+        </select>
+        <button class="toolbar-btn" onclick={newFile} title="Creer un nouveau fichier avec le langage selectionne">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="12" y1="18" x2="12" y2="12"/>
+            <line x1="9" y1="15" x2="15" y2="15"/>
+          </svg>
+          Nouveau
+        </button>
+      </div>
 
-      <button class="toolbar-btn" onclick={formatCode} title="Formater le code">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="21" y1="10" x2="3" y2="10"/>
-          <line x1="21" y1="6" x2="3" y2="6"/>
-          <line x1="21" y1="14" x2="3" y2="14"/>
-          <line x1="21" y1="18" x2="3" y2="18"/>
-        </svg>
-        Formater
-      </button>
+      <div class="separator"></div>
 
       <button class="toolbar-btn" onclick={saveFile} title="Sauvegarder (Ctrl+S)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -332,8 +520,7 @@ ORDER BY
     <div class="editor-center">
       <div class="monaco-wrapper">
         {#if MonacoEditor}
-          <svelte:component
-            this={MonacoEditor}
+          <MonacoEditor
             bind:this={monacoRef}
             bind:value={editorValue}
             bind:language={currentLanguage}
@@ -426,6 +613,34 @@ ORDER BY
     width: 1px;
     height: 20px;
     background: var(--border-color);
+  }
+
+  .new-file-group {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: var(--noir-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .new-file-group .language-select {
+    border: none;
+    border-right: 1px solid var(--border-color);
+    border-radius: 0;
+    padding: 6px 10px;
+    min-width: 90px;
+  }
+
+  .new-file-group .toolbar-btn {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .new-file-group .toolbar-btn:hover {
+    background: var(--bg-hover);
   }
 
   .language-select {

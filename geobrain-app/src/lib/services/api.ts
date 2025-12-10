@@ -245,16 +245,21 @@ export async function readFile(path: string): Promise<string> {
   return data.content;
 }
 
-export async function writeFile(path: string, content: string): Promise<void> {
-  const response = await fetch(`${API_BASE}/tools/write-file`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ path, content })
-  });
+export async function writeFile(path: string, content: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await fetch(`${API_BASE}/tools/write-file`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path, content })
+    });
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Failed to write file');
+    if (!response.ok) {
+      const error = await response.json();
+      return { success: false, error: error.error || 'Failed to write file' };
+    }
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: String(e) };
   }
 }
 
@@ -270,6 +275,14 @@ export async function listDirectory(path: string): Promise<{ name: string; isDir
     throw new Error(error.error || 'Failed to list directory');
   }
 
+  return response.json();
+}
+
+export async function listDrives(): Promise<{ name: string; path: string; label: string; isDirectory: boolean }[]> {
+  const response = await fetch(`${API_BASE}/tools/list-drives`);
+  if (!response.ok) {
+    return [{ name: 'C:', path: 'C:/', label: 'Disque local', isDirectory: true }];
+  }
   return response.json();
 }
 
@@ -379,4 +392,57 @@ export async function getUsageStats(): Promise<UsageStats> {
   const response = await fetch(`${API_BASE}/usage`);
   if (!response.ok) throw new Error('Failed to get usage stats');
   return response.json();
+}
+
+// ============================================
+// DATABASE CONNECTIONS
+// ============================================
+
+export interface DBConnection {
+  id: string;
+  name: string;
+  type: string;
+  host: string;
+  port: number;
+  database: string;
+  username: string;
+  isActive?: boolean;
+}
+
+export async function getConnections(): Promise<DBConnection[]> {
+  const response = await fetch(`${API_BASE}/connections`);
+  if (!response.ok) throw new Error('Failed to fetch connections');
+  return response.json();
+}
+
+export async function getActiveConnection(): Promise<DBConnection | null> {
+  try {
+    const connections = await getConnections();
+    return connections.find(c => c.isActive) || connections[0] || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function executeSQL(connectionId: string, query: string): Promise<{
+  success: boolean;
+  rows?: any[];
+  fields?: any[];
+  error?: string;
+}> {
+  try {
+    const response = await fetch(`${API_BASE}/connections/${connectionId}/sql`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query })
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      return { success: false, error: data.error || 'Query failed' };
+    }
+    return { success: true, rows: data.rows || data, fields: data.fields };
+  } catch (e) {
+    return { success: false, error: String(e) };
+  }
 }

@@ -147,29 +147,35 @@
     monaco = await import('monaco-editor');
 
     // Setup Monaco environment for workers
+    // Note: Each URL must be a static string for Vite to process correctly
     self.MonacoEnvironment = {
       getWorker: function (_moduleId: string, label: string) {
-        const getWorkerModule = (moduleUrl: string, label: string) => {
-          return new Worker(
-            new URL(`monaco-editor/esm/vs/language/${moduleUrl}`, import.meta.url),
-            { type: 'module' }
-          );
-        };
-
         switch (label) {
           case 'json':
-            return getWorkerModule('json/json.worker.js', label);
+            return new Worker(
+              new URL('monaco-editor/esm/vs/language/json/json.worker.js', import.meta.url),
+              { type: 'module' }
+            );
           case 'css':
           case 'scss':
           case 'less':
-            return getWorkerModule('css/css.worker.js', label);
+            return new Worker(
+              new URL('monaco-editor/esm/vs/language/css/css.worker.js', import.meta.url),
+              { type: 'module' }
+            );
           case 'html':
           case 'handlebars':
           case 'razor':
-            return getWorkerModule('html/html.worker.js', label);
+            return new Worker(
+              new URL('monaco-editor/esm/vs/language/html/html.worker.js', import.meta.url),
+              { type: 'module' }
+            );
           case 'typescript':
           case 'javascript':
-            return getWorkerModule('typescript/ts.worker.js', label);
+            return new Worker(
+              new URL('monaco-editor/esm/vs/language/typescript/ts.worker.js', import.meta.url),
+              { type: 'module' }
+            );
           default:
             return new Worker(
               new URL('monaco-editor/esm/vs/editor/editor.worker.js', import.meta.url),

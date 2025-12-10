@@ -15,13 +15,20 @@
   let {
     position,
     collapsed = $bindable(false),
-    size = $bindable(position === 'bottom' ? 200 : 250),
-    minSize = position === 'bottom' ? 100 : 150,
-    maxSize = position === 'bottom' ? 500 : 500,
+    size = $bindable(300),
+    minSize = 100,
+    maxSize = 500,
     storageKey,
     title = '',
     children
   }: Props = $props();
+
+  // Compute defaults based on position (avoid capturing initial value warning)
+  $effect(() => {
+    if (size === 300) {
+      size = position === 'bottom' ? 200 : 250;
+    }
+  });
 
   let isResizing = $state(false);
   let startPos = $state(0);

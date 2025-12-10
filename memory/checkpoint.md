@@ -4,6 +4,71 @@ Format: `CP-[DATE-HEURE]` | S=Session | P=Phase | T=Thème | F=Fichiers | W=Work
 
 ---
 
+## CP-20251210-2050
+S:12-suite|P:fondations-complete|T:Robustesse-backend+fixes
+F:server/index.js(global-error-handlers),connections.js(pg-error-handler),sessions.md
+W:Fix ECONNRESET PostgreSQL + Global error handlers + Fix wmic parsing volumeName
+N:Phase2(Ghostwriter+Conversion+DB-UI) OU Phase3(Carto-Ouest+QGIS)
+X:Serveurs OK 3001+5177 | Backend ne crash plus sur erreurs DB
+
+### Session 12 (continuation) - Résumé
+**Robustesse backend**:
+- Ajout `process.on('uncaughtException')` et `process.on('unhandledRejection')` dans index.js
+- Ajout `client.on('error')` dans connectPostgreSQL() pour gérer ECONNRESET
+- Le serveur ne crash plus quand la connexion PostgreSQL est interrompue
+
+**Fix endpoint list-drives**:
+- Amélioration parsing wmic: affiche maintenant les vrais noms de volumes (OS, Urbanus, SRV-FILES01)
+- Regex `[A-Z]:` pour extraire lettre disque
+- Gestion line endings Windows
+
+**Serveurs actifs**:
+- Backend: http://localhost:3001
+- Frontend: http://localhost:5177
+
+---
+
+## CP-20251210-1430
+S:12|P:fondations-complete|T:FileExplorer+LangSelector+Glitchs+Roadmap
+F:FileExplorer,EditorModule,SettingsModule,GlitchEngine,server/index.js(list-drives fix)
+W:FileExplorer nav disques(fix wmic parsing)+Sélecteur langue+templates+Système Glitchs complet+Roadmap review
+N:Phase2(Ghostwriter+Conversion+DB-UI) OU Phase3(Carto-Ouest+QGIS)
+X:Shell Bash indisponible (SHELL env var) | Serveurs manuels 3001+5173
+
+### Session 12 - Résumé
+**FileExplorer avec navigation disques** (expert/god):
+- Bouton parent (↑) pour remonter
+- Bouton disques pour voir tous les lecteurs
+- Fix endpoint `/api/tools/list-drives`: parsing wmic corrigé (regex `[A-Z]:`)
+- 5 disques détectés: C:, L:, M:, R:, W:
+
+**Éditeur - Sélecteur de langue + templates**:
+- Sélecteur côte à côte avec bouton Nouveau
+- Templates par langage: SQL, Python, JS, TS, JSON, Shell, XML, MD
+- Bouton Formater retiré
+
+**Système de Glitchs complet**:
+- Toggle on/off dans Paramètres (god mode)
+- Sliders fréquence (1-10) et intensité (1-10)
+- Easter eggs Matrix pour débloquer en mode non-god
+- GlitchEngine dynamique basé sur les paramètres
+
+### Roadmap État
+| Phase | Nom | État |
+|-------|-----|------|
+| 1 | Fondations | ✅ FAIT |
+| 2 | Productivité | 🔄 EN COURS (DB partiel) |
+| 3 | Cartographie | ⏳ (Bussigny+Uzu OK, Carto Ouest à faire) |
+| 4 | Intégrations système | 🔄 PARTIEL (FileExplorer local OK) |
+| 5 | Communications | ⏳ |
+
+### Prochaines priorités suggérées
+1. Phase 2: Ghostwriter + Conversion fichiers + UI connexions DB
+2. Phase 3: Auth Carto Ouest + Visualisation QGIS + Chatbot carto
+3. Consolidation: Tests, packaging Tauri
+
+---
+
 ## CP-20251210-1100
 S:9|P:3-security-godmode|T:Gardes-fous+Server-restart+Connexions-DB
 F:security.js,index.js,SettingsModule.svelte,DangerConfirmDialog.svelte(new),connections.js(new)

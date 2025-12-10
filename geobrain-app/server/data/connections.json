@@ -1,0 +1,67 @@
+[
+  {
+    "id": "conn_1765370903625",
+    "name": "SRV-FME PostgreSQL",
+    "type": "postgresql",
+    "host": "srv-fme",
+    "port": 5432,
+    "database": "Prod",
+    "username": "postgres",
+    "password": "U2FsdGVkX19OrrnIQKPUFmZGO25sQjw4B4XQoiwGdLc=",
+    "privateKey": null,
+    "ssl": false,
+    "createdAt": "2025-12-10T12:48:23.626Z",
+    "lastUsed": "2025-12-10T19:50:07.680Z",
+    "updatedAt": "2025-12-10T12:50:09.113Z"
+  },
+  {
+    "id": "conn_1765371090394",
+    "name": "SRV-FME Test",
+    "type": "postgresql",
+    "host": "srv-fme",
+    "port": 5432,
+    "database": "Test",
+    "username": "postgres",
+    "password": "U2FsdGVkX18V4WD663Mm56QTUV1/FASi+WuD1U3mz/g=",
+    "privateKey": null,
+    "ssl": false,
+    "createdAt": "2025-12-10T12:51:30.395Z",
+    "lastUsed": "2025-12-10T12:58:04.224Z"
+  },
+  {
+    "id": "conn_1765371109585",
+    "name": "Swisstopo WMTS",
+    "type": "wms",
+    "url": "https://wmts.geo.admin.ch/1.0.0/WMTSCapabilities.xml",
+    "port": 443,
+    "password": null,
+    "privateKey": null,
+    "ssl": false,
+    "createdAt": "2025-12-10T12:51:49.585Z",
+    "lastUsed": null
+  },
+  {
+    "id": "conn_1765371121388",
+    "name": "Swisstopo WMS",
+    "type": "wms",
+    "url": "https://wms.geo.admin.ch/",
+    "port": 443,
+    "password": null,
+    "privateKey": null,
+    "ssl": false,
+    "createdAt": "2025-12-10T12:52:01.388Z",
+    "lastUsed": null
+  },
+  {
+    "id": "conn_1765371153719",
+    "name": "OSM WMS (Terrestris)",
+    "type": "wms",
+    "url": "https://ows.terrestris.de/osm/service",
+    "port": 443,
+    "password": null,
+    "privateKey": null,
+    "ssl": false,
+    "createdAt": "2025-12-10T12:52:33.719Z",
+    "lastUsed": null
+  }
+]

@@ -1,70 +1,85 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import { appMode } from '$lib/stores/app';
+  import { shouldShowGlitch, glitchSettings } from '$lib/stores/app';
 
   // ============================================
   // CONFIGURATION - Effet néon qui clignote
+  // Configuration de base - sera modifiée par les paramètres utilisateur
   // ============================================
-  const CONFIG = {
-    // Phases de calme entre les GROSSES rafales (en ms)
-    calmPhase: {
-      min: 5000,   // 5 secondes minimum
-      max: 30000,  // 30 secondes maximum
-    },
-    // Durée d'une GROSSE rafale de glitch
-    burstPhase: {
-      min: 500,    // 0.5s minimum
-      max: 1500,   // 1.5s maximum
-    },
-    // Intervalle entre les glitchs pendant une rafale
-    burstInterval: {
-      min: 30,     // Très rapide pendant les rafales
-      max: 120,    // Max 120ms entre deux effets
-    },
-    // Petits glitchs isolés pendant la phase calme
-    smallGlitch: {
-      interval: { min: 800, max: 2500 },  // Toutes les 0.8-2.5 secondes
-      probability: 0.5,  // 50% de chance qu'il se produise
-    },
-    // Durée d'un effet glitch individuel
-    effectDuration: {
-      min: 100,
-      max: 400,
-    },
-    // Probabilité de chaque effet pendant une GROSSE rafale
-    effects: {
-      chromatic: 0.35,      // Aberration chromatique CMY - FORT
-      shiftX: 0.30,         // Décalage horizontal - FORT
-      shiftY: 0.25,         // Décalage vertical
-      flicker: 0.40,        // Clignotement - TRES FORT
-      hue: 0.15,            // Rotation de teinte
-      skew: 0.20,           // Inclinaison
-      scale: 0.12,          // Changement d'échelle
-      invert: 0.08,         // Inversion (plus rare)
-      split: 0.10,          // Split screen
-      characters: 0.45,     // Apparition de caractères - TRES FORT
-      screenTear: 0.25,     // Déchirure d'écran
-      wholePage: 0.15,      // Glitch de toute la page
-    },
-    // Probabilité des effets pour les PETITS glitchs isolés (plus subtil)
-    smallEffects: {
-      chromatic: 0.25,
-      shiftX: 0.20,
-      flicker: 0.35,
-      characters: 0.30,
-      screenTear: 0.15,
-    },
-    // Nombre d'éléments affectés par effet
-    elementsPerEffect: {
-      min: 1,
-      max: 5,
-    },
-    // Caractères par spawn
-    charactersPerSpawn: {
-      min: 3,
-      max: 10,
-    }
-  };
+
+  // Calculer les paramètres basés sur fréquence et intensité (1-10)
+  function getConfig(frequency: number, intensity: number) {
+    // Fréquence affecte les timings (inversement: freq haute = timings courts)
+    const freqFactor = (11 - frequency) / 5;  // freq 1 = 2x, freq 10 = 0.2x
+    const intFactor = intensity / 5;           // int 1 = 0.2x, int 10 = 2x
+
+    return {
+      // Phases de calme entre les GROSSES rafales (en ms)
+      calmPhase: {
+        min: 5000 * freqFactor,   // Fréquence haute = calme court
+        max: 30000 * freqFactor,
+      },
+      // Durée d'une GROSSE rafale de glitch
+      burstPhase: {
+        min: 300 + (200 * intFactor),   // Intensité haute = rafales plus longues
+        max: 1000 + (500 * intFactor),
+      },
+      // Intervalle entre les glitchs pendant une rafale
+      burstInterval: {
+        min: Math.max(20, 50 - (intensity * 3)),   // Plus rapide avec haute intensité
+        max: Math.max(60, 150 - (intensity * 8)),
+      },
+      // Petits glitchs isolés pendant la phase calme
+      smallGlitch: {
+        interval: {
+          min: Math.max(400, 1200 - (frequency * 80)),  // Plus fréquent avec haute freq
+          max: Math.max(1000, 3000 - (frequency * 150)),
+        },
+        probability: 0.3 + (frequency * 0.05),  // 35% à 80% selon fréquence
+      },
+      // Durée d'un effet glitch individuel
+      effectDuration: {
+        min: 80 + (intensity * 10),
+        max: 250 + (intensity * 30),
+      },
+      // Probabilité de chaque effet pendant une GROSSE rafale (modifiée par intensité)
+      effects: {
+        chromatic: 0.20 + (intFactor * 0.20),
+        shiftX: 0.15 + (intFactor * 0.20),
+        shiftY: 0.12 + (intFactor * 0.18),
+        flicker: 0.25 + (intFactor * 0.20),
+        hue: 0.08 + (intFactor * 0.12),
+        skew: 0.10 + (intFactor * 0.15),
+        scale: 0.06 + (intFactor * 0.10),
+        invert: 0.03 + (intFactor * 0.08),
+        split: 0.05 + (intFactor * 0.10),
+        characters: 0.30 + (intFactor * 0.20),
+        screenTear: 0.15 + (intFactor * 0.15),
+        wholePage: 0.08 + (intFactor * 0.12),
+      },
+      // Probabilité des effets pour les PETITS glitchs isolés (plus subtil)
+      smallEffects: {
+        chromatic: 0.15 + (intFactor * 0.15),
+        shiftX: 0.12 + (intFactor * 0.12),
+        flicker: 0.20 + (intFactor * 0.20),
+        characters: 0.18 + (intFactor * 0.18),
+        screenTear: 0.08 + (intFactor * 0.12),
+      },
+      // Nombre d'éléments affectés par effet
+      elementsPerEffect: {
+        min: 1,
+        max: 2 + Math.floor(intensity / 3),
+      },
+      // Caractères par spawn
+      charactersPerSpawn: {
+        min: 1 + Math.floor(intensity / 3),
+        max: 5 + Math.floor(intensity / 2),
+      }
+    };
+  }
+
+  // Configuration dynamique
+  let CONFIG = $derived(getConfig($glitchSettings.frequency, $glitchSettings.intensity));
 
   // Caractères glitch
   const GLITCH_CHARS = [
@@ -366,9 +381,9 @@
     );
   }
 
-  // Réagir au changement de mode
+  // Réagir au changement de mode ou des paramètres
   $effect(() => {
-    if ($appMode === 'god') {
+    if ($shouldShowGlitch) {
       startEngine();
     } else {
       stopEngine();
@@ -380,7 +395,7 @@
   });
 </script>
 
-{#if $appMode === 'god'}
+{#if $shouldShowGlitch}
   <div class="glitch-overlay" bind:this={glitchOverlay}></div>
 {/if}
 

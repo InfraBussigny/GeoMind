@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { mode } from '$lib/stores/app';
+  import { appMode } from '$lib/stores/app';
 
   // Props
   interface DangerWarning {
@@ -38,7 +38,7 @@
 </script>
 
 {#if show && warning}
-  <div class="dialog-overlay" class:god-mode={$mode === 'god'}>
+  <div class="dialog-overlay" class:god-mode={$appMode === 'god'}>
     <div
       class="dialog-container"
       style="

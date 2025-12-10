@@ -13,7 +13,6 @@
 </script>
 
 <script lang="ts">
-  import type { Artifact, ArtifactType } from './ArtifactPanel.svelte';
   import { onMount, tick } from 'svelte';
 
   // Props
@@ -27,7 +26,7 @@
   let isEditing = $state(true);
   let editedContent = $state('');
   let copySuccess = $state(false);
-  let codeContainer: HTMLPreElement;
+  let codeContainer = $state<HTMLPreElement | null>(null);
 
   // Initialiser editedContent quand l'artifact change
   $effect(() => {
@@ -40,7 +39,9 @@
   $effect(() => {
     if (isStreaming && artifact?.content && codeContainer) {
       tick().then(() => {
-        codeContainer.scrollTop = codeContainer.scrollHeight;
+        if (codeContainer) {
+          codeContainer.scrollTop = codeContainer.scrollHeight;
+        }
       });
     }
   });

@@ -13,6 +13,8 @@
     GOD_MODE_PHRASES,
     MODE_PERMISSIONS,
     SANDBOX_PATH,
+    glitchSettings,
+    checkGlitchEasterEgg,
     type Message,
     type AppMode
   } from '$lib/stores/app';
@@ -228,6 +230,12 @@ L'assistant t'accompagne dans tes tâches quotidiennes.`;
       // Gérer le changement de mode (standard/expert/god)
       handleModeChange(modeAction, content);
       return;
+    }
+
+    // Vérifier easter egg pour activer les glitchs (hors god mode)
+    if ($appMode !== 'god' && checkGlitchEasterEgg(content)) {
+      glitchSettings.unlockEasterEgg();
+      // Le message continue normalement, l'assistant répondra de façon thématique
     }
 
     const userMessage: Message = {

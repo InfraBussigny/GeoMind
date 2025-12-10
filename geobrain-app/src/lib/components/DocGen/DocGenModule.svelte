@@ -43,7 +43,7 @@
           <button
             class="template-card"
             class:selected={selectedTemplate === template.id}
-            on:click={() => selectedTemplate = template.id}
+            onclick={() => selectedTemplate = template.id}
           >
             <span class="template-icon">{template.icon}</span>
             <h3>{template.name}</h3>
@@ -57,29 +57,29 @@
       <h2>Nouveau document</h2>
       <div class="generator-form">
         <div class="form-group">
-          <label>Titre du document</label>
-          <input type="text" placeholder="Ex: Séance GT SDOL - Décembre 2025" />
+          <label for="doc-title">Titre du document</label>
+          <input id="doc-title" type="text" placeholder="Ex: Séance GT SDOL - Décembre 2025" />
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label>Date</label>
-            <input type="date" value="2025-12-08" />
+            <label for="doc-date">Date</label>
+            <input id="doc-date" type="date" value="2025-12-08" />
           </div>
           <div class="form-group">
-            <label>Auteur</label>
-            <input type="text" value="Marc Zermatten" />
+            <label for="doc-author">Auteur</label>
+            <input id="doc-author" type="text" value="Marc Zermatten" />
           </div>
         </div>
 
         <div class="form-group">
-          <label>Contenu / Notes</label>
-          <textarea rows="6" placeholder="Entrez le contenu brut ou les notes à transformer en document..."></textarea>
+          <label for="doc-content">Contenu / Notes</label>
+          <textarea id="doc-content" rows="6" placeholder="Entrez le contenu brut ou les notes à transformer en document..."></textarea>
         </div>
 
         <div class="form-actions">
           <button class="btn-secondary">Aperçu</button>
-          <button class="btn-primary" on:click={generateDocument} disabled={isGenerating}>
+          <button class="btn-primary" onclick={generateDocument} disabled={isGenerating}>
             {#if isGenerating}
               <span class="spinner"></span> Génération...
             {:else}
@@ -94,7 +94,7 @@
       <h2>Documents récents</h2>
       <div class="recent-list">
         {#each recentDocs as doc}
-          <button class="recent-item" on:click={() => openDocument(doc.name)}>
+          <button class="recent-item" onclick={() => openDocument(doc.name)}>
             <span class="doc-icon">
               {doc.type === 'pv' ? '📋' : doc.type === 'note' ? '📝' : '📖'}
             </span>

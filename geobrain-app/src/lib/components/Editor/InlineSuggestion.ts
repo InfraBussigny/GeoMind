@@ -280,8 +280,8 @@ export function createInlineCompletionsProvider(
       });
     },
 
-    freeInlineCompletions: () => {
-      // Cleanup
+    // Required by Monaco API - cleanup method
+    disposeInlineCompletions: () => {
       if (currentRequest) {
         currentRequest.abort();
         currentRequest = null;

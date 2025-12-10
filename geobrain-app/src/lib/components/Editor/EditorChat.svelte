@@ -283,7 +283,7 @@ Tu reponds en francais. Tu fournis du code fonctionnel, bien commente et optimis
   </div>
 </div>
 
-<script context="module" lang="ts">
+<script module lang="ts">
   // Simple markdown-like formatting
   function formatMessage(content: string): string {
     // Escape HTML first

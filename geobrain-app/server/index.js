@@ -10,6 +10,7 @@ import { existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { homedir } from 'os';
+import { exec } from 'child_process';
 import memory from './memory.js';
 import geoportalProxy from './geoportal-proxy.js';
 import { TOOL_DEFINITIONS, executeTool, AGENT_SYSTEM_PROMPT } from './tools.js';
@@ -1056,6 +1057,59 @@ app.post('/api/tools/list-directory', async (req, res) => {
   }
 });
 
+// List Windows drives
+app.get('/api/tools/list-drives', async (req, res) => {
+  try {
+    // On Windows, list available drives
+    if (process.platform === 'win32') {
+      const { exec } = await import('child_process');
+      const { promisify } = await import('util');
+      const execAsync = promisify(exec);
+
+      const { stdout } = await execAsync('wmic logicaldisk get name,volumename,description', { encoding: 'utf8' });
+      const lines = stdout.trim().split(/\r?\n/).slice(1); // Skip header, handle Windows line endings
+      const drives = lines
+        .map(line => {
+          const trimmed = line.trim();
+          if (!trimmed) return null;
+
+          // wmic returns columns in alphabetical order: Description, Name, VolumeName
+          // Parse with multiple spaces as separator
+          const parts = trimmed.split(/\s{2,}/);
+
+          // Find the drive letter (format: X:)
+          const driveMatch = trimmed.match(/([A-Z]:)/);
+          if (!driveMatch) return null;
+
+          const driveName = driveMatch[1];
+          // Get description (first part) and volume name (last part if exists)
+          const description = parts[0] || '';
+          const volumeName = parts.length > 2 ? parts[2] : '';
+          const label = volumeName || description || 'Disque local';
+
+          return {
+            name: driveName,
+            path: driveName + '/',
+            label: label,
+            isDirectory: true
+          };
+        })
+        .filter(Boolean);
+
+      res.json(drives);
+    } else {
+      // Unix-like: return root
+      res.json([{ name: '/', path: '/', label: 'Root', isDirectory: true }]);
+    }
+  } catch (error) {
+    // Fallback: common Windows drives
+    res.json([
+      { name: 'C:', path: 'C:/', label: 'Disque local', isDirectory: true },
+      { name: 'D:', path: 'D:/', label: 'Disque local', isDirectory: true }
+    ]);
+  }
+});
+
 app.post('/api/tools/execute-command', async (req, res) => {
   try {
     const { command, cwd, mode = 'standard', confirmed = false } = req.body;
@@ -1551,10 +1605,12 @@ app.post('/api/server/restart', async (req, res) => {
     console.log('✅ Nouveau processus lancé, arrêt de l\'ancien...');
 
     // Fermer le serveur actuel proprement
-    server.close(() => {
-      console.log('👋 Ancien serveur arrêté');
-      process.exit(0);
-    });
+    if (global.geobrainServer) {
+      global.geobrainServer.close(() => {
+        console.log('👋 Ancien serveur arrêté');
+        process.exit(0);
+      });
+    }
 
     // Force exit après 2 secondes si le close ne fonctionne pas
     setTimeout(() => {
@@ -1564,25 +1620,133 @@ app.post('/api/server/restart', async (req, res) => {
 });
 
 // ============================================
+// PORT CLEANUP UTILITY
+// ============================================
+
+/**
+ * Tue tout processus utilisant le port spécifié (Windows)
+ * Méthode robuste : netstat + taskkill via PowerShell
+ */
+async function killProcessOnPort(port) {
+  return new Promise((resolve) => {
+    // Utiliser PowerShell pour trouver et tuer le processus
+    const findCmd = `powershell.exe -Command "Get-NetTCPConnection -LocalPort ${port} -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique"`;
+
+    exec(findCmd, (error, stdout) => {
+      if (error || !stdout.trim()) {
+        console.log(`✅ Port ${port} libre`);
+        resolve(true);
+        return;
+      }
+
+      const pids = stdout.trim().split('\n').filter(pid => pid.trim() && pid.trim() !== '0');
+
+      if (pids.length === 0) {
+        console.log(`✅ Port ${port} libre`);
+        resolve(true);
+        return;
+      }
+
+      console.log(`⚠️ Port ${port} occupé par PID: ${pids.join(', ')}`);
+
+      // Tuer chaque processus (sauf le processus actuel)
+      const currentPid = process.pid.toString();
+      const pidsToKill = pids.filter(pid => pid.trim() !== currentPid);
+
+      if (pidsToKill.length === 0) {
+        resolve(true);
+        return;
+      }
+
+      const killPromises = pidsToKill.map(pid => {
+        return new Promise((resolveKill) => {
+          const killCmd = `powershell.exe -Command "Stop-Process -Id ${pid.trim()} -Force -ErrorAction SilentlyContinue"`;
+          exec(killCmd, () => {
+            console.log(`   🔪 Processus ${pid.trim()} terminé`);
+            resolveKill();
+          });
+        });
+      });
+
+      Promise.all(killPromises).then(() => {
+        // Attendre un peu que les sockets TIME_WAIT se libèrent
+        setTimeout(() => {
+          console.log(`✅ Port ${port} libéré`);
+          resolve(true);
+        }, 1000);
+      });
+    });
+  });
+}
+
+// ============================================
 // START SERVER
 // ============================================
 
-const server = app.listen(PORT, () => {
-  console.log(`
+// Fonction de démarrage avec nettoyage du port
+async function startServer() {
+  // D'abord, libérer le port si occupé
+  await killProcessOnPort(PORT);
+
+  const server = app.listen(PORT, () => {
+    console.log(`
 ╔════════════════════════════════════════════╗
 ║         GeoBrain Backend Server            ║
 ║════════════════════════════════════════════║
 ║  Running on: http://localhost:${PORT}         ║
 ║  Press Ctrl+C to stop                      ║
 ╚════════════════════════════════════════════╝
-  `);
+    `);
+  });
+
+  // Gérer les erreurs de démarrage
+  server.on('error', async (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.log(`\n⚠️ Port ${PORT} encore occupé, nouvelle tentative...`);
+      await killProcessOnPort(PORT);
+      setTimeout(() => startServer(), 2000);
+    } else {
+      console.error('Erreur serveur:', err);
+      process.exit(1);
+    }
+  });
+
+  // Graceful shutdown handler
+  process.on('SIGTERM', () => {
+    console.log('\n📴 Signal SIGTERM reçu, arrêt gracieux...');
+    server.close(() => {
+      console.log('✅ Serveur arrêté proprement');
+      process.exit(0);
+    });
+  });
+
+  process.on('SIGINT', () => {
+    console.log('\n📴 Ctrl+C reçu, arrêt gracieux...');
+    server.close(() => {
+      console.log('✅ Serveur arrêté proprement');
+      process.exit(0);
+    });
+  });
+
+  // Stocker la référence du serveur globalement pour le restart
+  global.geobrainServer = server;
+}
+
+// ============================================
+// GLOBAL ERROR HANDLERS
+// ============================================
+
+// Capturer les erreurs non gérées pour éviter les crashes
+process.on('uncaughtException', (err) => {
+  console.error('[ERREUR NON CAPTURÉE]', err.message);
+  console.error(err.stack);
+  // Ne pas faire process.exit() - laisser le serveur tourner
 });
 
-// Graceful shutdown handler
-process.on('SIGTERM', () => {
-  console.log('\n📴 Signal SIGTERM reçu, arrêt gracieux...');
-  server.close(() => {
-    console.log('✅ Serveur arrêté proprement');
-    process.exit(0);
-  });
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[PROMESSE REJETÉE NON GÉRÉE]', reason);
+  // Ne pas faire process.exit() - laisser le serveur tourner
 });
+
+// Démarrer le serveur
+startServer();

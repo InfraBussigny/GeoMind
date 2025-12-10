@@ -1,0 +1,274 @@
+{
+  "database": "Prod",
+  "host": "srv-fme",
+  "description": "Base de données SIT de la commune de Bussigny",
+  "srid": 2056,
+  "coordinate_system": "MN95 / Swiss CH1903+ LV95",
+  "schemas": {
+    "bdco": {
+      "description": "Base de Données de la Couverture du sol - Cadastre communal",
+      "source": "RF Vaud - Registre Foncier",
+      "tables": {
+        "bdco_parcelle": {
+          "description": "Parcelles cadastrales de Bussigny",
+          "geometry_type": "POLYGON",
+          "key_columns": {
+            "gid": "Identifiant unique interne",
+            "numero": "Numéro de parcelle (ex: 1234)",
+            "identdn": "Identifiant cantonal unique (format: VD0157-XXXX, 0157 = code commune Bussigny)",
+            "id_genre": "Code du genre de parcelle",
+            "genre": "Type de parcelle (Bien-fonds, DDP, etc.)",
+            "surface_rf": "Surface officielle RF en m²",
+            "surface_calcul": "Surface calculée géométriquement en m²"
+          },
+          "common_queries": [
+            "Compter les parcelles: SELECT COUNT(*) FROM bdco.bdco_parcelle",
+            "Surface totale: SELECT SUM(surface_rf) FROM bdco.bdco_parcelle",
+            "Par genre: SELECT genre, COUNT(*) FROM bdco.bdco_parcelle GROUP BY genre"
+          ]
+        },
+        "bdco_batiment": {
+          "description": "Bâtiments hors-sol",
+          "geometry_type": "POLYGON",
+          "key_columns": {
+            "gid": "Identifiant unique interne",
+            "numero": "Numéro EGID du bâtiment",
+            "identdn": "Identifiant cantonal",
+            "id_genre": "Code du genre de bâtiment",
+            "genre": "Type de bâtiment (habitation, industriel, etc.)",
+            "designation": "Nom ou description du bâtiment",
+            "surface_vd": "Surface au sol officielle en m²",
+            "surface_calcul": "Surface calculée en m²"
+          }
+        },
+        "bdco_batiment_souterrain": {
+          "description": "Constructions souterraines (parkings, caves, etc.)",
+          "geometry_type": "POLYGON",
+          "key_columns": {
+            "numero": "Numéro du bâtiment souterrain",
+            "designation": "Description",
+            "surface_vd": "Surface en m²"
+          }
+        },
+        "bdco_adresse_entree": {
+          "description": "Points d'entrée des bâtiments (adresses)",
+          "geometry_type": "POINT",
+          "key_columns": {
+            "numero_maison": "Numéro de rue (ex: 12, 12A)",
+            "texte": "Nom complet de la rue",
+            "texte_abrege": "Nom abrégé de la rue",
+            "numero_commune": "Code commune (5157 pour Bussigny)",
+            "designation": "Adresse complète formatée"
+          }
+        },
+        "bdco_adresse_rue_lin": {
+          "description": "Axes de rues (lignes)",
+          "geometry_type": "LINESTRING",
+          "key_columns": {
+            "texte": "Nom de la rue",
+            "genre": "Type de voie (rue, chemin, avenue, etc.)"
+          }
+        },
+        "bdco_limite_commune_surf": {
+          "description": "Limites communales (polygone)",
+          "geometry_type": "POLYGON",
+          "usage": "Pour filtrer les données par commune: ST_Within(geom, (SELECT geom FROM bdco.bdco_limite_commune_surf))"
+        },
+        "bdco_point_limite": {
+          "description": "Points limites cadastraux (bornes)",
+          "geometry_type": "POINT"
+        },
+        "bdco_ddp": {
+          "description": "Droits distincts et permanents (DDP)",
+          "geometry_type": "POLYGON",
+          "key_columns": {
+            "numero": "Numéro du DDP",
+            "designation": "Description du DDP"
+          }
+        },
+        "bdco_cs_dur": {
+          "description": "Couverture du sol - Surfaces dures (routes, parkings, trottoirs)",
+          "geometry_type": "POLYGON",
+          "key_columns": {
+            "genre": "Type de surface (route, chemin, place, etc.)",
+            "surface": "Surface en m²"
+          }
+        },
+        "bdco_cs_vert": {
+          "description": "Couverture du sol - Surfaces vertes (prés, jardins)",
+          "geometry_type": "POLYGON",
+          "key_columns": {
+            "genre": "Type de surface verte",
+            "surface": "Surface en m²"
+          }
+        },
+        "bdco_cs_bois": {
+          "description": "Couverture du sol - Surfaces boisées",
+          "geometry_type": "POLYGON"
+        },
+        "bdco_cs_eau": {
+          "description": "Couverture du sol - Surfaces en eau",
+          "geometry_type": "POLYGON"
+        },
+        "bdco_objet_divers_lin": {
+          "description": "Objets divers linéaires (murs, clôtures, escaliers)",
+          "geometry_type": "LINESTRING"
+        },
+        "bdco_objet_divers_surf": {
+          "description": "Objets divers surfaciques",
+          "geometry_type": "POLYGON"
+        }
+      }
+    },
+    "assainissement": {
+      "description": "Réseau d'assainissement communal (eaux usées et pluviales)",
+      "source": "PGEE / Plan Général d'Evacuation des Eaux",
+      "tables": {
+        "by_ass_chambre": {
+          "description": "Chambres de visite (regards)",
+          "geometry_type": "POINT",
+          "key_columns": {
+            "designation": "Nom/numéro de la chambre",
+            "genre_chambre": "Type (regard de visite, etc.)",
+            "fonction_hydro": "Fonction hydraulique (EP=eaux pluviales, EU=eaux usées, UN=unitaire)",
+            "materiau_chambre": "Matériau (béton, PVC, etc.)",
+            "annee_construction": "Année de construction",
+            "etat": "État général (bon, moyen, mauvais)",
+            "profondeur": "Profondeur en mètres",
+            "cote_radier": "Altitude du radier",
+            "proprietaire": "Propriétaire (commune, privé, canton)"
+          }
+        },
+        "by_ass_collecteur": {
+          "description": "Conduites d'assainissement",
+          "geometry_type": "LINESTRING",
+          "key_columns": {
+            "materiau": "Matériau (béton, PVC, grès, etc.)",
+            "fonction_hydro": "EP/EU/UN",
+            "fonction_hierarchique": "Collecteur principal/secondaire",
+            "annee_construction": "Année",
+            "etat": "État",
+            "largeur_profil": "Largeur/diamètre en mm",
+            "hauteur_max_profil": "Hauteur en mm",
+            "proprietaire": "Propriétaire"
+          }
+        },
+        "by_ass_couvercle": {
+          "description": "Couvercles des chambres",
+          "geometry_type": "POINT",
+          "key_columns": {
+            "forme_couvercle": "Forme (rond, carré)",
+            "materiau_couvercle": "Matériau",
+            "diametre": "Diamètre en cm",
+            "cote": "Altitude du couvercle"
+          }
+        }
+      }
+    },
+    "route": {
+      "description": "Réseau routier communal",
+      "tables": {
+        "by_rte_troncon": {
+          "description": "Tronçons de route",
+          "geometry_type": "LINESTRING",
+          "key_columns": {
+            "nom_rue": "Nom de la rue",
+            "classe_rte": "Classification (communale, cantonale, privée)",
+            "cat_route": "Catégorie",
+            "type_revetement": "Revêtement (asphalte, pavé, gravier)",
+            "etat_revetement": "État du revêtement",
+            "vitesse": "Limitation de vitesse",
+            "proprio": "Propriétaire",
+            "resp_entretien": "Responsable entretien"
+          }
+        },
+        "by_rte_arret_tp": {
+          "description": "Arrêts de transports publics",
+          "geometry_type": "POINT"
+        },
+        "by_rte_zone_stationnement": {
+          "description": "Zones de stationnement",
+          "geometry_type": "POLYGON"
+        },
+        "by_rte_vitesse": {
+          "description": "Zones de limitation de vitesse",
+          "geometry_type": "POLYGON/LINESTRING"
+        }
+      }
+    },
+    "nature": {
+      "description": "Espaces naturels et biodiversité",
+      "tables": {
+        "by_nat_arbre_vergers": {
+          "description": "Arbres et vergers",
+          "geometry_type": "POINT",
+          "key_columns": {
+            "genre_vergers": "Type d'arbre fruitier"
+          }
+        },
+        "by_nat_parcours_nature": {
+          "description": "Sentiers et parcours nature",
+          "geometry_type": "LINESTRING"
+        }
+      }
+    },
+    "pts_interet": {
+      "description": "Points d'intérêt communaux",
+      "tables": {
+        "by_pti_point_interet": {
+          "description": "POI - Lieux d'intérêt",
+          "geometry_type": "POINT",
+          "key_columns": {
+            "theme": "Catégorie (culture, sport, services, etc.)",
+            "type_point": "Type précis",
+            "nom": "Nom du lieu"
+          }
+        }
+      }
+    },
+    "divers": {
+      "description": "Données diverses",
+      "tables": {
+        "by_transport_public_l": {
+          "description": "Lignes de transport public",
+          "geometry_type": "LINESTRING"
+        },
+        "by_ouvrage_speciaux_p": {
+          "description": "Ouvrages spéciaux ponctuels",
+          "geometry_type": "POINT"
+        }
+      }
+    },
+    "externe": {
+      "description": "Données de fournisseurs externes",
+      "source": "SEL (Service des Eaux de Lausanne)",
+      "tables": {
+        "sel_conduite": {
+          "description": "Conduites d'eau potable SEL",
+          "geometry_type": "LINESTRING"
+        },
+        "sel_hydrant": {
+          "description": "Bornes hydrantes",
+          "geometry_type": "POINT"
+        },
+        "sel_vanne": {
+          "description": "Vannes du réseau d'eau",
+          "geometry_type": "POINT"
+        }
+      }
+    }
+  },
+  "common_filters": {
+    "bussigny_only": "WHERE identdn LIKE 'VD0157%'",
+    "commune_code": "numero_commune = 5157",
+    "spatial_filter": "ST_Within(geom, (SELECT geom FROM bdco.bdco_limite_commune_surf LIMIT 1))"
+  },
+  "example_queries": {
+    "count_parcelles": "SELECT COUNT(*) as total FROM bdco.bdco_parcelle",
+    "parcelles_by_genre": "SELECT genre, COUNT(*) as nombre, SUM(surface_rf) as surface_totale FROM bdco.bdco_parcelle GROUP BY genre ORDER BY nombre DESC",
+    "count_batiments": "SELECT COUNT(*) as total, SUM(surface_vd) as surface_totale FROM bdco.bdco_batiment",
+    "longueur_collecteurs": "SELECT fonction_hydro, SUM(ST_Length(geom)) as longueur_m FROM assainissement.by_ass_collecteur GROUP BY fonction_hydro",
+    "chambres_par_etat": "SELECT etat, COUNT(*) FROM assainissement.by_ass_chambre GROUP BY etat",
+    "rues_bussigny": "SELECT DISTINCT texte as nom_rue FROM bdco.bdco_adresse_rue_lin ORDER BY texte"
+  }
+}

@@ -455,6 +455,13 @@ async function connectPostgreSQL(id, config) {
     ssl: config.ssl ? { rejectUnauthorized: false } : false
   });
 
+  // Gestion des erreurs de connexion pour éviter les crashes
+  client.on('error', (err) => {
+    console.error(`[PostgreSQL] Erreur connexion ${id}:`, err.message);
+    // Nettoyer la connexion de la map
+    activeConnections.delete(id);
+  });
+
   await client.connect();
   activeConnections.set(id, { type: 'postgresql', client, config });
   updateLastUsed(id);

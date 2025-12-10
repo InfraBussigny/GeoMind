@@ -1,7 +1,28 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { providers, backendConnected, mode } from '$lib/stores/app';
+  import { providers, backendConnected, appMode, glitchSettings } from '$lib/stores/app';
   import { getProviders, saveProviderConfig } from '$lib/services/api';
+
+  // Types
+  interface Connection {
+    id: string;
+    name: string;
+    type: string;
+    host?: string;
+    url?: string;
+    port?: number;
+    database?: string;
+    username?: string;
+    lastUsed?: string;
+    status: 'connected' | 'disconnected';
+  }
+
+  interface ConnectionType {
+    name: string;
+    icon: string;
+    defaultPort: number;
+    fields: string[];
+  }
 
   let apiKeys = $state<Record<string, string>>({});
   let saving = $state<Record<string, boolean>>({});
@@ -11,10 +32,33 @@
   let restarting = $state(false);
   let restartError = $state<string | null>(null);
 
+  // Connexions DB
+  let connections = $state<Connection[]>([]);
+  let connectionTypes = $state<Record<string, ConnectionType>>({});
+  let showConnectionForm = $state(false);
+  let editingConnection = $state<Connection | null>(null);
+  let connectionForm = $state({
+    name: '',
+    type: 'postgresql',
+    host: '',
+    port: 5432,
+    database: '',
+    username: '',
+    password: '',
+    url: '',
+    ssl: false
+  });
+  let testingConnection = $state(false);
+  let testResult = $state<{ success: boolean; message: string; info?: any } | null>(null);
+  let savingConnection = $state(false);
+  let connectingId = $state<string | null>(null);
+
   onMount(async () => {
     await loadProviders();
     await loadMemorySummary();
     await loadServerStatus();
+    await loadConnections();
+    await loadConnectionTypes();
   });
 
   async function loadProviders() {
@@ -79,7 +123,7 @@
   }
 
   async function restartServer() {
-    if ($mode === 'standard') {
+    if ($appMode === 'standard') {
       restartError = 'Mode expert ou god requis pour redémarrer le serveur';
       return;
     }
@@ -91,7 +135,7 @@
       const response = await fetch('http://localhost:3001/api/server/restart', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode: $mode })
+        body: JSON.stringify({ mode: $appMode })
       });
 
       if (response.ok) {
@@ -186,6 +230,182 @@
     };
     return icons[providerId] || '?';
   }
+
+  // === Connexions DB ===
+  async function loadConnections() {
+    try {
+      const response = await fetch('http://localhost:3001/api/connections');
+      if (response.ok) {
+        connections = await response.json();
+      }
+    } catch (error) {
+      console.error('Error loading connections:', error);
+    }
+  }
+
+  async function loadConnectionTypes() {
+    try {
+      const response = await fetch('http://localhost:3001/api/connections/types');
+      if (response.ok) {
+        connectionTypes = await response.json();
+      }
+    } catch (error) {
+      console.error('Error loading connection types:', error);
+    }
+  }
+
+  function openNewConnectionForm() {
+    editingConnection = null;
+    connectionForm = {
+      name: '',
+      type: 'postgresql',
+      host: '',
+      port: 5432,
+      database: '',
+      username: '',
+      password: '',
+      url: '',
+      ssl: false
+    };
+    testResult = null;
+    showConnectionForm = true;
+  }
+
+  function openEditConnectionForm(conn: Connection) {
+    editingConnection = conn;
+    connectionForm = {
+      name: conn.name,
+      type: conn.type,
+      host: conn.host || '',
+      port: conn.port || connectionTypes[conn.type]?.defaultPort || 5432,
+      database: conn.database || '',
+      username: conn.username || '',
+      password: '',
+      url: conn.url || '',
+      ssl: false
+    };
+    testResult = null;
+    showConnectionForm = true;
+  }
+
+  function closeConnectionForm() {
+    showConnectionForm = false;
+    editingConnection = null;
+    testResult = null;
+  }
+
+  function onTypeChange() {
+    const type = connectionForm.type;
+    if (connectionTypes[type]) {
+      connectionForm.port = connectionTypes[type].defaultPort;
+    }
+  }
+
+  async function testCurrentConnection() {
+    testingConnection = true;
+    testResult = null;
+
+    try {
+      const response = await fetch('http://localhost:3001/api/connections/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(connectionForm)
+      });
+
+      testResult = await response.json();
+    } catch (error) {
+      testResult = { success: false, message: 'Erreur de connexion au backend' };
+    } finally {
+      testingConnection = false;
+    }
+  }
+
+  async function saveConnection() {
+    savingConnection = true;
+
+    try {
+      const url = editingConnection
+        ? `http://localhost:3001/api/connections/${editingConnection.id}`
+        : 'http://localhost:3001/api/connections';
+
+      const method = editingConnection ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(connectionForm)
+      });
+
+      if (response.ok) {
+        await loadConnections();
+        closeConnectionForm();
+      } else {
+        const data = await response.json();
+        testResult = { success: false, message: data.error || 'Erreur lors de la sauvegarde' };
+      }
+    } catch (error) {
+      testResult = { success: false, message: 'Erreur de connexion au backend' };
+    } finally {
+      savingConnection = false;
+    }
+  }
+
+  async function deleteConnection(id: string) {
+    if (!confirm('Supprimer cette connexion ?')) return;
+
+    try {
+      const response = await fetch(`http://localhost:3001/api/connections/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        await loadConnections();
+      }
+    } catch (error) {
+      console.error('Error deleting connection:', error);
+    }
+  }
+
+  async function toggleConnection(conn: Connection) {
+    connectingId = conn.id;
+
+    try {
+      const endpoint = conn.status === 'connected' ? 'disconnect' : 'connect';
+      const response = await fetch(`http://localhost:3001/api/connections/${conn.id}/${endpoint}`, {
+        method: 'POST'
+      });
+
+      if (response.ok) {
+        await loadConnections();
+      }
+    } catch (error) {
+      console.error('Error toggling connection:', error);
+    } finally {
+      connectingId = null;
+    }
+  }
+
+  function getConnectionIcon(type: string): string {
+    const icons: Record<string, string> = {
+      postgresql: '🐘',
+      ssh: '🔐',
+      wms: '🗺️',
+      wfs: '📍'
+    };
+    return icons[type] || '💾';
+  }
+
+  function formatLastUsed(dateStr?: string): string {
+    if (!dateStr) return 'Jamais';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('fr-CH', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
 </script>
 
 <div class="settings-module">
@@ -196,7 +416,7 @@
 
   <div class="settings-content">
     <!-- Server Section - Expert/God only -->
-    {#if $mode !== 'standard'}
+    {#if $appMode !== 'standard'}
       <section class="settings-section server-section">
         <div class="section-header">
           <h2>Serveur Backend</h2>
@@ -252,6 +472,309 @@
           Le redemarrage applique les modifications du code backend (security, endpoints, etc.)
         </p>
       </section>
+    {/if}
+
+    <!-- Glitch Effects Section - God mode or Easter Egg unlocked -->
+    {#if $appMode === 'god' || $glitchSettings.unlockedByEasterEgg}
+      <section class="settings-section glitch-section">
+        <div class="section-header">
+          <h2>Effets Visuels</h2>
+          <button
+            class="btn-toggle"
+            class:active={$glitchSettings.enabled}
+            onclick={() => glitchSettings.toggle()}
+          >
+            {$glitchSettings.enabled ? 'Actif' : 'Inactif'}
+          </button>
+        </div>
+
+        <p class="section-description">
+          Controle des effets glitch de l'interface. Ces effets ajoutent une atmosphere cyberpunk.
+          {#if $glitchSettings.unlockedByEasterEgg && $appMode !== 'god'}
+            <span class="easter-egg-badge">Easter egg</span>
+          {/if}
+        </p>
+
+        <div class="glitch-controls" class:disabled={!$glitchSettings.enabled}>
+          <div class="glitch-control">
+            <label>
+              <span class="control-label">Frequence</span>
+              <span class="control-value">{$glitchSettings.frequency}/10</span>
+            </label>
+            <input
+              type="range"
+              min="1"
+              max="10"
+              value={$glitchSettings.frequency}
+              oninput={(e) => glitchSettings.setFrequency(parseInt(e.currentTarget.value))}
+              disabled={!$glitchSettings.enabled}
+            />
+            <div class="control-hints">
+              <span>Rare</span>
+              <span>Frequent</span>
+            </div>
+          </div>
+
+          <div class="glitch-control">
+            <label>
+              <span class="control-label">Intensite</span>
+              <span class="control-value">{$glitchSettings.intensity}/10</span>
+            </label>
+            <input
+              type="range"
+              min="1"
+              max="10"
+              value={$glitchSettings.intensity}
+              oninput={(e) => glitchSettings.setIntensity(parseInt(e.currentTarget.value))}
+              disabled={!$glitchSettings.enabled}
+            />
+            <div class="control-hints">
+              <span>Subtil</span>
+              <span>Intense</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-reset" onclick={() => glitchSettings.reset()}>
+          Reinitialiser
+        </button>
+      </section>
+    {/if}
+
+    <!-- Connections Section - Expert/God only -->
+    {#if $appMode !== 'standard'}
+      <section class="settings-section connections-section">
+        <div class="section-header">
+          <h2>Connexions serveurs</h2>
+          <button class="btn-primary" onclick={openNewConnectionForm}>
+            + Nouvelle
+          </button>
+        </div>
+
+        {#if connections.length === 0}
+          <div class="no-connections">
+            <span class="no-conn-icon">🔌</span>
+            <p>Aucune connexion configuree</p>
+            <p class="hint">Ajoutez des connexions PostgreSQL, SSH ou WMS/WFS</p>
+          </div>
+        {:else}
+          <div class="connections-list">
+            {#each connections as conn}
+              <div class="connection-card" class:connected={conn.status === 'connected'}>
+                <div class="conn-header">
+                  <span class="conn-icon">{getConnectionIcon(conn.type)}</span>
+                  <div class="conn-info">
+                    <h4>{conn.name}</h4>
+                    <span class="conn-type">{connectionTypes[conn.type]?.name || conn.type}</span>
+                  </div>
+                  <span class="conn-status" class:online={conn.status === 'connected'}>
+                    {conn.status === 'connected' ? 'Connecte' : 'Deconnecte'}
+                  </span>
+                </div>
+
+                <div class="conn-details">
+                  {#if conn.host}
+                    <span class="conn-detail"><strong>Hote:</strong> {conn.host}:{conn.port}</span>
+                  {/if}
+                  {#if conn.database}
+                    <span class="conn-detail"><strong>Base:</strong> {conn.database}</span>
+                  {/if}
+                  {#if conn.url}
+                    <span class="conn-detail"><strong>URL:</strong> {conn.url}</span>
+                  {/if}
+                  <span class="conn-detail"><strong>Dernier usage:</strong> {formatLastUsed(conn.lastUsed)}</span>
+                </div>
+
+                <div class="conn-actions">
+                  <button
+                    class="btn-conn"
+                    class:btn-connect={conn.status !== 'connected'}
+                    class:btn-disconnect={conn.status === 'connected'}
+                    onclick={() => toggleConnection(conn)}
+                    disabled={connectingId === conn.id}
+                  >
+                    {#if connectingId === conn.id}
+                      <span class="spinner-sm"></span>
+                    {:else if conn.status === 'connected'}
+                      Deconnecter
+                    {:else}
+                      Connecter
+                    {/if}
+                  </button>
+                  <button class="btn-icon" onclick={() => openEditConnectionForm(conn)} title="Modifier">
+                    ✏️
+                  </button>
+                  <button class="btn-icon btn-danger" onclick={() => deleteConnection(conn.id)} title="Supprimer">
+                    🗑️
+                  </button>
+                </div>
+              </div>
+            {/each}
+          </div>
+        {/if}
+      </section>
+    {/if}
+
+    <!-- Connection Form Modal -->
+    {#if showConnectionForm}
+      <div class="modal-overlay" onclick={closeConnectionForm} onkeydown={(e) => e.key === 'Escape' && closeConnectionForm()} role="button" tabindex="-1">
+        <div class="modal-content" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()} role="dialog" aria-modal="true" tabindex="-1">
+          <div class="modal-header">
+            <h3>{editingConnection ? 'Modifier la connexion' : 'Nouvelle connexion'}</h3>
+            <button class="btn-close" onclick={closeConnectionForm}>×</button>
+          </div>
+
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="conn-name">Nom</label>
+              <input
+                id="conn-name"
+                type="text"
+                bind:value={connectionForm.name}
+                placeholder="Ma connexion PostgreSQL"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="conn-type">Type</label>
+              <select id="conn-type" bind:value={connectionForm.type} onchange={onTypeChange}>
+                {#each Object.entries(connectionTypes) as [key, type]}
+                  <option value={key}>{type.name}</option>
+                {/each}
+              </select>
+            </div>
+
+            {#if connectionForm.type === 'postgresql' || connectionForm.type === 'ssh'}
+              <div class="form-row">
+                <div class="form-group flex-grow">
+                  <label for="conn-host">Hote</label>
+                  <input
+                    id="conn-host"
+                    type="text"
+                    bind:value={connectionForm.host}
+                    placeholder="localhost"
+                  />
+                </div>
+                <div class="form-group" style="width: 100px;">
+                  <label for="conn-port">Port</label>
+                  <input
+                    id="conn-port"
+                    type="number"
+                    bind:value={connectionForm.port}
+                  />
+                </div>
+              </div>
+
+              {#if connectionForm.type === 'postgresql'}
+                <div class="form-group">
+                  <label for="conn-database">Base de donnees</label>
+                  <input
+                    id="conn-database"
+                    type="text"
+                    bind:value={connectionForm.database}
+                    placeholder="geobrain"
+                  />
+                </div>
+              {/if}
+
+              <div class="form-row">
+                <div class="form-group flex-grow">
+                  <label for="conn-username">Utilisateur</label>
+                  <input
+                    id="conn-username"
+                    type="text"
+                    bind:value={connectionForm.username}
+                    placeholder="postgres"
+                  />
+                </div>
+                <div class="form-group flex-grow">
+                  <label for="conn-password">Mot de passe</label>
+                  <input
+                    id="conn-password"
+                    type="password"
+                    bind:value={connectionForm.password}
+                    placeholder={editingConnection ? '(inchange)' : ''}
+                  />
+                </div>
+              </div>
+
+              {#if connectionForm.type === 'postgresql'}
+                <div class="form-group checkbox-group">
+                  <input
+                    id="conn-ssl"
+                    type="checkbox"
+                    bind:checked={connectionForm.ssl}
+                  />
+                  <label for="conn-ssl">Utiliser SSL</label>
+                </div>
+              {/if}
+            {:else}
+              <!-- WMS/WFS -->
+              <div class="form-group">
+                <label for="conn-url">URL du service</label>
+                <input
+                  id="conn-url"
+                  type="url"
+                  bind:value={connectionForm.url}
+                  placeholder="https://geo.example.ch/wms"
+                />
+              </div>
+
+              <div class="form-row">
+                <div class="form-group flex-grow">
+                  <label for="conn-username">Utilisateur (optionnel)</label>
+                  <input
+                    id="conn-username"
+                    type="text"
+                    bind:value={connectionForm.username}
+                  />
+                </div>
+                <div class="form-group flex-grow">
+                  <label for="conn-password">Mot de passe</label>
+                  <input
+                    id="conn-password"
+                    type="password"
+                    bind:value={connectionForm.password}
+                  />
+                </div>
+              </div>
+            {/if}
+
+            {#if testResult}
+              <div class="test-result" class:success={testResult.success} class:error={!testResult.success}>
+                <span class="test-icon">{testResult.success ? '✓' : '✗'}</span>
+                <div class="test-message">
+                  <strong>{testResult.message}</strong>
+                  {#if testResult.info?.version}
+                    <br><small>{testResult.info.version}</small>
+                  {/if}
+                  {#if testResult.info?.postgis}
+                    <br><small>PostGIS {testResult.info.postgis}</small>
+                  {/if}
+                </div>
+              </div>
+            {/if}
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn-secondary" onclick={closeConnectionForm}>Annuler</button>
+            <button
+              class="btn-test"
+              onclick={testCurrentConnection}
+              disabled={testingConnection || !connectionForm.name}
+            >
+              {testingConnection ? 'Test en cours...' : 'Tester'}
+            </button>
+            <button
+              class="btn-primary"
+              onclick={saveConnection}
+              disabled={savingConnection || !connectionForm.name}
+            >
+              {savingConnection ? 'Enregistrement...' : 'Enregistrer'}
+            </button>
+          </div>
+        </div>
+      </div>
     {/if}
 
     <!-- Memory Section -->
@@ -809,5 +1332,497 @@
     font-size: var(--font-size-xs);
     color: var(--text-muted);
     font-style: italic;
+  }
+
+  /* === Connections Section === */
+  .connections-section {
+    border-color: var(--info);
+    background: rgba(0, 212, 255, 0.03);
+  }
+
+  .no-connections {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--text-muted);
+  }
+
+  .no-conn-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: var(--spacing-md);
+    opacity: 0.5;
+  }
+
+  .no-connections .hint {
+    font-size: var(--font-size-xs);
+    margin-top: var(--spacing-sm);
+  }
+
+  .connections-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .connection-card {
+    background: var(--noir-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+  }
+
+  .connection-card.connected {
+    border-color: var(--cyber-green);
+    background: rgba(0, 255, 136, 0.05);
+  }
+
+  .conn-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .conn-icon {
+    font-size: 1.5rem;
+  }
+
+  .conn-info {
+    flex: 1;
+  }
+
+  .conn-info h4 {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-md);
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  .conn-type {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+  }
+
+  .conn-status {
+    font-size: var(--font-size-xs);
+    font-family: var(--font-mono);
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--noir-card);
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+  }
+
+  .conn-status.online {
+    background: rgba(0, 255, 136, 0.15);
+    color: var(--cyber-green);
+    border-color: var(--cyber-green);
+  }
+
+  .conn-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm) var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm);
+    background: var(--noir-card);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-xs);
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+  }
+
+  .conn-detail strong {
+    color: var(--text-muted);
+  }
+
+  .conn-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+  }
+
+  .btn-conn {
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-sm);
+    font-family: var(--font-mono);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border: 1px solid;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+  }
+
+  .btn-connect {
+    background: rgba(0, 255, 136, 0.15);
+    border-color: var(--cyber-green);
+    color: var(--cyber-green);
+  }
+
+  .btn-connect:hover:not(:disabled) {
+    background: rgba(0, 255, 136, 0.25);
+    box-shadow: 0 0 10px var(--cyber-green-glow);
+  }
+
+  .btn-disconnect {
+    background: rgba(255, 170, 0, 0.15);
+    border-color: var(--warning);
+    color: var(--warning);
+  }
+
+  .btn-disconnect:hover:not(:disabled) {
+    background: rgba(255, 170, 0, 0.25);
+  }
+
+  .btn-icon {
+    background: transparent;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: var(--spacing-xs);
+    border-radius: var(--border-radius-sm);
+    transition: all var(--transition-fast);
+  }
+
+  .btn-icon:hover {
+    background: var(--bg-hover);
+  }
+
+  .btn-icon.btn-danger:hover {
+    background: rgba(255, 68, 68, 0.2);
+  }
+
+  .spinner-sm {
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(0, 255, 136, 0.3);
+    border-top-color: var(--cyber-green);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  /* === Modal === */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .modal-content {
+    background: var(--noir-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow: auto;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .modal-header h3 {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-lg);
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  .btn-close {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+
+  .btn-close:hover {
+    color: var(--error);
+  }
+
+  .modal-body {
+    padding: var(--spacing-lg);
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-top: 1px solid var(--border-color);
+  }
+
+  .form-group {
+    margin-bottom: var(--spacing-md);
+  }
+
+  .form-group label {
+    display: block;
+    font-size: var(--font-size-sm);
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    background: var(--noir-surface);
+    color: var(--text-primary);
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: var(--cyber-green);
+    box-shadow: 0 0 8px var(--cyber-green-glow);
+  }
+
+  .form-row {
+    display: flex;
+    gap: var(--spacing-md);
+  }
+
+  .flex-grow {
+    flex: 1;
+  }
+
+  .checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+  }
+
+  .checkbox-group input {
+    width: auto;
+  }
+
+  .checkbox-group label {
+    margin-bottom: 0;
+  }
+
+  .btn-test {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--info);
+    border-radius: var(--border-radius-sm);
+    background: rgba(0, 212, 255, 0.15);
+    color: var(--info);
+    font-size: var(--font-size-sm);
+    font-family: var(--font-mono);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .btn-test:hover:not(:disabled) {
+    background: rgba(0, 212, 255, 0.25);
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+  }
+
+  .btn-test:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .test-result {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-sm);
+    margin-top: var(--spacing-md);
+  }
+
+  .test-result.success {
+    background: rgba(0, 255, 136, 0.1);
+    border: 1px solid var(--cyber-green);
+  }
+
+  .test-result.error {
+    background: rgba(255, 68, 68, 0.1);
+    border: 1px solid var(--error);
+  }
+
+  .test-icon {
+    font-size: 1.2rem;
+  }
+
+  .test-result.success .test-icon {
+    color: var(--cyber-green);
+  }
+
+  .test-result.error .test-icon {
+    color: var(--error);
+  }
+
+  .test-message {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+  }
+
+  .test-message small {
+    color: var(--text-muted);
+  }
+
+  /* === Glitch Section === */
+  .glitch-section {
+    border-color: var(--accent-pink);
+    background: rgba(255, 0, 128, 0.03);
+  }
+
+  .btn-toggle {
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: 20px;
+    font-size: var(--font-size-sm);
+    font-family: var(--font-mono);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border: 1px solid var(--border-color);
+    background: var(--noir-surface);
+    color: var(--text-muted);
+  }
+
+  .btn-toggle.active {
+    background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+    border-color: var(--accent-pink);
+    color: white;
+    box-shadow: 0 0 15px rgba(255, 0, 128, 0.4);
+  }
+
+  .btn-toggle:hover {
+    border-color: var(--accent-pink);
+  }
+
+  .easter-egg-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    margin-left: var(--spacing-sm);
+    font-size: 10px;
+    font-family: var(--font-mono);
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+    color: white;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .glitch-controls {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--noir-surface);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+  }
+
+  .glitch-controls.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .glitch-control {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .glitch-control label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .control-label {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+  }
+
+  .control-value {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--accent-pink);
+  }
+
+  .glitch-control input[type="range"] {
+    width: 100%;
+    height: 6px;
+    appearance: none;
+    background: var(--noir-card);
+    border-radius: 3px;
+    cursor: pointer;
+  }
+
+  .glitch-control input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(255, 0, 128, 0.5);
+    border: 2px solid var(--noir-profond);
+  }
+
+  .glitch-control input[type="range"]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 15px rgba(255, 0, 128, 0.7);
+    transform: scale(1.1);
+  }
+
+  .glitch-control input[type="range"]:disabled {
+    opacity: 0.5;
+  }
+
+  .glitch-control input[type="range"]:disabled::-webkit-slider-thumb {
+    background: var(--text-muted);
+    box-shadow: none;
+  }
+
+  .control-hints {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+  }
+
+  .btn-reset {
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-xs) var(--spacing-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: var(--font-size-xs);
+    font-family: var(--font-mono);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .btn-reset:hover {
+    border-color: var(--error);
+    color: var(--error);
+    background: rgba(255, 68, 68, 0.1);
   }
 </style>

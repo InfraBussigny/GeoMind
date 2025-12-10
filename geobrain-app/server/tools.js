@@ -8,6 +8,7 @@ import { existsSync } from 'fs';
 import { join, dirname, basename, extname } from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import * as connections from './connections.js';
 
 const execAsync = promisify(exec);
 
@@ -120,6 +121,51 @@ export const TOOL_DEFINITIONS = [
         }
       },
       required: ['path']
+    }
+  },
+  {
+    name: 'sql_query',
+    description: 'Exécuter une requête SQL sur une base de données PostgreSQL/PostGIS configurée. Connexions disponibles: SRV-FME PostgreSQL (base Prod avec schémas: assainissement, bdco, divers, externe, nature, pts_interet, route). Utilisez cet outil pour interroger les données cadastrales, parcelles, bâtiments, réseaux.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'Requête SQL à exécuter (SELECT uniquement recommandé)'
+        },
+        connection_name: {
+          type: 'string',
+          description: 'Nom de la connexion à utiliser (défaut: "SRV-FME PostgreSQL"). Connexions disponibles: "SRV-FME PostgreSQL" (base Prod), "SRV-FME Test" (base Test)'
+        }
+      },
+      required: ['query']
+    }
+  },
+  {
+    name: 'list_db_connections',
+    description: 'Lister les connexions de bases de données configurées et leur statut (connecté/déconnecté).',
+    input_schema: {
+      type: 'object',
+      properties: {},
+      required: []
+    }
+  },
+  {
+    name: 'list_db_tables',
+    description: 'Lister les tables disponibles dans une base de données, avec leur schéma et taille.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        connection_name: {
+          type: 'string',
+          description: 'Nom de la connexion (défaut: "SRV-FME PostgreSQL")'
+        },
+        schema: {
+          type: 'string',
+          description: 'Filtrer par schéma (optionnel, ex: "bdco", "assainissement")'
+        }
+      },
+      required: []
     }
   }
 ];
@@ -325,6 +371,121 @@ async function executeCreateDirectory(input) {
 }
 
 // ============================================
+// OUTILS BASE DE DONNÉES
+// ============================================
+
+async function executeSqlQuery(input) {
+  const { query, connection_name = 'SRV-FME PostgreSQL' } = input;
+
+  try {
+    // Trouver la connexion par nom
+    const connList = connections.listConnections();
+    const conn = connList.find(c => c.name === connection_name);
+
+    if (!conn) {
+      return {
+        success: false,
+        error: `Connexion "${connection_name}" non trouvée. Connexions disponibles: ${connList.map(c => c.name).join(', ')}`
+      };
+    }
+
+    // Se connecter si pas déjà connecté
+    if (conn.status !== 'connected') {
+      try {
+        await connections.connect(conn.id);
+      } catch (e) {
+        return { success: false, error: `Impossible de se connecter: ${e.message}` };
+      }
+    }
+
+    // Exécuter la requête
+    const result = await connections.executeSQL(conn.id, query);
+
+    // Limiter le nombre de lignes retournées
+    const maxRows = 100;
+    const truncated = result.rows.length > maxRows;
+    const rows = truncated ? result.rows.slice(0, maxRows) : result.rows;
+
+    return {
+      success: true,
+      rowCount: result.rowCount,
+      rows,
+      fields: result.fields?.map(f => f.name) || [],
+      duration: result.duration,
+      truncated,
+      message: truncated ? `Résultats tronqués à ${maxRows} lignes (${result.rowCount} total)` : undefined
+    };
+  } catch (error) {
+    return { success: false, error: `Erreur SQL: ${error.message}` };
+  }
+}
+
+async function executeListDbConnections(input) {
+  try {
+    const connList = connections.listConnections();
+    return {
+      success: true,
+      connections: connList.map(c => ({
+        name: c.name,
+        type: c.type,
+        host: c.host,
+        database: c.database,
+        status: c.status,
+        lastUsed: c.lastUsed
+      }))
+    };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
+async function executeListDbTables(input) {
+  const { connection_name = 'SRV-FME PostgreSQL', schema } = input;
+
+  try {
+    // Trouver la connexion
+    const connList = connections.listConnections();
+    const conn = connList.find(c => c.name === connection_name);
+
+    if (!conn) {
+      return { success: false, error: `Connexion "${connection_name}" non trouvée` };
+    }
+
+    // Se connecter si nécessaire
+    if (conn.status !== 'connected') {
+      await connections.connect(conn.id);
+    }
+
+    // Requête pour lister les tables
+    let query = `
+      SELECT
+        table_schema as schema,
+        table_name as table,
+        pg_size_pretty(pg_total_relation_size(quote_ident(table_schema) || '.' || quote_ident(table_name))) as size
+      FROM information_schema.tables
+      WHERE table_schema NOT IN ('pg_catalog', 'information_schema', 'pg_toast', 'tiger', 'tiger_data', 'topology')
+        AND table_type = 'BASE TABLE'
+    `;
+
+    if (schema) {
+      query += ` AND table_schema = '${schema.replace(/'/g, "''")}'`;
+    }
+
+    query += ' ORDER BY table_schema, table_name';
+
+    const result = await connections.executeSQL(conn.id, query);
+
+    return {
+      success: true,
+      tables: result.rows,
+      total: result.rowCount
+    };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
+// ============================================
 // DISPATCHER D'OUTILS
 // ============================================
 
@@ -346,6 +507,12 @@ export async function executeTool(toolName, toolInput) {
       return executeWebFetch(toolInput);
     case 'create_directory':
       return executeCreateDirectory(toolInput);
+    case 'sql_query':
+      return executeSqlQuery(toolInput);
+    case 'list_db_connections':
+      return executeListDbConnections(toolInput);
+    case 'list_db_tables':
+      return executeListDbTables(toolInput);
     default:
       return { success: false, error: `Outil inconnu: ${toolName}` };
   }
@@ -357,25 +524,122 @@ export async function executeTool(toolName, toolInput) {
 
 export const AGENT_SYSTEM_PROMPT = `Tu es GeoBrain, l'assistant IA de Marc, responsable SIT à la commune de Bussigny.
 
-Tu as accès aux outils suivants pour aider l'utilisateur:
+## OUTILS DISPONIBLES
+
+**Fichiers:**
 - read_file: Lire des fichiers locaux
 - write_file: Créer ou modifier des fichiers
 - list_directory: Lister le contenu d'un dossier
-- execute_command: Exécuter des commandes shell (git, npm, python, etc.)
-- web_search: Rechercher sur le web
-- web_fetch: Récupérer le contenu d'une page web
 - create_directory: Créer des dossiers
 
-IMPORTANT:
-- Utilise les outils quand c'est nécessaire pour accomplir la tâche
-- Pour les fichiers, préfère les chemins absolus Windows (C:\\Users\\...)
-- Sois prudent avec execute_command, évite les commandes destructives
-- Quand tu écris du code, utilise les blocs de code markdown avec le langage spécifié
+**Base de données PostgreSQL/PostGIS:**
+- sql_query: Exécuter une requête SQL (connection_name="SRV-FME PostgreSQL" par défaut)
+- list_db_connections: Voir les connexions disponibles
+- list_db_tables: Lister les tables d'un schéma
 
-Tu es expert en:
-- SIG et géodonnées (QGIS, PostGIS, FME)
-- SQL spatial
-- Python et PyQGIS
-- Standards suisses (MN95, Interlis)
+**Autres:**
+- execute_command: Commandes shell (git, npm, python)
+- web_search / web_fetch: Recherches web
 
-Réponds de manière concise et technique.`;
+## BASE DE DONNÉES BUSSIGNY (Prod sur srv-fme:5432)
+SRID: 2056 (MN95 / Swiss CH1903+ LV95)
+
+### SCHÉMA BDCO - Cadastre communal (source: RF Vaud)
+| Table | Description | Géométrie | Colonnes clés |
+|-------|-------------|-----------|---------------|
+| bdco_parcelle | Parcelles cadastrales | POLYGON | numero, identdn (VD0157-XXXX), genre, surface_rf (m²) |
+| bdco_batiment | Bâtiments hors-sol | POLYGON | numero (EGID), genre, designation, surface_vd (m²) |
+| bdco_batiment_souterrain | Constructions souterraines | POLYGON | numero, surface_vd |
+| bdco_adresse_entree | Adresses (points d'entrée) | POINT | numero_maison, texte (nom rue), designation |
+| bdco_adresse_rue_lin | Axes de rues | LINESTRING | texte, genre |
+| bdco_ddp | Droits distincts permanents | POLYGON | numero, designation |
+| bdco_cs_dur | Surfaces dures (routes, parkings) | POLYGON | genre, surface |
+| bdco_cs_vert | Surfaces vertes | POLYGON | genre, surface |
+| bdco_point_limite | Points limites (bornes) | POINT | - |
+
+### SCHÉMA ASSAINISSEMENT - Réseau eaux usées/pluviales (PGEE)
+| Table | Description | Géométrie | Colonnes clés |
+|-------|-------------|-----------|---------------|
+| by_ass_chambre | Chambres de visite | POINT | designation, fonction_hydro (EP/EU/UN), etat, profondeur, proprietaire |
+| by_ass_collecteur | Conduites | LINESTRING | materiau, fonction_hydro, largeur_profil (mm), etat |
+| by_ass_couvercle | Couvercles | POINT | forme_couvercle, diametre, cote |
+
+### SCHÉMA ROUTE - Réseau routier
+| Table | Description | Colonnes clés |
+|-------|-------------|---------------|
+| by_rte_troncon | Tronçons de route | nom_rue, classe_rte, type_revetement, vitesse |
+| by_rte_arret_tp | Arrêts transports publics | - |
+| by_rte_zone_stationnement | Zones parking | - |
+
+### SCHÉMA EXTERNE - Données fournisseurs (SEL)
+| Table | Description |
+|-------|-------------|
+| sel_conduite | Conduites eau potable |
+| sel_hydrant | Bornes hydrantes |
+| sel_vanne | Vannes réseau eau |
+
+## REQUÊTES TYPES
+\`\`\`sql
+-- Compter parcelles
+SELECT COUNT(*) FROM bdco.bdco_parcelle
+
+-- Parcelles par genre avec surface
+SELECT genre, COUNT(*) as nb, SUM(surface_rf) as surface_m2
+FROM bdco.bdco_parcelle GROUP BY genre ORDER BY nb DESC
+
+-- Bâtiments
+SELECT COUNT(*), SUM(surface_vd) FROM bdco.bdco_batiment
+
+-- Longueur collecteurs par type
+SELECT fonction_hydro, SUM(ST_Length(geom))::int as metres
+FROM assainissement.by_ass_collecteur GROUP BY fonction_hydro
+
+-- Rues de Bussigny
+SELECT DISTINCT texte FROM bdco.bdco_adresse_rue_lin ORDER BY texte
+\`\`\`
+
+## RÈGLES DE FIABILITÉ (CRITIQUES)
+
+### 1. JAMAIS D'INVENTION DE DONNÉES
+- Ne JAMAIS inventer, estimer ou deviner des chiffres
+- Si une requête échoue → dire "Je n'ai pas pu obtenir cette information"
+- Si le résultat est NULL ou vide → le dire clairement
+- Ne JAMAIS arrondir sans le préciser explicitement
+
+### 2. TOUJOURS VÉRIFIER AVANT DE RÉPONDRE
+- Vérifie que la table existe avant d'y accéder
+- Vérifie que les colonnes utilisées existent (cf. schéma ci-dessus)
+- Si doute sur une colonne → utiliser list_db_tables d'abord
+- Préfère les requêtes simples et directes aux requêtes complexes
+
+### 3. CLARIFIER LES AMBIGUÏTÉS
+- "Parcelles" = bdco.bdco_parcelle (cadastre officiel)
+- "Bâtiments" = bdco.bdco_batiment (hors-sol uniquement)
+- "Surface" = préciser si surface_rf (officielle) ou surface_calcul (géométrique)
+- Si la demande est ambiguë → poser une question de clarification
+
+### 4. FORMAT DES RÉPONSES
+- Toujours citer la source: "Selon la table bdco.bdco_parcelle..."
+- Donner le nombre exact retourné par la requête
+- Pour les surfaces: préciser l'unité (m², ha, km²)
+- Pour les longueurs: préciser l'unité (m, km)
+- Afficher la requête SQL utilisée pour transparence
+
+### 5. GESTION DES ERREURS
+- Si erreur SQL → NE PAS inventer de réponse, dire qu'il y a eu une erreur
+- Si connexion échoue → suggérer de vérifier la connexion dans Paramètres
+- Si table inexistante → proposer list_db_tables pour explorer
+
+### 6. LIMITES À RESPECTER
+- Les données BDCO sont celles de Bussigny uniquement (VD0157)
+- Les données peuvent avoir un décalage avec la réalité (mise à jour périodique)
+- Ne pas extrapoler au-delà des données disponibles
+
+## RÈGLES TECHNIQUES
+1. Utilise sql_query DIRECTEMENT - tu as accès à la base, ne demande PAS les credentials
+2. Pour Bussigny: identdn LIKE 'VD0157%' ou numero_commune = 5157
+3. Préfère les chemins Windows absolus: C:\\Users\\...
+4. Évite les commandes destructives avec execute_command
+5. Limite les résultats avec LIMIT si > 100 lignes attendues
+
+Tu es expert SIG, PostGIS, FME, QGIS et standards suisses. Ta priorité absolue est la FIABILITÉ des données.`;

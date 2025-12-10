@@ -1,3 +1,37 @@
+## Session 12 (suite) - 10 décembre 2025
+**Thème principal** : FileExplorer drives + Language Selector + Glitch System (continuation)
+
+### Travail effectué
+
+#### 1. Fix endpoint list-drives
+L'endpoint `/api/tools/list-drives` retournait un tableau vide car le parsing wmic était incorrect :
+- **Problème** : wmic retourne les colonnes dans l'ordre alphabétique (Description, Name, VolumeName)
+- **Solution** : Regex pour extraire la lettre du disque (`/([A-Z]:)/`) + gestion des line endings Windows
+- **Résultat** : 5 disques détectés (C:, L:, M:, R:, W:)
+
+### État actuel
+- **Frontend** : http://localhost:5176 (ou port disponible)
+- **Backend** : http://localhost:3001
+
+### Fonctionnalités implémentées (session 12)
+1. **FileExplorer avec navigation disques** (expert/god mode)
+   - Bouton parent (↑) pour remonter
+   - Bouton disques pour voir tous les lecteurs
+   - Liste des disques disponibles (locaux + réseau)
+
+2. **Éditeur : Sélecteur de langue + templates**
+   - Sélecteur côte à côte avec bouton Nouveau
+   - Templates par langage (SQL, Python, JS, TS, JSON, Shell, XML, MD)
+   - Bouton Formater retiré
+
+3. **Système de Glitchs**
+   - Toggle on/off dans Paramètres (god mode)
+   - Sliders fréquence (1-10) et intensité (1-10)
+   - Easter eggs Matrix pour débloquer en mode non-god
+   - GlitchEngine dynamique basé sur les paramètres
+
+---
+
 ## Session 9 (suite) - 10 décembre 2025
 **Thème principal** : Gardes-fous God Mode + UI Server Restart + Connexions DB
 

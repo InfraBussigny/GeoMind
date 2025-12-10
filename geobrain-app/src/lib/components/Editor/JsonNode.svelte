@@ -1,4 +1,6 @@
 <script lang="ts">
+  import JsonNode from './JsonNode.svelte';
+
   interface Props {
     value: any;
     nodeKey: string;
@@ -7,11 +9,17 @@
 
   let { value, nodeKey, expanded = false }: Props = $props();
 
-  let isExpanded = $state(expanded);
+  let isExpanded = $state(false);
 
-  const isObject = typeof value === 'object' && value !== null;
-  const isArray = Array.isArray(value);
-  const isEmpty = isObject && Object.keys(value).length === 0;
+  // Sync with prop on mount
+  $effect(() => {
+    isExpanded = expanded;
+  });
+
+  // Use $derived for reactive computed values
+  const isObject = $derived(typeof value === 'object' && value !== null);
+  const isArray = $derived(Array.isArray(value));
+  const isEmpty = $derived(isObject && Object.keys(value).length === 0);
 
   function toggle() {
     isExpanded = !isExpanded;
@@ -38,7 +46,7 @@
     {#if isExpanded}
       <div class="json-children">
         {#each Object.entries(value) as [k, v]}
-          <svelte:self value={v} nodeKey={k} expanded={false} />
+          <JsonNode value={v} nodeKey={k} expanded={false} />
         {/each}
       </div>
       <span class="json-bracket">{isArray ? ']' : '}'}</span>

@@ -373,3 +373,109 @@ export const canvasLayers = writable<string[]>([]);
 
 // Settings
 export const settingsOpen = writable(false);
+
+// ============================================
+// GLITCH EFFECTS SYSTEM
+// ============================================
+
+export interface GlitchSettings {
+  enabled: boolean;            // Glitchs activés
+  frequency: number;           // 1-10, fréquence des glitchs
+  intensity: number;           // 1-10, intensité des effets
+  unlockedByEasterEgg: boolean; // Si débloqué par easter egg dans mode non-god
+}
+
+const defaultGlitchSettings: GlitchSettings = {
+  enabled: true,              // Activé par défaut en god mode
+  frequency: 5,               // Moyen
+  intensity: 5,               // Moyen
+  unlockedByEasterEgg: false
+};
+
+function createGlitchStore() {
+  const stored = loadPreference<GlitchSettings>('geobrain-glitch', defaultGlitchSettings);
+  const { subscribe, set, update } = writable<GlitchSettings>(stored);
+
+  return {
+    subscribe,
+    set: (value: GlitchSettings) => {
+      savePreference('geobrain-glitch', value);
+      set(value);
+    },
+    toggle: () => {
+      update(current => {
+        const updated = { ...current, enabled: !current.enabled };
+        savePreference('geobrain-glitch', updated);
+        return updated;
+      });
+    },
+    setFrequency: (freq: number) => {
+      update(current => {
+        const updated = { ...current, frequency: Math.max(1, Math.min(10, freq)) };
+        savePreference('geobrain-glitch', updated);
+        return updated;
+      });
+    },
+    setIntensity: (intensity: number) => {
+      update(current => {
+        const updated = { ...current, intensity: Math.max(1, Math.min(10, intensity)) };
+        savePreference('geobrain-glitch', updated);
+        return updated;
+      });
+    },
+    unlockEasterEgg: () => {
+      update(current => {
+        const updated = { ...current, unlockedByEasterEgg: true, enabled: true };
+        savePreference('geobrain-glitch', updated);
+        return updated;
+      });
+    },
+    reset: () => {
+      savePreference('geobrain-glitch', defaultGlitchSettings);
+      set(defaultGlitchSettings);
+    }
+  };
+}
+
+export const glitchSettings = createGlitchStore();
+
+// Séquence Konami pour easter egg (haut, haut, bas, bas, gauche, droite, gauche, droite, b, a)
+export const KONAMI_CODE = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+
+// Phrases easter egg pour activer les glitchs en mode non-god
+// Doivent être dites à l'assistant
+export const GLITCH_EASTER_EGG_PHRASES = [
+  'there is no spoon',       // Matrix
+  'il n\'y a pas de cuillère',
+  'wake up neo',
+  'follow the white rabbit',
+  'suis le lapin blanc',
+  'the matrix has you',
+  'je vois la matrice',
+  'red pill',                // Pilule rouge
+  'pilule rouge',
+  'hack the planet',         // Hackers
+  'access mainframe',
+  'sudo rm -rf reality',     // Blague geek
+  'glitch in the matrix',
+  'bug dans la matrice'
+];
+
+// Vérifier si un message contient une phrase easter egg glitch
+export function checkGlitchEasterEgg(message: string): boolean {
+  const normalized = message.toLowerCase().trim();
+  return GLITCH_EASTER_EGG_PHRASES.some(phrase => normalized.includes(phrase));
+}
+
+// État dérivé: est-ce que les glitchs doivent s'afficher?
+export const shouldShowGlitch = derived(
+  [appMode, glitchSettings],
+  ([$mode, $glitch]) => {
+    // En god mode: selon les paramètres
+    if ($mode === 'god') {
+      return $glitch.enabled;
+    }
+    // En mode standard/expert: seulement si débloqué par easter egg ET activé
+    return $glitch.unlockedByEasterEgg && $glitch.enabled;
+  }
+);

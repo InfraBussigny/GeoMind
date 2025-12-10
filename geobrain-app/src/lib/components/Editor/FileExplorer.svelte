@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { listDirectory, readFile } from '$lib/services/api';
+  import { listDirectory, readFile, listDrives } from '$lib/services/api';
+  import { appMode } from '$lib/stores/app';
 
   interface FileNode {
     name: string;
@@ -8,6 +9,7 @@
     isExpanded?: boolean;
     children?: FileNode[];
     isLoading?: boolean;
+    label?: string;
   }
 
   interface Props {
@@ -18,10 +20,53 @@
   let { rootPath = 'C:/Users/zema/GeoBrain', onFileSelect }: Props = $props();
 
   let files = $state<FileNode[]>([]);
+  let drives = $state<FileNode[]>([]);
+  let currentRoot = $state(rootPath);
   let selectedPath = $state<string | null>(null);
   let searchQuery = $state('');
   let isLoading = $state(true);
   let error = $state<string | null>(null);
+  let showDrives = $state(false);
+
+  // Charger les disques au démarrage en mode expert/god
+  $effect(() => {
+    if ($appMode === 'expert' || $appMode === 'god') {
+      loadDrives();
+    }
+  });
+
+  async function loadDrives() {
+    try {
+      const driveList = await listDrives();
+      drives = driveList.map(d => ({
+        name: d.name,
+        path: d.path,
+        label: d.label,
+        isDirectory: true,
+        isExpanded: false,
+        children: []
+      }));
+    } catch (e) {
+      console.error('Error loading drives:', e);
+    }
+  }
+
+  function selectDrive(drive: FileNode) {
+    currentRoot = drive.path;
+    showDrives = false;
+    loadRootDirectory();
+  }
+
+  function goUp() {
+    const parts = currentRoot.replace(/\/$/, '').split('/');
+    if (parts.length > 1) {
+      parts.pop();
+      currentRoot = parts.join('/') || parts[0] + '/';
+      loadRootDirectory();
+    } else {
+      showDrives = true;
+    }
+  }
 
   // File type icons and colors
   const fileTypes: Record<string, { icon: string; color: string }> = {
@@ -53,17 +98,18 @@
 
   // Load root directory on mount
   $effect(() => {
-    loadDirectory(rootPath);
+    loadRootDirectory();
   });
 
   async function loadDirectory(path: string): Promise<FileNode[]> {
     try {
-      const result = await listDirectory(path);
-      if (result.success && result.entries) {
-        return result.entries
+      const entries = await listDirectory(path);
+      // API returns array directly: [{name, isDirectory, isFile}]
+      if (Array.isArray(entries)) {
+        return entries
           .map((entry: any) => ({
             name: entry.name,
-            path: entry.path,
+            path: `${path}/${entry.name}`.replace(/\\/g, '/').replace(/\/+/g, '/'),
             isDirectory: entry.isDirectory,
             isExpanded: false,
             children: entry.isDirectory ? [] : undefined,
@@ -86,17 +132,15 @@
   async function loadRootDirectory() {
     isLoading = true;
     error = null;
+    showDrives = false;
     try {
-      files = await loadDirectory(rootPath);
+      files = await loadDirectory(currentRoot);
     } catch (e) {
       error = 'Impossible de charger le repertoire';
     } finally {
       isLoading = false;
     }
   }
-
-  // Initial load
-  loadRootDirectory();
 
   async function toggleDirectory(node: FileNode) {
     if (!node.isDirectory) return;
@@ -153,6 +197,25 @@
 </script>
 
 <div class="file-explorer">
+  <!-- Navigation bar (expert/god mode) -->
+  {#if $appMode === 'expert' || $appMode === 'god'}
+    <div class="nav-bar">
+      <button class="nav-btn" onclick={goUp} title="Dossier parent">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 15l-6-6-6 6"/>
+        </svg>
+      </button>
+      <button class="nav-btn drives-btn" onclick={() => showDrives = !showDrives} title="Afficher les disques">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="4" width="20" height="5" rx="1"/>
+          <rect x="2" y="10" width="20" height="5" rx="1"/>
+          <rect x="2" y="16" width="20" height="5" rx="1"/>
+        </svg>
+      </button>
+      <span class="current-path" title={currentRoot}>{currentRoot}</span>
+    </div>
+  {/if}
+
   <!-- Search bar -->
   <div class="search-bar">
     <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -173,20 +236,36 @@
     </button>
   </div>
 
-  <!-- File tree -->
-  <div class="file-tree">
-    {#if isLoading}
-      <div class="loading">Chargement...</div>
-    {:else if error}
-      <div class="error">{error}</div>
-    {:else if filteredFiles.length === 0}
-      <div class="empty">Aucun fichier</div>
-    {:else}
-      {#each filteredFiles as node}
-        {@render fileNode(node, 0)}
+  <!-- Drives list (when showDrives) -->
+  {#if showDrives && drives.length > 0}
+    <div class="drives-list">
+      {#each drives as drive}
+        <button class="drive-item" onclick={() => selectDrive(drive)}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="4" width="20" height="16" rx="2"/>
+            <path d="M6 8h.01"/>
+          </svg>
+          <span class="drive-name">{drive.name}</span>
+          <span class="drive-label">{drive.label}</span>
+        </button>
       {/each}
-    {/if}
-  </div>
+    </div>
+  {:else}
+    <!-- File tree -->
+    <div class="file-tree">
+      {#if isLoading}
+        <div class="loading">Chargement...</div>
+      {:else if error}
+        <div class="error">{error}</div>
+      {:else if filteredFiles.length === 0}
+        <div class="empty">Aucun fichier</div>
+      {:else}
+        {#each filteredFiles as node}
+          {@render fileNode(node, 0)}
+        {/each}
+      {/if}
+    </div>
+  {/if}
 </div>
 
 {#snippet fileNode(node: FileNode, depth: number)}
@@ -291,6 +370,86 @@
     flex-direction: column;
     height: 100%;
     background: var(--noir-surface);
+  }
+
+  .nav-bar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--noir-card);
+  }
+
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.15s;
+  }
+
+  .nav-btn:hover {
+    background: var(--bg-hover);
+    color: var(--cyber-green);
+  }
+
+  .current-path {
+    flex: 1;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .drives-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px;
+    overflow-y: auto;
+  }
+
+  .drive-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    background: var(--noir-card);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .drive-item:hover {
+    background: var(--bg-hover);
+    border-left: 2px solid var(--cyber-green);
+  }
+
+  .drive-item svg {
+    color: var(--accent-cyan);
+  }
+
+  .drive-name {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 12px;
+  }
+
+  .drive-label {
+    font-size: 11px;
+    color: var(--text-muted);
   }
 
   .search-bar {
