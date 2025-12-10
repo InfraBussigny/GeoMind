@@ -951,6 +951,24 @@ app.post('/api/security/validate', (req, res) => {
   res.json(result);
 });
 
+// Endpoint pour évaluer le niveau de dangerosité d'une commande/requête
+app.post('/api/security/evaluate-danger', (req, res) => {
+  const { command } = req.body;
+
+  if (!command) {
+    return res.status(400).json({ error: 'command requis' });
+  }
+
+  const dangerEval = security.evaluateDangerLevel(command);
+  const warning = security.generateWarningMessage(dangerEval);
+
+  res.json({
+    ...dangerEval,
+    warning,
+    isBlocked: security.isAlwaysBlocked(command)
+  });
+});
+
 // Get available tools for a mode
 app.get('/api/security/tools/:mode', (req, res) => {
   const { mode } = req.params;
@@ -1040,15 +1058,18 @@ app.post('/api/tools/list-directory', async (req, res) => {
 
 app.post('/api/tools/execute-command', async (req, res) => {
   try {
-    const { command, cwd, mode = 'standard' } = req.body;
+    const { command, cwd, mode = 'standard', confirmed = false } = req.body;
 
-    // Valider l'opération selon le mode
-    const validation = security.validateOperation({ type: 'execute_command', command }, mode);
+    // Valider l'opération selon le mode (avec flag confirmed pour bypass confirmation)
+    const validation = security.validateOperation({ type: 'execute_command', command, confirmed }, mode);
     if (!validation.allowed) {
       return res.status(403).json({
         error: validation.error,
-        blocked: true,
+        blocked: validation.blocked || false,
         needsConfirmation: validation.needsConfirmation || false,
+        dangerLevel: validation.dangerLevel || null,
+        dangerColor: validation.dangerColor || null,
+        warning: validation.warning || null,
         requiredMode: mode === 'standard' ? 'expert' : (mode === 'expert' ? 'god' : null)
       });
     }
@@ -1071,14 +1092,18 @@ app.post('/api/tools/execute-command', async (req, res) => {
 // Endpoint pour les requêtes SQL (avec sécurité)
 app.post('/api/tools/sql-query', async (req, res) => {
   try {
-    const { query, database, mode = 'standard' } = req.body;
+    const { query, database, mode = 'standard', confirmed = false } = req.body;
 
-    // Valider l'opération selon le mode
-    const validation = security.validateOperation({ type: 'sql_query', query }, mode);
+    // Valider l'opération selon le mode (avec flag confirmed pour bypass confirmation)
+    const validation = security.validateOperation({ type: 'sql_query', query, confirmed }, mode);
     if (!validation.allowed) {
       return res.status(403).json({
         error: validation.error,
-        blocked: true,
+        blocked: validation.blocked || false,
+        needsConfirmation: validation.needsConfirmation || false,
+        dangerLevel: validation.dangerLevel || null,
+        dangerColor: validation.dangerColor || null,
+        warning: validation.warning || null,
         allowedInMode: mode === 'standard' ? 'Seules les requêtes SELECT sont autorisées' : null
       });
     }
@@ -1347,10 +1372,202 @@ app.get('/api/geoportal/themes', async (req, res) => {
 });
 
 // ============================================
+// CONNECTIONS MANAGEMENT
+// ============================================
+
+import * as connections from './connections.js';
+
+// Liste des types de connexions supportés
+app.get('/api/connections/types', (req, res) => {
+  res.json(connections.CONNECTION_TYPES);
+});
+
+// Liste toutes les connexions
+app.get('/api/connections', (req, res) => {
+  try {
+    const list = connections.listConnections();
+    res.json(list);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Ajoute une nouvelle connexion
+app.post('/api/connections', (req, res) => {
+  try {
+    const result = connections.addConnection(req.body);
+    res.json({ success: true, ...result });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Met à jour une connexion
+app.put('/api/connections/:id', (req, res) => {
+  try {
+    const result = connections.updateConnection(req.params.id, req.body);
+    res.json({ success: true, ...result });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Supprime une connexion
+app.delete('/api/connections/:id', (req, res) => {
+  try {
+    connections.deleteConnection(req.params.id);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Teste une connexion (sans la sauvegarder)
+app.post('/api/connections/test', async (req, res) => {
+  try {
+    const result = await connections.testConnection(req.body);
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+// Se connecte à un serveur
+app.post('/api/connections/:id/connect', async (req, res) => {
+  try {
+    const result = await connections.connect(req.params.id);
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+// Se déconnecte d'un serveur
+app.post('/api/connections/:id/disconnect', (req, res) => {
+  try {
+    const result = connections.disconnect(req.params.id);
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+// Exécute une requête SQL
+app.post('/api/connections/:id/sql', async (req, res) => {
+  try {
+    const { query } = req.body;
+    if (!query) {
+      return res.status(400).json({ error: 'Query required' });
+    }
+    const result = await connections.executeSQL(req.params.id, query);
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+// Exécute une commande SSH
+app.post('/api/connections/:id/ssh', async (req, res) => {
+  try {
+    const { command } = req.body;
+    if (!command) {
+      return res.status(400).json({ error: 'Command required' });
+    }
+    const result = await connections.executeSSH(req.params.id, command);
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+// Récupère les capabilities OGC
+app.get('/api/connections/:id/capabilities', async (req, res) => {
+  try {
+    const result = await connections.getOGCCapabilities(req.params.id);
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+// ============================================
+// SERVER MANAGEMENT ENDPOINTS
+// ============================================
+
+// Server status endpoint
+app.get('/api/server/status', (req, res) => {
+  res.json({
+    status: 'running',
+    uptime: process.uptime(),
+    startTime: new Date(Date.now() - process.uptime() * 1000).toISOString(),
+    nodeVersion: process.version,
+    memoryUsage: process.memoryUsage(),
+    pid: process.pid
+  });
+});
+
+// Restart endpoint - mode expert/god uniquement
+app.post('/api/server/restart', async (req, res) => {
+  const { mode = 'standard' } = req.body;
+
+  // Vérifier les permissions
+  if (mode === 'standard') {
+    return res.status(403).json({
+      error: 'Redémarrage serveur non autorisé en mode standard. Passez en mode expert.'
+    });
+  }
+
+  console.log('\n🔄 Redémarrage demandé depuis l\'interface...\n');
+
+  // Envoyer la réponse avant de redémarrer
+  res.json({
+    success: true,
+    message: 'Redémarrage en cours...',
+    willRestartIn: 1500
+  });
+
+  // Attendre que la réponse soit envoyée
+  setTimeout(async () => {
+    const { spawn } = await import('child_process');
+    const path = await import('path');
+    const { fileURLToPath } = await import('url');
+
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+
+    console.log('🔄 Lancement du nouveau processus serveur...');
+
+    // Lancer un nouveau processus Node.js détaché
+    const child = spawn('node', ['index.js'], {
+      cwd: __dirname,
+      detached: true,
+      stdio: 'ignore',
+      shell: true
+    });
+
+    // Détacher le processus enfant
+    child.unref();
+
+    console.log('✅ Nouveau processus lancé, arrêt de l\'ancien...');
+
+    // Fermer le serveur actuel proprement
+    server.close(() => {
+      console.log('👋 Ancien serveur arrêté');
+      process.exit(0);
+    });
+
+    // Force exit après 2 secondes si le close ne fonctionne pas
+    setTimeout(() => {
+      process.exit(0);
+    }, 2000);
+  }, 500);
+});
+
+// ============================================
 // START SERVER
 // ============================================
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`
 ╔════════════════════════════════════════════╗
 ║         GeoBrain Backend Server            ║
@@ -1359,4 +1576,13 @@ app.listen(PORT, () => {
 ║  Press Ctrl+C to stop                      ║
 ╚════════════════════════════════════════════╝
   `);
+});
+
+// Graceful shutdown handler
+process.on('SIGTERM', () => {
+  console.log('\n📴 Signal SIGTERM reçu, arrêt gracieux...');
+  server.close(() => {
+    console.log('✅ Serveur arrêté proprement');
+    process.exit(0);
+  });
 });

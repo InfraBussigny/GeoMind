@@ -1,7 +1,7 @@
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 
-export type ModuleType = 'chat' | 'canvas' | 'editor' | 'docgen' | 'settings';
+export type ModuleType = 'chat' | 'canvas' | 'editor' | 'docgen' | 'connections' | 'settings';
 
 export const currentModule = writable<ModuleType>('chat');
 export const sidebarCollapsed = writable(false);
@@ -200,7 +200,7 @@ export const appMode = createAppModeStore();
 export const visibleModules = derived(appMode, ($mode) => {
   if ($mode === 'expert' || $mode === 'god') {
     // Expert et God: tous les modules
-    return ['chat', 'canvas', 'editor', 'docgen', 'settings'] as ModuleType[];
+    return ['chat', 'canvas', 'editor', 'docgen', 'connections', 'settings'] as ModuleType[];
   }
   // Mode standard: seulement Assistant et Cartes
   return ['chat', 'canvas'] as ModuleType[];

@@ -1,3 +1,67 @@
+## Session 9 (suite) - 10 décembre 2025
+**Thème principal** : Gardes-fous God Mode + UI Server Restart + Connexions DB
+
+### Travail effectué (avant crash CC)
+
+#### 1. Gardes-fous God Mode (security.js)
+Système de sécurité complet même pour le mode god :
+- **ALWAYS_BLOCKED_COMMANDS** : commandes JAMAIS autorisées
+  - Formatage disques : `format c:`, `diskpart`, `fdisk`, `dd if=/dev/zero`
+  - Suppression système : `del /s c:\windows`, `rm -rf /`, `rd /s c:\users`
+  - Boot/BIOS : `bcdedit /delete`, `fixmbr`, `bootrec`
+  - Fork bombs : `:(){ :|:& };:`, `%0|%0`
+- **DANGER_LEVELS** : 6 niveaux (SAFE→BLOCKED) avec codes couleurs
+- **COMMAND_RISK_PATTERNS** : évaluation risque pour SQL/shell
+  - CRITICAL : DROP DATABASE, DELETE sans WHERE, rm -rf
+  - HIGH : UPDATE, ALTER TABLE, kill -9, taskkill /f
+  - MEDIUM : INSERT, npm install, git push
+- **Fonctions** : `isAlwaysBlocked()`, `evaluateDangerLevel()`, `generateWarningMessage()`
+- **validateOperation()** modifié : bloque/demande confirmation même en god mode
+
+#### 2. UI Redémarrage Serveur (SettingsModule.svelte)
+Nouvelle section "Serveur Backend" dans Paramètres (expert/god) :
+- Affichage : statut, uptime, mémoire, version Node.js, PID
+- Bouton "Redémarrer" avec spinner et polling reconnexion
+- Auto-détection retour serveur après restart
+
+#### 3. Endpoints Backend (index.js)
+- `GET /api/server/status` : infos serveur (uptime, pid, memory)
+- `POST /api/server/restart` : spawn nouveau process Node détaché puis exit
+- `POST /api/security/evaluate-danger` : évaluation dangerosité commande
+- Modification endpoints execute/sql : ajout flag `confirmed` pour bypass confirmation
+
+#### 4. DangerConfirmDialog.svelte (nouveau)
+Dialog modal pour confirmation opérations risquées :
+- Badge niveau de danger coloré
+- Affichage de la commande et conséquence
+- Thème CMY spécial pour god mode
+- Boutons Annuler / Confirmer
+
+#### 5. Connexions DB (partiel)
+- Fichier `connections.js` créé avec gestion PostgreSQL/Oracle
+- Endpoints CRUD `/api/connections/*`
+- UI dans SettingsModule non terminée
+
+### État au moment du crash
+- **Frontend** : HMR OK sur port 5173
+- **Backend** : port 3001 occupé par ancien processus
+- **Dernière action** : `powershell.exe -Command "Stop-Process -Force"` → crash Claude Code
+
+### Pour reprendre
+1. Tuer manuellement le processus Node sur port 3001 via Task Manager
+2. Relancer backend : `cd geobrain-app/server && npm start`
+3. Relancer frontend si nécessaire : `cd geobrain-app && npm run dev`
+4. Tester bouton Redémarrer dans Paramètres
+5. Finaliser le vrai auto-restart (spawn detached pas encore testé)
+
+### Fichiers modifiés
+- `server/security.js` : +150 lignes (gardes-fous, évaluation danger)
+- `server/index.js` : endpoints status/restart + flags confirmed
+- `src/lib/components/Settings/SettingsModule.svelte` : section serveur
+- `src/lib/components/DangerConfirmDialog.svelte` : nouveau composant
+
+---
+
 ## Session 8 - 10 décembre 2025
 **Thème principal** : Phase 3 UI/UX - Thèmes et Mode Expert
 

@@ -8,6 +8,7 @@
     { id: 'canvas', label: 'Cartes', description: 'Visualisation' },
     { id: 'editor', label: 'Editeur', description: 'SQL & Python' },
     { id: 'docgen', label: 'Documents', description: 'Generation PDF' },
+    { id: 'connections', label: 'Connexions', description: 'Serveurs' },
     { id: 'settings', label: 'Parametres', description: 'Configuration' },
   ];
 
@@ -100,6 +101,16 @@
               <polyline points="14 2 14 8 20 8"/>
               <line x1="8" y1="13" x2="16" y2="13"/>
               <line x1="8" y1="17" x2="14" y2="17"/>
+            </svg>
+          <!-- Connexions -->
+          {:else if module.id === 'connections'}
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <!-- Serveur avec connexion -->
+              <rect x="2" y="2" width="20" height="8" rx="2"/>
+              <rect x="2" y="14" width="20" height="8" rx="2"/>
+              <circle cx="6" cy="6" r="1" fill="currentColor"/>
+              <circle cx="6" cy="18" r="1" fill="currentColor"/>
+              <line x1="12" y1="10" x2="12" y2="14"/>
             </svg>
           <!-- Parametres / Settings -->
           {:else if module.id === 'settings'}

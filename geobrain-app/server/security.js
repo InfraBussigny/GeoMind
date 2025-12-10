@@ -1,7 +1,90 @@
 /**
  * GeoBrain Security Module
  * Gestion des permissions selon le mode (standard/expert/god)
+ * Avec gardes-fous même pour le God mode
  */
+
+// ============================================
+// GARDES-FOUS GOD MODE - COMMANDES BLOQUÉES
+// ============================================
+
+// Commandes TOUJOURS bloquées, même en God mode (pourraient endommager le poste)
+const ALWAYS_BLOCKED_COMMANDS = [
+  // Formatage et destruction de disques
+  'format c:', 'format d:', 'format e:',
+  'diskpart', 'fdisk', 'mkfs',
+  'dd if=/dev/zero', 'dd if=/dev/random',
+  // Suppression système Windows
+  'del /s /q c:\\windows', 'rd /s /q c:\\windows',
+  'del /s /q c:\\users', 'rd /s /q c:\\users',
+  'del /s /q c:\\program', 'rd /s /q c:\\program',
+  // Suppression système Linux
+  'rm -rf /', 'rm -rf /*', 'rm -rf /home', 'rm -rf /usr', 'rm -rf /etc',
+  // Registre Windows critique
+  'reg delete hklm', 'reg delete hkcr', 'reg delete hkcu\\software\\microsoft\\windows',
+  // Boot/BIOS
+  'bcdedit /delete', 'bootrec', 'bcdboot',
+  // Shutdown forcé sans confirmation
+  'shutdown /r /t 0', 'shutdown /s /t 0',
+  // Fork bombs et déni de service
+  ':(){ :|:& };:', '%0|%0', 'for /l %',
+  // Écriture MBR/secteur de démarrage
+  'fixmbr', 'fixboot', 'bootsect'
+];
+
+// Patterns regex pour commandes toujours bloquées
+const ALWAYS_BLOCKED_PATTERNS = [
+  /format\s+[a-z]:/i,
+  /del\s+\/[sfq]+.*[a-z]:\\(windows|users|program)/i,
+  /rd\s+\/[sfq]+.*[a-z]:\\(windows|users|program)/i,
+  /rm\s+-rf?\s+\/(bin|boot|dev|etc|home|lib|opt|root|sbin|srv|sys|usr|var)/i,
+  /reg\s+delete\s+hk(lm|cr|cu)\\software\\microsoft\\windows/i,
+  />\s*\/dev\/(sda|hda|nvme)/i
+];
+
+// ============================================
+// NIVEAUX DE DANGEROSITÉ
+// ============================================
+
+const DANGER_LEVELS = {
+  SAFE: { level: 0, label: 'Sûr', color: 'green', needsConfirmation: false },
+  LOW: { level: 1, label: 'Faible', color: 'yellow', needsConfirmation: false },
+  MEDIUM: { level: 2, label: 'Moyen', color: 'orange', needsConfirmation: true },
+  HIGH: { level: 3, label: 'Élevé', color: 'red', needsConfirmation: true },
+  CRITICAL: { level: 4, label: 'Critique', color: 'darkred', needsConfirmation: true },
+  BLOCKED: { level: 5, label: 'Bloqué', color: 'black', needsConfirmation: false, blocked: true }
+};
+
+// Commandes avec niveau de risque (pour God mode)
+const COMMAND_RISK_PATTERNS = [
+  // CRITICAL - Confirmation obligatoire avec avertissement fort
+  { pattern: /drop\s+(database|table|schema)/i, level: 'CRITICAL', consequence: 'Suppression définitive de données de la base' },
+  { pattern: /truncate\s+table/i, level: 'CRITICAL', consequence: 'Suppression de toutes les données de la table' },
+  { pattern: /delete\s+from\s+\w+\s*(;|$)/i, level: 'CRITICAL', consequence: 'Suppression de TOUTES les lignes de la table (pas de WHERE)' },
+  { pattern: /rm\s+-rf?\s+[^\s]+/i, level: 'CRITICAL', consequence: 'Suppression récursive irréversible de fichiers' },
+  { pattern: /del\s+\/[sfq]/i, level: 'CRITICAL', consequence: 'Suppression forcée de fichiers Windows' },
+
+  // HIGH - Confirmation obligatoire
+  { pattern: /update\s+\w+\s+set\s+.*where/i, level: 'HIGH', consequence: 'Modification de données existantes' },
+  { pattern: /alter\s+table/i, level: 'HIGH', consequence: 'Modification de la structure de la table' },
+  { pattern: /grant|revoke/i, level: 'HIGH', consequence: 'Modification des permissions de la base' },
+  { pattern: /chmod\s+-R/i, level: 'HIGH', consequence: 'Changement récursif de permissions' },
+  { pattern: /chown\s+-R/i, level: 'HIGH', consequence: 'Changement récursif de propriétaire' },
+  { pattern: /kill\s+-9/i, level: 'HIGH', consequence: 'Arrêt forcé d\'un processus' },
+  { pattern: /taskkill\s+\/f/i, level: 'HIGH', consequence: 'Arrêt forcé d\'un processus Windows' },
+  { pattern: /net\s+stop/i, level: 'HIGH', consequence: 'Arrêt d\'un service Windows' },
+
+  // MEDIUM - Confirmation recommandée
+  { pattern: /insert\s+into/i, level: 'MEDIUM', consequence: 'Insertion de nouvelles données' },
+  { pattern: /create\s+(table|database|index)/i, level: 'MEDIUM', consequence: 'Création d\'objets dans la base' },
+  { pattern: /npm\s+(install|uninstall)/i, level: 'MEDIUM', consequence: 'Modification des dépendances du projet' },
+  { pattern: /pip\s+install/i, level: 'MEDIUM', consequence: 'Installation de packages Python' },
+  { pattern: /git\s+(push|force|reset\s+--hard)/i, level: 'MEDIUM', consequence: 'Modification de l\'historique Git' },
+
+  // LOW - Information seulement
+  { pattern: /git\s+commit/i, level: 'LOW', consequence: 'Enregistrement des modifications' },
+  { pattern: /select.*from/i, level: 'SAFE', consequence: 'Lecture de données' }
+];
 
 // Configuration des permissions par mode
 export const MODE_PERMISSIONS = {
@@ -108,6 +191,117 @@ export function isDangerousCommand(command) {
 }
 
 /**
+ * Vérifie si une commande est TOUJOURS bloquée (même en God mode)
+ */
+export function isAlwaysBlocked(command) {
+  const lowerCommand = command.toLowerCase();
+
+  // Vérifier les commandes textuelles
+  if (ALWAYS_BLOCKED_COMMANDS.some(blocked => lowerCommand.includes(blocked.toLowerCase()))) {
+    return true;
+  }
+
+  // Vérifier les patterns regex
+  if (ALWAYS_BLOCKED_PATTERNS.some(pattern => pattern.test(command))) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Évalue le niveau de dangerosité d'une commande/requête
+ * Retourne un objet avec le niveau, la description et si confirmation requise
+ */
+export function evaluateDangerLevel(commandOrQuery) {
+  // D'abord vérifier si c'est toujours bloqué
+  if (isAlwaysBlocked(commandOrQuery)) {
+    return {
+      ...DANGER_LEVELS.BLOCKED,
+      command: commandOrQuery,
+      consequence: 'Cette commande pourrait endommager votre système de manière irréversible.',
+      blocked: true
+    };
+  }
+
+  // Chercher le niveau de risque dans les patterns
+  for (const risk of COMMAND_RISK_PATTERNS) {
+    if (risk.pattern.test(commandOrQuery)) {
+      return {
+        ...DANGER_LEVELS[risk.level],
+        command: commandOrQuery,
+        consequence: risk.consequence
+      };
+    }
+  }
+
+  // Par défaut, niveau sûr
+  return {
+    ...DANGER_LEVELS.SAFE,
+    command: commandOrQuery,
+    consequence: 'Opération standard sans risque identifié'
+  };
+}
+
+/**
+ * Génère un message d'avertissement formaté pour l'UI
+ */
+export function generateWarningMessage(dangerEval) {
+  const icons = {
+    SAFE: '✅',
+    LOW: '📝',
+    MEDIUM: '⚠️',
+    HIGH: '🔶',
+    CRITICAL: '🚨',
+    BLOCKED: '🚫'
+  };
+
+  const levelName = Object.keys(DANGER_LEVELS).find(
+    key => DANGER_LEVELS[key].level === dangerEval.level
+  );
+
+  if (dangerEval.blocked) {
+    return {
+      title: `${icons.BLOCKED} COMMANDE BLOQUÉE`,
+      message: `Cette opération est **interdite** même en God mode car elle pourrait endommager votre système.`,
+      consequence: dangerEval.consequence,
+      color: 'darkred',
+      canProceed: false
+    };
+  }
+
+  if (dangerEval.level >= 3) { // HIGH ou CRITICAL
+    return {
+      title: `${icons[levelName]} ATTENTION - Risque ${dangerEval.label}`,
+      message: `Cette opération nécessite votre **confirmation explicite**.`,
+      consequence: dangerEval.consequence,
+      color: dangerEval.color,
+      canProceed: true,
+      requiresConfirmation: true
+    };
+  }
+
+  if (dangerEval.level === 2) { // MEDIUM
+    return {
+      title: `${icons.MEDIUM} Confirmation recommandée`,
+      message: `Cette opération peut modifier des données.`,
+      consequence: dangerEval.consequence,
+      color: dangerEval.color,
+      canProceed: true,
+      requiresConfirmation: true
+    };
+  }
+
+  return {
+    title: `${icons.SAFE} Opération sûre`,
+    message: dangerEval.consequence,
+    color: 'green',
+    canProceed: true,
+    requiresConfirmation: false
+  };
+}
+
+/**
  * Valide une opération selon le mode et retourne une erreur si non autorisé
  */
 export function validateOperation(operation, mode) {
@@ -151,7 +345,39 @@ export function validateOperation(operation, mode) {
           error: `Exécution de commandes non autorisée en mode "${mode}". Passez en mode expert.`
         };
       }
-      // Vérifier commandes dangereuses en mode expert (pas god)
+
+      // === GARDES-FOUS GOD MODE ===
+      // Vérifier si commande TOUJOURS bloquée (même en god mode)
+      if (isAlwaysBlocked(operation.command)) {
+        const warning = generateWarningMessage(evaluateDangerLevel(operation.command));
+        return {
+          allowed: false,
+          blocked: true,
+          error: `🚫 COMMANDE BLOQUÉE: ${warning.consequence}`,
+          dangerLevel: 'BLOCKED',
+          warning
+        };
+      }
+
+      // En god mode, évaluer la dangerosité et demander confirmation si nécessaire
+      if (mode === 'god') {
+        const dangerEval = evaluateDangerLevel(operation.command);
+        const warning = generateWarningMessage(dangerEval);
+
+        if (dangerEval.needsConfirmation && !operation.confirmed) {
+          return {
+            allowed: false,
+            needsConfirmation: true,
+            dangerLevel: dangerEval.label,
+            dangerColor: dangerEval.color,
+            warning,
+            error: `⚠️ Confirmation requise (Risque: ${dangerEval.label})`
+          };
+        }
+        return { allowed: true, dangerLevel: dangerEval.label };
+      }
+
+      // Vérifier commandes dangereuses en mode expert
       if (mode === 'expert' && isDangerousCommand(operation.command)) {
         return {
           allowed: false,
@@ -165,7 +391,38 @@ export function validateOperation(operation, mode) {
       if (!perms.canQueryDB) {
         return { allowed: false, error: 'Requêtes DB non autorisées dans ce mode.' };
       }
-      // Vérifier si c'est une requête de modification
+
+      // === GARDES-FOUS GOD MODE POUR SQL ===
+      if (mode === 'god') {
+        const dangerEval = evaluateDangerLevel(operation.query);
+        const warning = generateWarningMessage(dangerEval);
+
+        // Bloquer les commandes SQL destructrices sans WHERE (DROP DATABASE, etc.)
+        if (dangerEval.blocked) {
+          return {
+            allowed: false,
+            blocked: true,
+            error: `🚫 REQUÊTE SQL BLOQUÉE: ${warning.consequence}`,
+            dangerLevel: 'BLOCKED',
+            warning
+          };
+        }
+
+        // Demander confirmation pour les requêtes risquées
+        if (dangerEval.needsConfirmation && !operation.confirmed) {
+          return {
+            allowed: false,
+            needsConfirmation: true,
+            dangerLevel: dangerEval.label,
+            dangerColor: dangerEval.color,
+            warning,
+            error: `⚠️ Confirmation requise (Risque SQL: ${dangerEval.label})`
+          };
+        }
+        return { allowed: true, dangerLevel: dangerEval.label };
+      }
+
+      // Vérifier si c'est une requête de modification (modes non-god)
       if (isDangerousSQL(operation.query) && !perms.canModifyDB) {
         return {
           allowed: false,
@@ -229,6 +486,9 @@ export default {
   isInSandbox,
   isDangerousSQL,
   isDangerousCommand,
+  isAlwaysBlocked,
+  evaluateDangerLevel,
+  generateWarningMessage,
   validateOperation,
   filterToolsForMode,
   getStandardModeWarning,

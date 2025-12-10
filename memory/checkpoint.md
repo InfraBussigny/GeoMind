@@ -4,6 +4,54 @@ Format: `CP-[DATE-HEURE]` | S=Session | P=Phase | T=Thème | F=Fichiers | W=Work
 
 ---
 
+## CP-20251210-1100
+S:9|P:3-security-godmode|T:Gardes-fous+Server-restart+Connexions-DB
+F:security.js,index.js,SettingsModule.svelte,DangerConfirmDialog.svelte(new),connections.js(new)
+W:Gardes-fous God mode(BLOCKED commands+danger levels)+Server restart UI+DB connections mgmt
+N:Finaliser restart serveur(test spawn detached)+Phase4 Canevas-pro
+X:Crash CC pendant powershell Stop-Process Node | Serveurs non redémarrés
+
+### Session 9 - Suite (travail perdu partiellement)
+**Gardes-fous God Mode** (security.js):
+- ALWAYS_BLOCKED_COMMANDS: format c:, diskpart, rm -rf /, del /s /q c:\windows, etc.
+- ALWAYS_BLOCKED_PATTERNS: regex pour détection patterns dangereux
+- DANGER_LEVELS: SAFE(0), LOW(1), MEDIUM(2), HIGH(3), CRITICAL(4), BLOCKED(5)
+- COMMAND_RISK_PATTERNS: patterns SQL/shell avec niveau+conséquence
+- evaluateDangerLevel(cmd): retourne niveau+warning
+- generateWarningMessage(): format UI avec icônes
+- validateOperation() modifié: bloque même en god mode les commandes critiques
+
+**Endpoints backend** (index.js):
+- POST /api/server/restart: redémarrage serveur (spawn detached)
+- GET /api/server/status: uptime, memory, pid, nodeVersion
+- POST /api/security/evaluate-danger: évaluation dangerosité
+- POST /api/tools/execute-command: ajout confirmed flag pour bypass
+- POST /api/tools/sql-query: ajout confirmed flag
+
+**UI Server Settings** (SettingsModule.svelte):
+- Section "Serveur Backend" visible en expert/god
+- Affichage: status, uptime, mémoire, Node.js, PID
+- Bouton "Redémarrer" avec polling reconnexion
+- Styles CSS: spinner, error, server-info grid
+
+**DangerConfirmDialog.svelte** (nouveau):
+- Dialog modal confirmation opérations risquées
+- Badge niveau coloré (green→red→black)
+- Affichage conséquence
+- Thème CMY pour god mode
+
+**Connections management** (connections.js - partiel):
+- Gestion connexions PostgreSQL/Oracle
+- Endpoints CRUD /api/connections/*
+- UI dans SettingsModule (non terminé)
+
+### État au moment du crash
+- Frontend HMR: OK sur 5173
+- Backend: port 3001 occupé par ancien processus
+- Dernière action: powershell.exe Stop-Process -Force sur Node → crash CC
+
+---
+
 ## CP-20251210-1000
 S:9|P:3-security-godmode|T:God-mode-CMY-glitch
 F:security.js(new),GlitchEngine.svelte(new),theme.css,app.ts,+layout.svelte,ChatModule.svelte,Sidebar.svelte,ThemeToggle.svelte,index.js

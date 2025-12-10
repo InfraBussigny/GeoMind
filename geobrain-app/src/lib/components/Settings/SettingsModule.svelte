@@ -1,16 +1,20 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { providers, backendConnected } from '$lib/stores/app';
+  import { providers, backendConnected, mode } from '$lib/stores/app';
   import { getProviders, saveProviderConfig } from '$lib/services/api';
 
   let apiKeys = $state<Record<string, string>>({});
   let saving = $state<Record<string, boolean>>({});
   let saved = $state<Record<string, boolean>>({});
   let memorySummary = $state<any>(null);
+  let serverStatus = $state<any>(null);
+  let restarting = $state(false);
+  let restartError = $state<string | null>(null);
 
   onMount(async () => {
     await loadProviders();
     await loadMemorySummary();
+    await loadServerStatus();
   });
 
   async function loadProviders() {
@@ -62,6 +66,105 @@
     }
   }
 
+  async function loadServerStatus() {
+    try {
+      const response = await fetch('http://localhost:3001/api/server/status');
+      if (response.ok) {
+        serverStatus = await response.json();
+      }
+    } catch (error) {
+      console.error('Error loading server status:', error);
+      serverStatus = null;
+    }
+  }
+
+  async function restartServer() {
+    if ($mode === 'standard') {
+      restartError = 'Mode expert ou god requis pour redémarrer le serveur';
+      return;
+    }
+
+    restarting = true;
+    restartError = null;
+
+    try {
+      const response = await fetch('http://localhost:3001/api/server/restart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: $mode })
+      });
+
+      if (response.ok) {
+        // Attendre que le serveur redémarre
+        await new Promise(resolve => setTimeout(resolve, 3000));
+
+        // Polling pour vérifier que le serveur est de retour
+        let attempts = 0;
+        const maxAttempts = 10;
+
+        while (attempts < maxAttempts) {
+          try {
+            await loadServerStatus();
+            if (serverStatus) {
+              backendConnected.set(true);
+              break;
+            }
+          } catch {
+            // Serveur pas encore prêt
+          }
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          attempts++;
+        }
+
+        if (attempts >= maxAttempts) {
+          restartError = 'Le serveur n\'a pas redémarré. Vérifiez la console.';
+          backendConnected.set(false);
+        }
+      } else {
+        const data = await response.json();
+        restartError = data.error || 'Erreur lors du redémarrage';
+      }
+    } catch (error) {
+      restartError = 'Connexion perdue. Redémarrage en cours...';
+      // C'est normal, le serveur s'est arrêté
+      backendConnected.set(false);
+
+      // Attendre et vérifier que le serveur revient
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      let attempts = 0;
+      while (attempts < 10) {
+        try {
+          await loadServerStatus();
+          if (serverStatus) {
+            backendConnected.set(true);
+            restartError = null;
+            break;
+          }
+        } catch {
+          // Pas encore prêt
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        attempts++;
+      }
+    } finally {
+      restarting = false;
+    }
+  }
+
+  function formatUptime(seconds: number): string {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+    if (hours > 0) return `${hours}h ${minutes}m ${secs}s`;
+    if (minutes > 0) return `${minutes}m ${secs}s`;
+    return `${secs}s`;
+  }
+
+  function formatMemory(bytes: number): string {
+    return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  }
+
   function getProviderColor(providerId: string): string {
     const colors: Record<string, string> = {
       claude: '#D97706',
@@ -92,6 +195,65 @@
   </header>
 
   <div class="settings-content">
+    <!-- Server Section - Expert/God only -->
+    {#if $mode !== 'standard'}
+      <section class="settings-section server-section">
+        <div class="section-header">
+          <h2>Serveur Backend</h2>
+          <button
+            class="btn-restart"
+            onclick={restartServer}
+            disabled={restarting}
+          >
+            {#if restarting}
+              <span class="spinner"></span>
+              Redemarrage...
+            {:else}
+              Redemarrer
+            {/if}
+          </button>
+        </div>
+
+        {#if restartError}
+          <div class="restart-error">{restartError}</div>
+        {/if}
+
+        {#if serverStatus}
+          <div class="server-info">
+            <div class="server-stat">
+              <span class="stat-label">Statut</span>
+              <span class="stat-value status-running">En ligne</span>
+            </div>
+            <div class="server-stat">
+              <span class="stat-label">Uptime</span>
+              <span class="stat-value">{formatUptime(serverStatus.uptime)}</span>
+            </div>
+            <div class="server-stat">
+              <span class="stat-label">Memoire</span>
+              <span class="stat-value">{formatMemory(serverStatus.memoryUsage?.heapUsed || 0)}</span>
+            </div>
+            <div class="server-stat">
+              <span class="stat-label">Node.js</span>
+              <span class="stat-value">{serverStatus.nodeVersion}</span>
+            </div>
+            <div class="server-stat">
+              <span class="stat-label">PID</span>
+              <span class="stat-value">{serverStatus.pid}</span>
+            </div>
+          </div>
+        {:else}
+          <div class="server-offline">
+            <span class="offline-icon">&#x26A0;</span>
+            Serveur hors ligne ou inaccessible
+          </div>
+        {/if}
+
+        <p class="server-note">
+          Le redemarrage applique les modifications du code backend (security, endpoints, etc.)
+        </p>
+      </section>
+    {/if}
+
     <!-- Memory Section -->
     <section class="settings-section">
       <div class="section-header">
@@ -546,6 +708,105 @@
   }
 
   .text-muted {
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  /* Server Section Styles */
+  .server-section {
+    border-color: var(--cyber-green);
+    background: rgba(0, 255, 136, 0.03);
+  }
+
+  .btn-restart {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--warning);
+    border-radius: var(--border-radius-sm);
+    background: rgba(255, 170, 0, 0.15);
+    color: var(--warning);
+    font-size: var(--font-size-sm);
+    font-family: var(--font-mono);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+  }
+
+  .btn-restart:hover:not(:disabled) {
+    background: rgba(255, 170, 0, 0.25);
+    box-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
+  }
+
+  .btn-restart:disabled {
+    opacity: 0.7;
+    cursor: wait;
+  }
+
+  .spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 170, 0, 0.3);
+    border-top-color: var(--warning);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .restart-error {
+    background: rgba(255, 68, 68, 0.15);
+    border: 1px solid var(--error);
+    color: var(--error);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .server-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--spacing-sm);
+    background: var(--noir-surface);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-color);
+  }
+
+  .server-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .status-running {
+    color: var(--cyber-green) !important;
+    font-weight: 600;
+  }
+
+  .server-offline {
+    background: rgba(255, 68, 68, 0.1);
+    border: 1px solid var(--error);
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-md);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--error);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+  }
+
+  .offline-icon {
+    font-size: 1.2rem;
+  }
+
+  .server-note {
+    margin-top: var(--spacing-md);
+    font-size: var(--font-size-xs);
     color: var(--text-muted);
     font-style: italic;
   }
