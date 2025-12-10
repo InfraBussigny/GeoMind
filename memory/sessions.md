@@ -1,3 +1,39 @@
+## Session 13 - 11 decembre 2025 00h15
+**Theme** : Corrections build + Tests modules + Planification IA locale
+
+### Travail effectue
+- Fix converter.ts (regex Python parenthese manquante)
+- Fix SchemaBrowser/QueryBuilder (imports getConnections, executeSQL)
+- Fix CommunicationsPanel (export types OutlookState/ThreeCXState)
+- Fix vite.config.ts (Monaco manualChunks conflit)
+- Tests backend OK, modules visibles en mode Expert
+- Commit: 95368de
+
+---
+
+## PROCHAINE SESSION - TODO PRIORITAIRE
+
+### 1. Settings IA multi-providers
+- [ ] UI API Keys (Claude, OpenAI, Mistral, DeepSeek, Perplexity, Google)
+- [ ] Toggle API Key vs OAuth Login par provider
+- [ ] Bouton Ajouter fournisseur custom (nom, baseUrl, models[], authType)
+
+### 2. Integration modeles locaux (Ollama)
+- [ ] Installer: winget install Ollama.Ollama
+- [ ] Provider Local baseUrl http://localhost:11434/v1
+- [ ] Modeles: llama3.2, mistral, deepseek-coder, codellama
+- [ ] Auto-detection modeles via /api/tags
+
+### Cloud vs Local
+| Aspect | Cloud | Local |
+|--------|-------|-------|
+| Qualite | 5/5 | 3-4/5 |
+| Contexte | 200K tokens | 8-32K |
+| Cout | Payant | Gratuit |
+| Offline | Non | Oui |
+
+---
+
 ## Session 12 (fin) - 10 décembre 2025 22h30
 **Thème principal** : Intégration UI complète des modules Phase 7-11
 
