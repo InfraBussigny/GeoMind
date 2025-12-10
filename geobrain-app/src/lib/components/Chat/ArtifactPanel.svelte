@@ -566,23 +566,22 @@ ${content}
         </div>
         <div class="history-list">
           {#each revisions.slice().reverse() as revision, i}
-            <div
-              class="history-item"
-              class:active={currentRevisionIndex === revisions.length - 1 - i}
-              onclick={() => goToRevision(revisions.length - 1 - i)}
-              role="button"
-              tabindex="0"
-            >
-              <div class="history-item-info">
+            <div class="history-item" class:active={currentRevisionIndex === revisions.length - 1 - i}>
+              <button
+                class="history-item-btn"
+                onclick={() => goToRevision(revisions.length - 1 - i)}
+                type="button"
+              >
                 <span class="history-time">{formatTimestamp(revision.timestamp)}</span>
                 {#if revision.label}
                   <span class="history-label">{revision.label}</span>
                 {/if}
-              </div>
+              </button>
               <button
                 class="restore-btn"
-                onclick={(e) => { e.stopPropagation(); restoreRevision(revision); }}
+                onclick={() => restoreRevision(revision)}
                 title="Restaurer cette version"
+                type="button"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
@@ -591,15 +590,14 @@ ${content}
               </button>
             </div>
           {/each}
-          <div
+          <button
             class="history-item current"
             class:active={currentRevisionIndex === -1}
             onclick={() => goToRevision(-1)}
-            role="button"
-            tabindex="0"
+            type="button"
           >
             <span class="history-time">Version actuelle</span>
-          </div>
+          </button>
         </div>
       </div>
     {/if}
@@ -798,10 +796,17 @@ ${content}
     border-style: dashed;
   }
 
-  .history-item-info {
+  .history-item-btn {
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 2px;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    text-align: left;
+    color: inherit;
   }
 
   .history-time {

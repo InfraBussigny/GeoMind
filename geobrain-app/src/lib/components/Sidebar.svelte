@@ -7,6 +7,11 @@
     { id: 'chat', label: 'Assistant', description: 'Chat IA' },
     { id: 'canvas', label: 'Cartes', description: 'Visualisation' },
     { id: 'editor', label: 'Editeur', description: 'SQL & Python' },
+    { id: 'data', label: 'Donnees', description: 'PostgreSQL' },
+    { id: 'carto', label: 'Cartographie', description: 'WMS/WFS' },
+    { id: 'ssh', label: 'Terminal', description: 'SSH & SFTP' },
+    { id: 'comm', label: 'Comms', description: 'Outlook & 3CX' },
+    { id: 'ai', label: 'Multi-IA', description: 'Providers' },
     { id: 'docgen', label: 'Documents', description: 'Generation PDF' },
     { id: 'connections', label: 'Connexions', description: 'Serveurs' },
     { id: 'settings', label: 'Parametres', description: 'Configuration' },
@@ -113,6 +118,39 @@
               <polyline points="14 2 14 8 20 8"/>
               <line x1="8" y1="13" x2="16" y2="13"/>
               <line x1="8" y1="17" x2="14" y2="17"/>
+            </svg>
+          <!-- Data / PostgreSQL -->
+          {:else if module.id === 'data'}
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <ellipse cx="12" cy="5" rx="9" ry="3"/>
+              <path d="M21 5v6c0 1.66-4 3-9 3s-9-1.34-9-3V5"/>
+              <path d="M21 11v6c0 1.66-4 3-9 3s-9-1.34-9-3v-6"/>
+            </svg>
+          <!-- Carto / WMS -->
+          {:else if module.id === 'carto'}
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <path d="M3 9h18M9 21V9"/>
+              <circle cx="15" cy="15" r="2" fill="currentColor"/>
+            </svg>
+          <!-- SSH / Terminal -->
+          {:else if module.id === 'ssh'}
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="2" y="4" width="20" height="16" rx="2"/>
+              <path d="M6 8l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="12" y1="16" x2="18" y2="16" stroke-linecap="round"/>
+            </svg>
+          <!-- Communications -->
+          {:else if module.id === 'comm'}
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+            </svg>
+          <!-- AI / Multi-IA -->
+          {:else if module.id === 'ai'}
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>
+              <path d="M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
             </svg>
           <!-- Connexions -->
           {:else if module.id === 'connections'}
