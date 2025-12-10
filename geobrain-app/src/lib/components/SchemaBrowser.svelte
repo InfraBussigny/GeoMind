@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { listConnections, executeQuery } from '$lib/services/api';
+  import { getConnections, executeSQL } from '$lib/services/api';
 
   // Props
   interface Props {
@@ -39,9 +39,9 @@
   // Load connections on mount
   onMount(async () => {
     try {
-      const result = await listConnections();
-      if (result.success) {
-        connections = result.connections.filter((c: { type: string }) => c.type === 'postgresql');
+      const result = await getConnections();
+      if (result.success && result.rows) {
+        connections = result.filter((c: { type: string }) => c.type === 'postgresql');
       }
     } catch (e) {
       console.error('Failed to load connections:', e);
@@ -56,14 +56,14 @@
     error = null;
 
     try {
-      const result = await executeQuery(selectedConnection, `
+      const result = await executeSQL(selectedConnection, `
         SELECT schema_name
         FROM information_schema.schemata
         WHERE schema_name NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
         ORDER BY schema_name
       `);
 
-      if (result.success) {
+      if (result.success && result.rows) {
         schemas = result.rows.map((row: { schema_name: string }) => ({
           name: row.schema_name,
           tables: []
@@ -86,7 +86,7 @@
     if (!schema || schema.tables.length > 0) return; // Already loaded
 
     try {
-      const result = await executeQuery(selectedConnection, `
+      const result = await executeSQL(selectedConnection, `
         SELECT
           t.table_name,
           t.table_type,
@@ -98,7 +98,7 @@
         ORDER BY t.table_name
       `);
 
-      if (result.success) {
+      if (result.success && result.rows) {
         schema.tables = result.rows.map((row: { table_name: string; table_type: string; row_estimate: number }) => ({
           name: row.table_name,
           type: row.table_type === 'VIEW' ? 'view' : 'table',
@@ -120,7 +120,7 @@
     if (!table || table.columns) return; // Already loaded
 
     try {
-      const result = await executeQuery(selectedConnection, `
+      const result = await executeSQL(selectedConnection, `
         SELECT
           c.column_name,
           c.data_type,
@@ -145,7 +145,7 @@
         ORDER BY c.ordinal_position
       `);
 
-      if (result.success) {
+      if (result.success && result.rows) {
         table.columns = result.rows.map((row: {
           column_name: string;
           data_type: string;

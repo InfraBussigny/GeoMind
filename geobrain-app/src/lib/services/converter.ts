@@ -630,7 +630,7 @@ export function detectFormat(content: string, filename?: string): AllFormat {
   }
 
   // Python
-  if (/^(def |class |import |from |#.*coding|#!/m.test(trimmed)) {
+  if (/^(def |class |import |from |#.*coding|#\!)/m.test(trimmed)) {
     return 'py';
   }
 

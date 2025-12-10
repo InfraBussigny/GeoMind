@@ -24,7 +24,7 @@
     type CalendarEvent,
     type CallRecord,
     type EmailDraft,
-    type ThreeCXConfig
+    type ThreeCXConfig, type OutlookState, type ThreeCXState
   } from '$lib/services/communications';
 
   // State

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { executeQuery, listConnections } from '$lib/services/api';
+  import { executeSQL, getConnections } from '$lib/services/api';
 
   // Props
   interface Props {
@@ -32,9 +32,9 @@
 
   async function loadConnections() {
     try {
-      const result = await listConnections();
-      if (result.success) {
-        connections = result.connections.filter((c: { type: string }) => c.type === 'postgresql');
+      const result = await getConnections();
+      if (result.success && result.rows) {
+        connections = result.filter((c: { type: string }) => c.type === 'postgresql');
         if (connections.length > 0 && !selectedConnection) {
           selectedConnection = connections[0].id;
         }
@@ -55,10 +55,10 @@
     const startTime = Date.now();
 
     try {
-      const result = await executeQuery(selectedConnection, query);
+      const result = await executeSQL(selectedConnection, query);
       const executionTime = Date.now() - startTime;
 
-      if (result.success) {
+      if (result.success && result.rows) {
         const rows = result.rows || [];
         const columns = rows.length > 0 ? Object.keys(rows[0]) : [];
 

@@ -1,4 +1,13 @@
-# GeoBrain Checkpoints - Journal compact
+# GeoBrain Checkpoints
+
+## CP-20251210-2230
+```
+S:12|P:UI-INTEGRATION|T:sidebar-modules
+F:app.ts,Sidebar.svelte,+page.svelte,ArtifactPanel.svelte
+W:5 nouveaux modules (data,carto,ssh,comm,ai) intégrés sidebar + visibleModules + rendu +page
+N:Tests UI fonctionnels, polish UX
+X:commit 2da661a pushed, all 11 phases complete + UI wired
+``` - Journal compact
 
 Format: `CP-[DATE-HEURE]` | S=Session | P=Phase | T=Thème | F=Fichiers | W=Work | N=Next | X=Extra
 

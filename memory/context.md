@@ -1,7 +1,16 @@
 # Contexte SIT - Commune de Bussigny
 
+## DIRECTIVE N°1 - NOYAU FONDAMENTAL
+> **GeoBrain doit être : EFFICACE, FIABLE, ROBUSTE, RAPIDE, PERTINENT, POLYVALENT, USER-FRIENDLY, SANS AMBIGUÏTÉ.**
+>
+> Cette directive s'applique à TOUTE action : code, architecture, UI, documentation.
+> - Éviter les bugs, hallucinations, quiproquos
+> - Prioriser la qualité sur la quantité
+> - Tester avant de livrer
+> - Code clair, commenté, maintenable
+
 ## Dernière mise à jour
-2025-12-08
+2025-12-10
 
 ## Responsable
 - **Nom** : Marc Zermatten

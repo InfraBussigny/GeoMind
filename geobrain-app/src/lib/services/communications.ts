@@ -116,7 +116,7 @@ const DEFAULT_OUTLOOK_SCOPES = [
 // Outlook Store
 // ============================================
 
-interface OutlookState {
+export interface OutlookState {
   isAuthenticated: boolean;
   config: OutlookConfig | null;
   user: { name: string; email: string } | null;
@@ -175,7 +175,7 @@ export const outlookStore = createOutlookStore();
 // 3CX Store
 // ============================================
 
-interface ThreeCXState {
+export interface ThreeCXState {
   isConnected: boolean;
   config: ThreeCXConfig | null;
   extension: PhoneExtension | null;
