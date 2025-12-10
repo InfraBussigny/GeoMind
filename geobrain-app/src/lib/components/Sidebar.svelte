@@ -127,8 +127,10 @@
   <div class="sidebar-footer">
     <div class="footer-actions">
       <ThemeToggle />
-      {#if $appMode === 'expert' && !$sidebarCollapsed}
-        <span class="mode-badge">EXPERT</span>
+      {#if $appMode === 'god' && !$sidebarCollapsed}
+        <span class="mode-badge god">GOD</span>
+      {:else if $appMode === 'expert' && !$sidebarCollapsed}
+        <span class="mode-badge expert">EXPERT</span>
       {/if}
     </div>
     <button class="toggle-btn" onclick={toggleSidebar} title={$sidebarCollapsed ? 'Ouvrir le menu' : 'Reduire le menu'}>
@@ -407,21 +409,48 @@
 
   .mode-badge {
     padding: 4px 10px;
-    background: var(--primary-glow);
-    color: var(--primary);
-    border: 1px solid var(--primary);
     border-radius: 4px;
     font-size: 10px;
     font-weight: 700;
     font-family: var(--font-mono);
     letter-spacing: 1px;
     text-transform: uppercase;
-    animation: pulse-badge 2s infinite;
   }
 
-  @keyframes pulse-badge {
+  .mode-badge.expert {
+    background: var(--primary-glow);
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    animation: pulse-badge-expert 2s infinite;
+  }
+
+  .mode-badge.god {
+    background: linear-gradient(135deg, #00FFFF, #FF00FF);
+    color: black;
+    font-weight: bold;
+    border: 1px solid #FF00FF;
+    animation: pulse-badge-god 1.5s infinite;
+    text-shadow: none;
+  }
+
+  @keyframes pulse-badge-expert {
     0%, 100% { box-shadow: 0 0 0 0 var(--primary-glow); }
     50% { box-shadow: 0 0 10px var(--primary-glow); }
+  }
+
+  @keyframes pulse-badge-god {
+    0%, 100% {
+      box-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+      filter: hue-rotate(0deg);
+    }
+    33% {
+      box-shadow: 0 0 15px rgba(255, 0, 255, 0.7), 0 0 25px rgba(0, 255, 255, 0.4);
+      filter: hue-rotate(30deg);
+    }
+    66% {
+      box-shadow: 0 0 10px rgba(255, 255, 0, 0.6), 0 0 20px rgba(255, 0, 255, 0.5);
+      filter: hue-rotate(-30deg);
+    }
   }
 
   .toggle-btn {

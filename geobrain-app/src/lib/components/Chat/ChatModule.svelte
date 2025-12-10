@@ -9,8 +9,12 @@
     backendConnected,
     appMode,
     theme,
-    checkExpertActivation,
-    type Message
+    checkModeActivation,
+    GOD_MODE_PHRASES,
+    MODE_PERMISSIONS,
+    SANDBOX_PATH,
+    type Message,
+    type AppMode
   } from '$lib/stores/app';
   import { getProviders, streamMessage, type ToolUseEvent, type ToolResultEvent, type StreamController, type ModelSelectedEvent, type AgentsActivatedEvent } from '$lib/services/api';
   import ProviderSelector from './ProviderSelector.svelte';
@@ -63,8 +67,8 @@
     await checkBackendAndLoadProviders();
   });
 
-  // Gérer le changement de mode expert (easter egg)
-  async function handleExpertModeChange(action: 'activate' | 'deactivate', originalMessage: string) {
+  // Gérer le changement de mode (easter egg) - 3 niveaux : standard, expert, god
+  async function handleModeChange(action: string, originalMessage: string) {
     // Ajouter le message de l'utilisateur
     const userMessage: Message = {
       id: crypto.randomUUID(),
@@ -84,42 +88,82 @@
     const assistantMessageId = crypto.randomUUID();
     let responseContent: string;
 
-    if (action === 'activate') {
-      appMode.activateExpert();
-      responseContent = `**Mode Expert activé**
+    switch (action) {
+      case 'activate_god':
+        appMode.activateGod();
+        responseContent = `**🔓 ROOT ACCESS GRANTED**
 
-Bienvenue dans les coulisses, Marc. J'ai déverrouillé l'accès complet aux outils avancés :
+\`\`\`
+$ su -
+Password: ********
+#
+\`\`\`
 
-• **Éditeur** - SQL, Python, FME et scripts
-• **Documents** - Génération PDF et rapports
-• **Paramètres** - Configuration système
+Accès complet au système. Toutes les protections sont désactivées.
 
-Le mode sombre a été activé automatiquement pour une meilleure concentration. Tu peux le changer via le sélecteur de thème.
+• Fichiers de configuration et secrets : **déverrouillés**
+• Commandes système : **sans restriction**
+• Base de données : **full control**
+• Confirmations : **désactivées**
 
-*"On passe aux choses sérieuses"* - Message reçu 5/5.`;
-    } else {
-      appMode.deactivateExpert();
-      theme.set('light'); // Retour au mode clair
-      const is22 = originalMessage.trim() === '22' || originalMessage.toLowerCase().includes('22');
-      responseContent = is22
-        ? `**22, v'la les flics !** 🚔
+*With great power comes great responsibility.*`;
+        break;
 
-Mode professionnel réactivé. Interface sobre et présentable.
+      case 'activate_expert':
+        appMode.activateExpert();
+        responseContent = `**Mode avancé activé**
 
-Les modules avancés sont maintenant masqués. Tu gardes accès à :
-• **Assistant** - Chat IA
-• **Cartes** - Visualisation cartographique
+Bienvenue dans les coulisses, Marc.
 
-*Rien à voir ici, circulez...*`
-        : `**Mode Professionnel activé**
+**Outils débloqués :**
+• Éditeur SQL, Python, FME
+• Génération de documents PDF
+• Configuration système
 
-Interface simplifiée restaurée. Les modules avancés sont maintenant masqués.
+**Permissions :**
+• Lecture/écriture fichiers ✓
+• Exécution de commandes ✓
+• Modification base de données ✓
 
-Tu gardes accès à :
-• **Assistant** - Chat IA
-• **Cartes** - Visualisation cartographique
+Interface sombre activée. On passe aux choses sérieuses.`;
+        break;
 
-Pour réactiver le mode expert, tu sais quoi dire...`;
+      case 'deactivate_to_expert':
+        appMode.deactivateToExpert();
+        responseContent = `**Retour au mode avancé**
+
+Les accès sensibles ont été révoqués. Tu conserves les outils avancés.
+
+• Éditeur, documents, paramètres : ✓
+• Fichiers de configuration : protégés`;
+        break;
+
+      case 'deactivate_to_standard':
+      default:
+        appMode.deactivateToStandard();
+        const is22 = originalMessage.trim() === '22' || originalMessage.toLowerCase().includes('22');
+        responseContent = is22
+          ? `**22 !** 🚔
+
+Interface professionnelle activée.
+
+• Lecture de fichiers ✓
+• Génération de code ✓
+• Recherche web ✓
+
+*Rien à voir ici.*`
+          : `**Mode standard activé**
+
+Interface simplifiée.
+
+**Fonctionnalités disponibles :**
+• Lecture de fichiers
+• Génération de code
+• Recherche web
+• Écriture dans le sandbox
+
+L'assistant t'accompagne dans tes tâches quotidiennes.`;
+        break;
     }
 
     const assistantMessage: Message = {
@@ -177,12 +221,12 @@ Pour réactiver le mode expert, tu sais quoi dire...`;
 
   // Traiter un message (soit direct, soit depuis la queue)
   async function processMessage(content: string) {
-    // Vérifier si le message contient une phrase d'activation du mode expert
-    const expertAction = checkExpertActivation(content);
+    // Vérifier si le message contient une phrase de changement de mode
+    const modeAction = checkModeActivation(content, $appMode);
 
-    if (expertAction) {
-      // Gérer l'activation/désactivation du mode expert
-      handleExpertModeChange(expertAction, content);
+    if (modeAction) {
+      // Gérer le changement de mode (standard/expert/god)
+      handleModeChange(modeAction, content);
       return;
     }
 
@@ -578,14 +622,8 @@ Pour réactiver le mode expert, tu sais quoi dire...`;
   }
 
   function getProviderIcon(providerId: string): string {
-    const icons: Record<string, string> = {
-      claude: 'C',
-      openai: 'O',
-      mistral: 'M',
-      deepseek: 'D',
-      perplexity: 'P'
-    };
-    return icons[providerId] || '?';
+    // GeoBrain utilise toujours son propre logo
+    return 'G';
   }
 
   // Formater le message avec support markdown amélioré
@@ -1199,6 +1237,8 @@ Pour réactiver le mode expert, tu sais quoi dire...`;
 
   .provider-icon {
     font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 800;
   }
 
   .message-content {

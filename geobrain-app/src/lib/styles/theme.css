@@ -216,6 +216,428 @@
   --font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
 }
 
+/* ========================================
+   THEME GOD MODE - CMY GLITCH
+   Effet "tout est buggé" avec aberration chromatique
+   Cyan (#00FFFF) - Magenta (#FF00FF) - Yellow (#FFFF00)
+   ======================================== */
+[data-theme="god"] {
+  /* Couleurs CMY principales */
+  --cmy-cyan: #00FFFF;
+  --cmy-magenta: #FF00FF;
+  --cmy-yellow: #FFFF00;
+  --cmy-cyan-dim: rgba(0, 255, 255, 0.7);
+  --cmy-magenta-dim: rgba(255, 0, 255, 0.7);
+  --cmy-yellow-dim: rgba(255, 255, 0, 0.7);
+
+  /* Primary = Magenta pour l'UI */
+  --primary: #FF00FF;
+  --primary-dark: #cc00cc;
+  --primary-light: #ff66ff;
+  --primary-glow: rgba(255, 0, 255, 0.5);
+
+  /* Fonds - Noir profond pour contraste max */
+  --bg-primary: #000000;
+  --bg-secondary: #050505;
+  --bg-tertiary: #0a0a0a;
+  --bg-sidebar: #020202;
+  --bg-hover: #151515;
+  --bg-active: #1a1a1a;
+
+  /* Texte - Blanc pur pour lisibilité */
+  --text-primary: #ffffff;
+  --text-secondary: #e0e0e0;
+  --text-muted: #909090;
+  --text-on-dark: #ffffff;
+  --text-on-primary: #000000;
+  --text-accent: var(--cmy-cyan);
+  --text-bright: #ffffff;
+  --text-label: #c0c0c0;
+
+  /* Bordures avec effet CMY */
+  --border-color: #333333;
+  --border-subtle: rgba(255, 0, 255, 0.2);
+  --border-focus: var(--cmy-magenta);
+
+  /* Ombres CMY */
+  --shadow-sm: 0 2px 10px rgba(255, 0, 255, 0.2);
+  --shadow-md: 0 4px 20px rgba(0, 255, 255, 0.15), 0 4px 20px rgba(255, 0, 255, 0.15);
+  --shadow-lg: 0 8px 40px rgba(0, 255, 255, 0.2), 0 8px 40px rgba(255, 0, 255, 0.2);
+  --shadow-glow: 0 0 20px var(--cmy-cyan), 0 0 40px var(--cmy-magenta);
+  --shadow-glow-sm: 0 0 10px var(--cmy-magenta);
+
+  /* Couleurs fonctionnelles */
+  --success: #00ff88;
+  --success-dark: #00cc6a;
+  --success-glow: rgba(0, 255, 136, 0.4);
+  --success-light: rgba(0, 255, 136, 0.2);
+  --warning: var(--cmy-yellow);
+  --warning-dark: #cccc00;
+  --warning-glow: rgba(255, 255, 0, 0.4);
+  --warning-light: rgba(255, 255, 0, 0.2);
+  --error: #ff3366;
+  --error-dark: #e6294d;
+  --error-glow: rgba(255, 51, 102, 0.4);
+  --error-light: rgba(255, 51, 102, 0.2);
+  --info: var(--cmy-cyan);
+  --info-dark: #00cccc;
+  --info-glow: rgba(0, 255, 255, 0.4);
+  --info-light: rgba(0, 255, 255, 0.2);
+
+  /* Legacy aliases */
+  --cyber-green: var(--cmy-cyan);
+  --cyber-green-dark: #00cccc;
+  --cyber-green-light: #66ffff;
+  --cyber-green-glow: rgba(0, 255, 255, 0.5);
+  --noir-profond: var(--bg-primary);
+  --noir-surface: var(--bg-secondary);
+  --noir-card: var(--bg-tertiary);
+  --noir-elevated: var(--bg-hover);
+  --gris-cyber: var(--border-color);
+  --gris-medium: #404040;
+  --gris-light: #606060;
+  --gris-muted: #808080;
+  --border-glow: var(--cmy-magenta);
+
+  /* Police monospace */
+  --font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+}
+
+/* ========================================
+   GOD MODE - Effets glitch CSS de base
+   (Les effets aléatoires sont gérés par JS)
+   ======================================== */
+
+/* Classes de glitch appliquées dynamiquement par JS */
+/* EFFETS AMPLIFIES pour une meilleure visibilité */
+
+/* Aberration chromatique - décalage CMY FORT */
+.glitch-chromatic {
+  text-shadow:
+    -4px 0 var(--cmy-cyan),
+    4px 0 var(--cmy-magenta),
+    0 3px var(--cmy-yellow) !important;
+  animation: glitch-chromatic-shake 0.25s steps(4) !important;
+}
+
+@keyframes glitch-chromatic-shake {
+  0% {
+    text-shadow: -4px 0 var(--cmy-cyan), 4px 0 var(--cmy-magenta), 0 3px var(--cmy-yellow);
+    transform: translateX(0);
+  }
+  20% {
+    text-shadow: 5px 2px var(--cmy-cyan), -3px -1px var(--cmy-magenta), 2px -2px var(--cmy-yellow);
+    transform: translateX(-2px);
+  }
+  40% {
+    text-shadow: -3px -2px var(--cmy-cyan), 4px 1px var(--cmy-magenta), -1px 3px var(--cmy-yellow);
+    transform: translateX(3px);
+  }
+  60% {
+    text-shadow: 2px 3px var(--cmy-cyan), -5px 0 var(--cmy-magenta), 3px -1px var(--cmy-yellow);
+    transform: translateX(-1px);
+  }
+  80% {
+    text-shadow: -2px -1px var(--cmy-cyan), 3px 2px var(--cmy-magenta), -2px 2px var(--cmy-yellow);
+    transform: translateX(2px);
+  }
+  100% {
+    text-shadow: -4px 0 var(--cmy-cyan), 4px 0 var(--cmy-magenta), 0 3px var(--cmy-yellow);
+    transform: translateX(0);
+  }
+}
+
+/* Décalage horizontal saccadé - AMPLIFIÉ */
+.glitch-shift-x {
+  animation: glitch-shift-x 0.3s steps(5) !important;
+}
+
+@keyframes glitch-shift-x {
+  0% { transform: translateX(0); }
+  15% { transform: translateX(-10px); }
+  30% { transform: translateX(8px); }
+  45% { transform: translateX(-6px); }
+  60% { transform: translateX(12px); }
+  75% { transform: translateX(-4px); }
+  90% { transform: translateX(5px); }
+  100% { transform: translateX(0); }
+}
+
+/* Décalage vertical saccadé - AMPLIFIÉ */
+.glitch-shift-y {
+  animation: glitch-shift-y 0.25s steps(4) !important;
+}
+
+@keyframes glitch-shift-y {
+  0% { transform: translateY(0); }
+  20% { transform: translateY(-8px); }
+  40% { transform: translateY(6px); }
+  60% { transform: translateY(-4px); }
+  80% { transform: translateY(10px); }
+  100% { transform: translateY(0); }
+}
+
+/* Clignotement - PLUS INTENSE */
+.glitch-flicker {
+  animation: glitch-flicker 0.2s steps(6) !important;
+}
+
+@keyframes glitch-flicker {
+  0% { opacity: 1; filter: brightness(1); }
+  15% { opacity: 0.2; filter: brightness(2); }
+  30% { opacity: 0.9; filter: brightness(0.8); }
+  45% { opacity: 0.1; filter: brightness(1.5); }
+  60% { opacity: 0.7; filter: brightness(1.2); }
+  75% { opacity: 0.3; filter: brightness(0.5); }
+  90% { opacity: 0.95; filter: brightness(1.1); }
+  100% { opacity: 1; filter: brightness(1); }
+}
+
+/* Distorsion de couleur - PLUS VISIBLE */
+.glitch-hue {
+  animation: glitch-hue 0.35s steps(6) !important;
+}
+
+@keyframes glitch-hue {
+  0% { filter: hue-rotate(0deg) saturate(1); }
+  17% { filter: hue-rotate(120deg) saturate(2); }
+  33% { filter: hue-rotate(-90deg) saturate(1.5); }
+  50% { filter: hue-rotate(200deg) saturate(0.5); }
+  67% { filter: hue-rotate(-45deg) saturate(2.5); }
+  83% { filter: hue-rotate(150deg) saturate(1.2); }
+  100% { filter: hue-rotate(0deg) saturate(1); }
+}
+
+/* Skew/inclinaison - AMPLIFIÉ */
+.glitch-skew {
+  animation: glitch-skew 0.25s steps(4) !important;
+}
+
+@keyframes glitch-skew {
+  0% { transform: skewX(0deg) skewY(0deg); }
+  20% { transform: skewX(-8deg) skewY(2deg); }
+  40% { transform: skewX(6deg) skewY(-3deg); }
+  60% { transform: skewX(-4deg) skewY(1deg); }
+  80% { transform: skewX(10deg) skewY(-2deg); }
+  100% { transform: skewX(0deg) skewY(0deg); }
+}
+
+/* Scale - PLUS VISIBLE */
+.glitch-scale {
+  animation: glitch-scale 0.2s steps(4) !important;
+}
+
+@keyframes glitch-scale {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.08, 0.94); }
+  50% { transform: scale(0.95, 1.06); }
+  75% { transform: scale(1.03, 0.97); }
+  100% { transform: scale(1); }
+}
+
+/* Inversion - PLUS LONG */
+.glitch-invert {
+  animation: glitch-invert 0.15s steps(3) !important;
+}
+
+@keyframes glitch-invert {
+  0% { filter: invert(0) brightness(1); }
+  33% { filter: invert(1) brightness(1.2); }
+  66% { filter: invert(0.5) brightness(0.8); }
+  100% { filter: invert(0) brightness(1); }
+}
+
+/* Barre de scan horizontale - PLUS VISIBLE */
+.glitch-scanline {
+  position: relative;
+}
+.glitch-scanline::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--cmy-cyan) 20%,
+    var(--cmy-magenta) 50%,
+    var(--cmy-yellow) 80%,
+    transparent 100%
+  );
+  animation: glitch-scanline-move 0.2s linear;
+  pointer-events: none;
+  box-shadow: 0 0 10px var(--cmy-cyan), 0 0 20px var(--cmy-magenta);
+}
+
+@keyframes glitch-scanline-move {
+  0% { top: 0; opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+/* Split screen effect - AMPLIFIÉ */
+.glitch-split {
+  animation: glitch-split 0.25s steps(4) !important;
+}
+
+@keyframes glitch-split {
+  0% {
+    clip-path: inset(0 0 0 0);
+    transform: translateX(0);
+  }
+  20% {
+    clip-path: inset(0 0 60% 0);
+    transform: translateX(8px);
+    filter: hue-rotate(30deg);
+  }
+  40% {
+    clip-path: inset(50% 0 0 0);
+    transform: translateX(-10px);
+    filter: hue-rotate(-30deg);
+  }
+  60% {
+    clip-path: inset(30% 0 30% 0);
+    transform: translateX(6px);
+    filter: hue-rotate(60deg);
+  }
+  80% {
+    clip-path: inset(10% 0 70% 0);
+    transform: translateX(-4px);
+    filter: hue-rotate(-45deg);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    transform: translateX(0);
+    filter: hue-rotate(0deg);
+  }
+}
+
+/* ========================================
+   GOD MODE - Styles permanents subtils
+   ======================================== */
+
+/* Scanlines très subtiles en fond */
+[data-theme="god"]::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.01) 2px,
+    rgba(255, 255, 255, 0.01) 4px
+  );
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* Sidebar en God mode */
+[data-theme="god"] .sidebar {
+  border-right: 1px solid rgba(255, 0, 255, 0.3);
+  box-shadow: 2px 0 20px rgba(0, 255, 255, 0.1);
+}
+
+/* Logo avec glow CMY */
+[data-theme="god"] .logo-img {
+  filter:
+    drop-shadow(0 0 10px var(--cmy-cyan))
+    drop-shadow(0 0 20px var(--cmy-magenta));
+}
+
+/* Subtitle avec effet CMY statique */
+[data-theme="god"] .logo-subtitle {
+  background: linear-gradient(90deg, var(--cmy-cyan), var(--cmy-magenta), var(--cmy-yellow));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Nav items actifs */
+[data-theme="god"] .nav-item.active {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(255, 0, 255, 0.1));
+  border-color: var(--cmy-magenta);
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.2), inset 0 0 20px rgba(0, 255, 255, 0.05);
+}
+
+[data-theme="god"] .nav-item.active .nav-icon-wrapper {
+  background: linear-gradient(135deg, var(--cmy-cyan), var(--cmy-magenta));
+  border-color: var(--cmy-magenta);
+  box-shadow: 0 0 10px var(--cmy-cyan);
+}
+
+[data-theme="god"] .nav-item.active .nav-label {
+  background: linear-gradient(90deg, var(--cmy-cyan), var(--cmy-magenta));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme="god"] .active-indicator {
+  background: linear-gradient(180deg, var(--cmy-cyan), var(--cmy-magenta));
+  box-shadow: 0 0 10px var(--cmy-cyan), 0 0 20px var(--cmy-magenta);
+}
+
+/* Badge God mode */
+[data-theme="god"] .mode-badge.god {
+  background: linear-gradient(135deg, var(--cmy-cyan), var(--cmy-magenta)) !important;
+  box-shadow: 0 0 10px var(--cmy-cyan), 0 0 15px var(--cmy-magenta);
+}
+
+/* Selection text */
+[data-theme="god"] ::selection {
+  background: var(--cmy-magenta);
+  color: black;
+  text-shadow: none;
+}
+
+/* Scrollbar CMY */
+[data-theme="god"] ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--cmy-cyan), var(--cmy-magenta));
+  border: 1px solid rgba(255, 0, 255, 0.3);
+}
+
+[data-theme="god"] ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--cmy-magenta), var(--cmy-yellow));
+  box-shadow: 0 0 10px var(--cmy-magenta);
+}
+
+/* Boutons */
+[data-theme="god"] .btn-primary {
+  background: linear-gradient(135deg, var(--cmy-cyan), var(--cmy-magenta));
+  border-color: var(--cmy-magenta);
+  color: black;
+  font-weight: bold;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+}
+
+[data-theme="god"] .btn-primary:hover {
+  background: linear-gradient(135deg, var(--cmy-magenta), var(--cmy-yellow));
+  box-shadow: 0 0 25px var(--cmy-magenta), 0 0 40px var(--cmy-cyan);
+}
+
+/* Inputs focus */
+[data-theme="god"] input:focus,
+[data-theme="god"] textarea:focus {
+  border-color: var(--cmy-cyan);
+  box-shadow:
+    0 0 0 2px rgba(0, 255, 255, 0.2),
+    0 0 10px rgba(255, 0, 255, 0.2);
+}
+
+/* Messages assistant */
+[data-theme="god"] .message-assistant {
+  border-left: 2px solid var(--cmy-cyan);
+}
+
+/* Divider */
+[data-theme="god"] .divider-glow {
+  background: linear-gradient(90deg, transparent, var(--cmy-cyan), var(--cmy-magenta), var(--cmy-yellow), transparent);
+}
+
 /* Reset et base */
 *, *::before, *::after {
   box-sizing: border-box;

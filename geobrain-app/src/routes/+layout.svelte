@@ -2,6 +2,7 @@
   import '$lib/styles/theme.css';
   import Sidebar from '$lib/components/Sidebar.svelte';
   import StatusBar from '$lib/components/StatusBar/StatusBar.svelte';
+  import GlitchEngine from '$lib/components/GlitchEngine.svelte';
   import { theme, appMode } from '$lib/stores/app';
   import { browser } from '$app/environment';
 
@@ -14,17 +15,22 @@
     }
   });
 
-  // Basculer automatiquement en mode sombre lors de l'activation du mode expert
+  // Synchronisation automatique : chaque mode a son thème associé
+  // standard → light, expert → dark, god → god
   $effect(() => {
-    if (browser && $appMode === 'expert') {
-      // Ne basculer que si on vient d'activer le mode expert
-      const wasStandard = localStorage.getItem('geobrain-previous-mode') !== 'expert';
-      if (wasStandard) {
-        theme.set('dark');
-      }
-      localStorage.setItem('geobrain-previous-mode', 'expert');
-    } else if (browser) {
-      localStorage.setItem('geobrain-previous-mode', 'standard');
+    if (!browser) return;
+
+    const modeToTheme = {
+      standard: 'light',
+      expert: 'dark',
+      god: 'god'
+    } as const;
+
+    const expectedTheme = modeToTheme[$appMode];
+
+    // Forcer le thème associé au mode
+    if ($theme !== expectedTheme) {
+      theme.set(expectedTheme);
     }
   });
 </script>
@@ -32,6 +38,9 @@
 <svelte:head>
   <title>GeoBrain - Bussigny SIT</title>
 </svelte:head>
+
+<!-- Moteur de glitch pour le God Mode -->
+<GlitchEngine />
 
 <div class="app-container" data-mode={$appMode}>
   <Sidebar />

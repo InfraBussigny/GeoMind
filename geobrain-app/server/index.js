@@ -15,6 +15,7 @@ import geoportalProxy from './geoportal-proxy.js';
 import { TOOL_DEFINITIONS, executeTool, AGENT_SYSTEM_PROMPT } from './tools.js';
 import { selectModel, MODELS } from './model-selector.js';
 import { orchestrate, generateEnrichedSystemPrompt, identifyRelevantAgents, listAgents } from './sub-agents.js';
+import security from './security.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -339,7 +340,7 @@ app.post('/api/agents/orchestrate', async (req, res) => {
 
 // Agent chat endpoint with tool execution loop and REAL streaming
 app.post('/api/chat/agent', async (req, res) => {
-  const { provider, model, messages, autoSelectModel } = req.body;
+  const { provider, model, messages, autoSelectModel, mode = 'standard' } = req.body;
 
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
@@ -405,6 +406,17 @@ app.post('/api/chat/agent', async (req, res) => {
       })}\n\n`);
     }
 
+    // Log du mode de sécurité actuel
+    console.log(`[Agent] Security mode: ${mode}`);
+    const modePerms = security.MODE_PERMISSIONS[mode];
+
+    // Filtrer les outils disponibles selon le mode
+    const availableTools = modePerms.allowedTools.includes('*')
+      ? TOOL_DEFINITIONS
+      : TOOL_DEFINITIONS.filter(tool => modePerms.allowedTools.includes(tool.name));
+
+    console.log(`[Agent] Available tools for mode "${mode}": ${availableTools.length}/${TOOL_DEFINITIONS.length}`);
+
     // Convertir les messages
     const claudeMessages = messages.map(m => ({
       role: m.role === 'user' ? 'user' : 'assistant',
@@ -428,7 +440,7 @@ app.post('/api/chat/agent', async (req, res) => {
         max_tokens: 8096,
         system: systemPrompt,
         messages: claudeMessages,
-        tools: TOOL_DEFINITIONS,
+        tools: availableTools,  // Outils filtrés selon le mode
         stream: true  // ACTIVER LE STREAMING
       };
 
@@ -538,7 +550,7 @@ app.post('/api/chat/agent', async (req, res) => {
         break;
       }
 
-      // Exécuter les outils
+      // Exécuter les outils (avec validation de sécurité)
       const toolResults = [];
       for (const toolUse of toolUses) {
         if (isAborted) break;
@@ -550,8 +562,36 @@ app.post('/api/chat/agent', async (req, res) => {
           input: toolUse.input
         })}\n\n`);
 
-        // Exécuter l'outil
-        const result = await executeTool(toolUse.name, toolUse.input);
+        // Valider l'opération selon le mode
+        const operation = {
+          type: toolUse.name,
+          path: toolUse.input?.path,
+          command: toolUse.input?.command,
+          query: toolUse.input?.query
+        };
+        const validation = security.validateOperation(operation, mode);
+
+        let result;
+        if (!validation.allowed) {
+          // Opération bloquée par la sécurité
+          result = {
+            error: validation.error,
+            blocked: true,
+            mode: mode,
+            suggestion: validation.needsConfirmation
+              ? 'Cette opération nécessite une confirmation ou un mode supérieur.'
+              : `Passez en mode ${mode === 'standard' ? 'expert' : 'god'} pour effectuer cette opération.`
+          };
+          res.write(`data: ${JSON.stringify({
+            type: 'security_blocked',
+            tool: toolUse.name,
+            error: validation.error,
+            mode: mode
+          })}\n\n`);
+        } else {
+          // Exécuter l'outil
+          result = await executeTool(toolUse.name, toolUse.input);
+        }
 
         // Informer le client du résultat
         res.write(`data: ${JSON.stringify({
@@ -880,12 +920,80 @@ async function callPerplexity(model, messages) {
 }
 
 // ============================================
-// FILE SYSTEM TOOLS
+// SECURITY API
+// ============================================
+
+// Get permissions for a specific mode
+app.get('/api/security/permissions/:mode', (req, res) => {
+  const { mode } = req.params;
+  const perms = security.MODE_PERMISSIONS[mode];
+
+  if (!perms) {
+    return res.status(400).json({ error: 'Mode inconnu', validModes: ['standard', 'expert', 'god'] });
+  }
+
+  res.json({
+    mode,
+    permissions: perms,
+    sandboxPath: security.SANDBOX_PATH
+  });
+});
+
+// Validate an operation before execution
+app.post('/api/security/validate', (req, res) => {
+  const { operation, mode } = req.body;
+
+  if (!operation || !mode) {
+    return res.status(400).json({ error: 'operation et mode requis' });
+  }
+
+  const result = security.validateOperation(operation, mode);
+  res.json(result);
+});
+
+// Get available tools for a mode
+app.get('/api/security/tools/:mode', (req, res) => {
+  const { mode } = req.params;
+  const perms = security.MODE_PERMISSIONS[mode];
+
+  if (!perms) {
+    return res.status(400).json({ error: 'Mode inconnu' });
+  }
+
+  // Si mode god, retourner tous les outils disponibles
+  if (perms.allowedTools.includes('*')) {
+    res.json({
+      mode,
+      tools: ['*'],
+      description: 'Tous les outils sont disponibles'
+    });
+  } else {
+    res.json({
+      mode,
+      tools: perms.allowedTools,
+      description: `${perms.allowedTools.length} outils disponibles`
+    });
+  }
+});
+
+// ============================================
+// FILE SYSTEM TOOLS (avec sécurité)
 // ============================================
 
 app.post('/api/tools/read-file', async (req, res) => {
   try {
-    const { path } = req.body;
+    const { path, mode = 'standard' } = req.body;
+
+    // Valider l'opération selon le mode
+    const validation = security.validateOperation({ type: 'read_file', path }, mode);
+    if (!validation.allowed) {
+      return res.status(403).json({
+        error: validation.error,
+        blocked: true,
+        requiredMode: mode === 'standard' ? 'god' : null
+      });
+    }
+
     const content = await readFile(path, 'utf-8');
     res.json({ content });
   } catch (error) {
@@ -895,7 +1003,19 @@ app.post('/api/tools/read-file', async (req, res) => {
 
 app.post('/api/tools/write-file', async (req, res) => {
   try {
-    const { path, content } = req.body;
+    const { path, content, mode = 'standard' } = req.body;
+
+    // Valider l'opération selon le mode
+    const validation = security.validateOperation({ type: 'write_file', path }, mode);
+    if (!validation.allowed) {
+      return res.status(403).json({
+        error: validation.error,
+        blocked: true,
+        sandboxPath: security.SANDBOX_PATH,
+        suggestion: `En mode "${mode}", vous ne pouvez écrire que dans: ${security.SANDBOX_PATH}`
+      });
+    }
+
     await writeFile(path, content, 'utf-8');
     res.json({ success: true });
   } catch (error) {
@@ -920,7 +1040,19 @@ app.post('/api/tools/list-directory', async (req, res) => {
 
 app.post('/api/tools/execute-command', async (req, res) => {
   try {
-    const { command, cwd } = req.body;
+    const { command, cwd, mode = 'standard' } = req.body;
+
+    // Valider l'opération selon le mode
+    const validation = security.validateOperation({ type: 'execute_command', command }, mode);
+    if (!validation.allowed) {
+      return res.status(403).json({
+        error: validation.error,
+        blocked: true,
+        needsConfirmation: validation.needsConfirmation || false,
+        requiredMode: mode === 'standard' ? 'expert' : (mode === 'expert' ? 'god' : null)
+      });
+    }
+
     const { exec } = await import('child_process');
     const { promisify } = await import('util');
     const execAsync = promisify(exec);
@@ -933,6 +1065,55 @@ app.post('/api/tools/execute-command', async (req, res) => {
     res.json({ stdout, stderr });
   } catch (error) {
     res.status(500).json({ error: error.message, stderr: error.stderr });
+  }
+});
+
+// Endpoint pour les requêtes SQL (avec sécurité)
+app.post('/api/tools/sql-query', async (req, res) => {
+  try {
+    const { query, database, mode = 'standard' } = req.body;
+
+    // Valider l'opération selon le mode
+    const validation = security.validateOperation({ type: 'sql_query', query }, mode);
+    if (!validation.allowed) {
+      return res.status(403).json({
+        error: validation.error,
+        blocked: true,
+        allowedInMode: mode === 'standard' ? 'Seules les requêtes SELECT sont autorisées' : null
+      });
+    }
+
+    // TODO: Implémenter la vraie connexion DB
+    res.json({
+      message: 'SQL endpoint ready',
+      query,
+      validated: true
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Endpoint pour supprimer des fichiers (avec sécurité)
+app.post('/api/tools/delete-file', async (req, res) => {
+  try {
+    const { path, mode = 'standard' } = req.body;
+    const { unlink } = await import('fs/promises');
+
+    // Valider l'opération selon le mode
+    const validation = security.validateOperation({ type: 'delete_file', path }, mode);
+    if (!validation.allowed) {
+      return res.status(403).json({
+        error: validation.error,
+        blocked: true,
+        requiredMode: 'expert'
+      });
+    }
+
+    await unlink(path);
+    res.json({ success: true, deleted: path });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
