@@ -1,5 +1,5 @@
 ## Session 14 - 11 decembre 2025 08h00
-**Theme** : Settings IA multi-providers + Endpoints backend
+**Theme** : Settings IA multi-providers + Endpoints backend + Installation Ollama
 
 ### Travail effectue
 
@@ -26,10 +26,18 @@
 - POST /api/ai/anthropic/chat
 - POST /api/ai/:provider/test (test connexion)
 
-### Reste a faire
-- [ ] Installer Ollama: `winget install Ollama.Ollama`
-- [ ] Tester l'integration complete
-- [ ] Telecharger quelques modeles locaux (llama3.2, codellama)
+#### 4. Installation Ollama (serveur IA local)
+- Telechargement OllamaSetup.exe (1.23 GB) depuis ollama.com
+- Installation complete dans C:\Users\zema\AppData\Local\Programs\Ollama\
+- Service Ollama actif sur http://localhost:11434
+- Modeles telecharges :
+  - **llama3.2** (2.0 GB) - modele general
+  - **codellama** (3.8 GB) - specialise code
+- API testee et fonctionnelle
+
+### Commits
+- 4e41ca2 : Multi-providers IA + endpoints backend
+- (a suivre) : Documentation Ollama
 
 ---
 
