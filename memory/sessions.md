@@ -1,3 +1,38 @@
+## Session 14 - 11 decembre 2025 08h00
+**Theme** : Settings IA multi-providers + Endpoints backend
+
+### Travail effectue
+
+#### 1. Frontend AISettingsPanel.svelte ameliore
+- Ajout tous les providers : Anthropic, Google, OpenAI, Mistral, DeepSeek, Perplexity, Ollama, LM Studio, Custom
+- Toggle API Key vs OAuth pour providers compatibles (Anthropic, Google)
+- Formulaire "Ajouter fournisseur personnalise" avec nom, icone, baseUrl, apiKey, modele
+- Styles CSS pour auth-type-selector, oauth-section, custom-provider-form
+
+#### 2. aiRouter.ts etendu
+- Type AIProvider: ajout 'mistral', 'deepseek', 'perplexity', 'custom'
+- AIProviderConfig: ajout customName, customIcon
+- AVAILABLE_MODELS: +15 modeles (Mistral Large/Medium/Small/Codestral, DeepSeek Chat/Coder/R1, Perplexity Sonar/Pro/Reasoning, Ollama locaux)
+- Fonctions chat pour chaque provider: chatMistral, chatDeepSeek, chatPerplexity, chatCustom
+- getProviderInfo: icones et couleurs pour tous les providers
+- addCustomProvider: fonction pour ajouter provider custom
+
+#### 3. Backend index.js - Nouveaux endpoints /api/ai/*
+- POST /api/ai/mistral/chat
+- POST /api/ai/deepseek/chat
+- POST /api/ai/perplexity/chat
+- POST /api/ai/google/chat
+- POST /api/ai/openai/chat
+- POST /api/ai/anthropic/chat
+- POST /api/ai/:provider/test (test connexion)
+
+### Reste a faire
+- [ ] Installer Ollama: `winget install Ollama.Ollama`
+- [ ] Tester l'integration complete
+- [ ] Telecharger quelques modeles locaux (llama3.2, codellama)
+
+---
+
 ## Session 13 - 11 decembre 2025 00h15
 **Theme** : Corrections build + Tests modules + Planification IA locale
 
@@ -8,29 +43,6 @@
 - Fix vite.config.ts (Monaco manualChunks conflit)
 - Tests backend OK, modules visibles en mode Expert
 - Commit: 95368de
-
----
-
-## PROCHAINE SESSION - TODO PRIORITAIRE
-
-### 1. Settings IA multi-providers
-- [ ] UI API Keys (Claude, OpenAI, Mistral, DeepSeek, Perplexity, Google)
-- [ ] Toggle API Key vs OAuth Login par provider
-- [ ] Bouton Ajouter fournisseur custom (nom, baseUrl, models[], authType)
-
-### 2. Integration modeles locaux (Ollama)
-- [ ] Installer: winget install Ollama.Ollama
-- [ ] Provider Local baseUrl http://localhost:11434/v1
-- [ ] Modeles: llama3.2, mistral, deepseek-coder, codellama
-- [ ] Auto-detection modeles via /api/tags
-
-### Cloud vs Local
-| Aspect | Cloud | Local |
-|--------|-------|-------|
-| Qualite | 5/5 | 3-4/5 |
-| Contexte | 200K tokens | 8-32K |
-| Cout | Payant | Gratuit |
-| Offline | Non | Oui |
 
 ---
 

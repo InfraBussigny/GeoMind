@@ -7,6 +7,7 @@
     getAvailableModels,
     formatCost,
     getProviderInfo,
+    addCustomProvider,
     AVAILABLE_MODELS,
     type AIProvider,
     type AIModel,
@@ -54,6 +55,19 @@
     priority: 1
   });
 
+  // Custom provider form
+  let showCustomForm = $state(false);
+  let customProviderForm = $state({
+    name: '',
+    baseUrl: '',
+    apiKey: '',
+    defaultModel: '',
+    icon: '⚙️'
+  });
+
+  // All providers list
+  const ALL_PROVIDERS: AIProvider[] = ['anthropic', 'google', 'openai', 'mistral', 'deepseek', 'perplexity', 'ollama', 'lmstudio', 'custom'];
+
   // Subscribe to stores
   $effect(() => {
     const unsub1 = aiConfigStore.subscribe(s => configState = s);
@@ -71,9 +85,43 @@
   });
 
   async function loadModels() {
-    for (const provider of ['anthropic', 'google', 'openai', 'ollama', 'lmstudio'] as AIProvider[]) {
+    for (const provider of ALL_PROVIDERS) {
       availableModels[provider] = await getAvailableModels(provider);
     }
+  }
+
+  // Add custom provider
+  function handleAddCustomProvider() {
+    if (!customProviderForm.name || !customProviderForm.baseUrl) return;
+
+    addCustomProvider({
+      name: customProviderForm.name,
+      baseUrl: customProviderForm.baseUrl,
+      apiKey: customProviderForm.apiKey,
+      defaultModel: customProviderForm.defaultModel || 'custom-model',
+      icon: customProviderForm.icon
+    });
+
+    // Reset form
+    customProviderForm = { name: '', baseUrl: '', apiKey: '', defaultModel: '', icon: '⚙️' };
+    showCustomForm = false;
+  }
+
+  // Toggle auth type
+  function toggleAuthType(provider: AIProvider) {
+    const config = getConfig(provider);
+    const newAuthType = config?.authType === 'oauth' ? 'api_key' : 'oauth';
+    aiConfigStore.setProvider(provider, { authType: newAuthType });
+  }
+
+  // Check if provider supports OAuth
+  function supportsOAuth(provider: AIProvider): boolean {
+    return ['anthropic', 'google'].includes(provider);
+  }
+
+  // Check if provider is local
+  function isLocalProvider(provider: AIProvider): boolean {
+    return ['ollama', 'lmstudio', 'custom'].includes(provider);
   }
 
   // Test provider connection
@@ -161,9 +209,9 @@
   <div class="tab-content">
     {#if activeTab === 'providers'}
       <div class="providers-list">
-        {#each ['anthropic', 'google', 'openai', 'ollama', 'lmstudio'] as provider}
+        {#each ALL_PROVIDERS.filter(p => p !== 'custom') as provider}
           {@const config = getConfig(provider as AIProvider)}
-          {@const info = getProviderInfo(provider as AIProvider)}
+          {@const info = getProviderInfo(provider as AIProvider, config?.customName, config?.customIcon)}
           {@const isActive = configState.activeProvider === provider}
 
           <div class="provider-card" class:active={isActive} class:enabled={config?.enabled}>
@@ -182,7 +230,7 @@
 
             {#if config?.enabled}
               <div class="provider-config">
-                {#if provider === 'ollama' || provider === 'lmstudio'}
+                {#if isLocalProvider(provider)}
                   <div class="config-field">
                     <label>URL du serveur</label>
                     <input
@@ -193,15 +241,44 @@
                     />
                   </div>
                 {:else}
-                  <div class="config-field">
-                    <label>Clé API</label>
-                    <input
-                      type="password"
-                      value={config?.apiKey || ''}
-                      placeholder="sk-..."
-                      oninput={(e) => updateApiKey(provider as AIProvider, (e.target as HTMLInputElement).value)}
-                    />
-                  </div>
+                  <!-- Auth type selector for providers that support OAuth -->
+                  {#if supportsOAuth(provider)}
+                    <div class="auth-type-selector">
+                      <button
+                        class="auth-type-btn"
+                        class:active={config?.authType !== 'oauth'}
+                        onclick={() => aiConfigStore.setProvider(provider as AIProvider, { authType: 'api_key' })}
+                      >
+                        🔑 Clé API
+                      </button>
+                      <button
+                        class="auth-type-btn"
+                        class:active={config?.authType === 'oauth'}
+                        onclick={() => aiConfigStore.setProvider(provider as AIProvider, { authType: 'oauth' })}
+                      >
+                        🔐 OAuth
+                      </button>
+                    </div>
+                  {/if}
+
+                  {#if config?.authType === 'oauth'}
+                    <div class="oauth-section">
+                      <button class="oauth-btn">
+                        Se connecter avec {info.name}
+                      </button>
+                      <p class="hint">Utilisez votre compte {info.name} pour accéder à l'API</p>
+                    </div>
+                  {:else}
+                    <div class="config-field">
+                      <label>Clé API</label>
+                      <input
+                        type="password"
+                        value={config?.apiKey || ''}
+                        placeholder={provider === 'anthropic' ? 'sk-ant-...' : provider === 'openai' ? 'sk-...' : 'Clé API'}
+                        oninput={(e) => updateApiKey(provider as AIProvider, (e.target as HTMLInputElement).value)}
+                      />
+                    </div>
+                  {/if}
                 {/if}
 
                 <div class="provider-actions">
@@ -231,6 +308,97 @@
             {/if}
           </div>
         {/each}
+
+        <!-- Custom provider section -->
+        {@const customConfig = getConfig('custom')}
+        {#if customConfig?.enabled}
+          <div class="provider-card enabled" class:active={configState.activeProvider === 'custom'}>
+            <div class="provider-header">
+              <span class="provider-icon">{customConfig.customIcon || '⚙️'}</span>
+              <span class="provider-name">{customConfig.customName || 'Custom'}</span>
+              <label class="toggle">
+                <input
+                  type="checkbox"
+                  checked={customConfig?.enabled}
+                  onchange={(e) => toggleProvider('custom', (e.target as HTMLInputElement).checked)}
+                />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="provider-config">
+              <div class="config-field">
+                <label>URL du serveur</label>
+                <input
+                  type="text"
+                  value={customConfig?.baseUrl || ''}
+                  placeholder="http://localhost:8080"
+                  oninput={(e) => updateBaseUrl('custom', (e.target as HTMLInputElement).value)}
+                />
+              </div>
+              <div class="config-field">
+                <label>Clé API (optionnel)</label>
+                <input
+                  type="password"
+                  value={customConfig?.apiKey || ''}
+                  placeholder="Clé API"
+                  oninput={(e) => updateApiKey('custom', (e.target as HTMLInputElement).value)}
+                />
+              </div>
+              <div class="provider-actions">
+                <button class="test-btn" onclick={() => handleTestProvider('custom')} disabled={testingProvider === 'custom'}>
+                  {testingProvider === 'custom' ? '...' : 'Tester'}
+                </button>
+                {#if testResults['custom']}
+                  <span class="test-result" class:success={testResults['custom'].success}>
+                    {testResults['custom'].success ? '✓ OK' : `✗ ${testResults['custom'].error}`}
+                  </span>
+                {/if}
+                {#if configState.activeProvider !== 'custom'}
+                  <button class="use-btn" onclick={() => selectProvider('custom')}>Utiliser</button>
+                {:else}
+                  <span class="active-badge">Actif</span>
+                {/if}
+              </div>
+            </div>
+          </div>
+        {/if}
+
+        <!-- Add custom provider button -->
+        {#if showCustomForm}
+          <div class="custom-provider-form">
+            <h4>Ajouter un fournisseur personnalisé</h4>
+            <div class="form-grid">
+              <div class="config-field">
+                <label>Nom</label>
+                <input type="text" placeholder="Mon Provider" bind:value={customProviderForm.name} />
+              </div>
+              <div class="config-field">
+                <label>Icône (emoji)</label>
+                <input type="text" placeholder="⚙️" bind:value={customProviderForm.icon} maxlength="2" />
+              </div>
+              <div class="config-field full-width">
+                <label>URL de base (OpenAI-compatible)</label>
+                <input type="text" placeholder="http://localhost:8080" bind:value={customProviderForm.baseUrl} />
+              </div>
+              <div class="config-field">
+                <label>Clé API (optionnel)</label>
+                <input type="password" placeholder="API Key" bind:value={customProviderForm.apiKey} />
+              </div>
+              <div class="config-field">
+                <label>Modèle par défaut</label>
+                <input type="text" placeholder="model-name" bind:value={customProviderForm.defaultModel} />
+              </div>
+            </div>
+            <div class="form-actions">
+              <button onclick={() => showCustomForm = false}>Annuler</button>
+              <button class="save-btn" onclick={handleAddCustomProvider}>Ajouter</button>
+            </div>
+          </div>
+        {:else}
+          <button class="add-provider-btn" onclick={() => showCustomForm = true}>
+            + Ajouter un fournisseur personnalisé
+          </button>
+        {/if}
       </div>
 
     {:else if activeTab === 'models'}
@@ -241,10 +409,10 @@
         </div>
 
         <div class="models-by-provider">
-          {#each ['anthropic', 'google', 'openai', 'ollama', 'lmstudio'] as provider}
+          {#each ALL_PROVIDERS as provider}
             {@const models = getModelsForProvider(provider as AIProvider)}
             {@const config = getConfig(provider as AIProvider)}
-            {@const info = getProviderInfo(provider as AIProvider)}
+            {@const info = getProviderInfo(provider as AIProvider, config?.customName, config?.customIcon)}
 
             {#if config?.enabled && models.length > 0}
               <div class="provider-models">
@@ -379,10 +547,11 @@
         </div>
 
         <div class="usage-by-provider">
-          {#each ['anthropic', 'google', 'openai', 'ollama', 'lmstudio'] as provider}
+          {#each ALL_PROVIDERS as provider}
             {@const records = usageRecords.filter(r => r.provider === provider)}
             {@const providerCost = records.reduce((sum, r) => sum + r.cost, 0)}
-            {@const info = getProviderInfo(provider as AIProvider)}
+            {@const config = getConfig(provider as AIProvider)}
+            {@const info = getProviderInfo(provider as AIProvider, config?.customName, config?.customIcon)}
 
             {#if records.length > 0}
               <div class="provider-usage">
@@ -936,5 +1105,96 @@
     text-align: center;
     color: var(--text-secondary);
     padding: 24px;
+  }
+
+  /* Auth type selector */
+  .auth-type-selector {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .auth-type-btn {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .auth-type-btn:hover {
+    border-color: var(--accent-primary);
+  }
+
+  .auth-type-btn.active {
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+    border-color: var(--accent-primary);
+  }
+
+  /* OAuth section */
+  .oauth-section {
+    text-align: center;
+    padding: 12px;
+  }
+
+  .oauth-btn {
+    padding: 10px 20px;
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .oauth-btn:hover {
+    opacity: 0.9;
+  }
+
+  /* Custom provider form */
+  .custom-provider-form {
+    background: var(--bg-secondary);
+    border: 1px dashed var(--accent-primary);
+    border-radius: 8px;
+    padding: 16px;
+  }
+
+  .custom-provider-form h4 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: var(--accent-primary);
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .form-grid .full-width {
+    grid-column: 1 / -1;
+  }
+
+  .add-provider-btn {
+    width: 100%;
+    padding: 12px;
+    border: 1px dashed var(--border-color);
+    border-radius: 8px;
+    background: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+  }
+
+  .add-provider-btn:hover {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
   }
 </style>

@@ -10,7 +10,7 @@ import { browser } from '$app/environment';
 // Types
 // ============================================
 
-export type AIProvider = 'anthropic' | 'google' | 'openai' | 'ollama' | 'lmstudio';
+export type AIProvider = 'anthropic' | 'google' | 'openai' | 'mistral' | 'deepseek' | 'perplexity' | 'ollama' | 'lmstudio' | 'custom';
 
 export interface AIModel {
   id: string;
@@ -31,6 +31,9 @@ export interface AIProviderConfig {
   defaultModel?: string;
   authType?: 'api_key' | 'oauth';
   oauthToken?: string;
+  // For custom providers
+  customName?: string;
+  customIcon?: string;
 }
 
 export interface ChatMessage {
@@ -181,6 +184,112 @@ export const AVAILABLE_MODELS: AIModel[] = [
     isLocal: false
   },
 
+  // Mistral AI
+  {
+    id: 'mistral-large-latest',
+    name: 'Mistral Large',
+    provider: 'mistral',
+    contextLength: 128000,
+    inputPrice: 2,
+    outputPrice: 6,
+    capabilities: ['chat', 'code', 'function_calling'],
+    isLocal: false
+  },
+  {
+    id: 'mistral-medium-latest',
+    name: 'Mistral Medium',
+    provider: 'mistral',
+    contextLength: 32000,
+    inputPrice: 2.7,
+    outputPrice: 8.1,
+    capabilities: ['chat', 'code'],
+    isLocal: false
+  },
+  {
+    id: 'mistral-small-latest',
+    name: 'Mistral Small',
+    provider: 'mistral',
+    contextLength: 32000,
+    inputPrice: 0.2,
+    outputPrice: 0.6,
+    capabilities: ['chat', 'code'],
+    isLocal: false
+  },
+  {
+    id: 'codestral-latest',
+    name: 'Codestral',
+    provider: 'mistral',
+    contextLength: 32000,
+    inputPrice: 0.2,
+    outputPrice: 0.6,
+    capabilities: ['code'],
+    isLocal: false
+  },
+
+  // DeepSeek
+  {
+    id: 'deepseek-chat',
+    name: 'DeepSeek Chat',
+    provider: 'deepseek',
+    contextLength: 64000,
+    inputPrice: 0.14,
+    outputPrice: 0.28,
+    capabilities: ['chat', 'code'],
+    isLocal: false
+  },
+  {
+    id: 'deepseek-coder',
+    name: 'DeepSeek Coder',
+    provider: 'deepseek',
+    contextLength: 64000,
+    inputPrice: 0.14,
+    outputPrice: 0.28,
+    capabilities: ['code'],
+    isLocal: false
+  },
+  {
+    id: 'deepseek-reasoner',
+    name: 'DeepSeek R1',
+    provider: 'deepseek',
+    contextLength: 64000,
+    inputPrice: 0.55,
+    outputPrice: 2.19,
+    capabilities: ['chat', 'code'],
+    isLocal: false
+  },
+
+  // Perplexity
+  {
+    id: 'sonar-pro',
+    name: 'Sonar Pro',
+    provider: 'perplexity',
+    contextLength: 200000,
+    inputPrice: 3,
+    outputPrice: 15,
+    capabilities: ['chat'],
+    isLocal: false
+  },
+  {
+    id: 'sonar',
+    name: 'Sonar',
+    provider: 'perplexity',
+    contextLength: 128000,
+    inputPrice: 1,
+    outputPrice: 1,
+    capabilities: ['chat'],
+    isLocal: false
+  },
+  {
+    id: 'sonar-reasoning',
+    name: 'Sonar Reasoning',
+    provider: 'perplexity',
+    contextLength: 128000,
+    inputPrice: 1,
+    outputPrice: 5,
+    capabilities: ['chat'],
+    isLocal: false
+  },
+
   // Local - Ollama (examples, dynamically loaded)
   {
     id: 'llama3.2',
@@ -203,8 +312,8 @@ export const AVAILABLE_MODELS: AIModel[] = [
     isLocal: true
   },
   {
-    id: 'mistral',
-    name: 'Mistral 7B',
+    id: 'mistral-local',
+    name: 'Mistral 7B (Local)',
     provider: 'ollama',
     contextLength: 32000,
     inputPrice: 0,
@@ -217,6 +326,16 @@ export const AVAILABLE_MODELS: AIModel[] = [
     name: 'Qwen 2.5 Coder',
     provider: 'ollama',
     contextLength: 32000,
+    inputPrice: 0,
+    outputPrice: 0,
+    capabilities: ['code'],
+    isLocal: true
+  },
+  {
+    id: 'deepseek-coder-local',
+    name: 'DeepSeek Coder (Local)',
+    provider: 'ollama',
+    contextLength: 16000,
     inputPrice: 0,
     outputPrice: 0,
     capabilities: ['code'],
@@ -242,6 +361,24 @@ const DEFAULT_CONFIGS: AIProviderConfig[] = [
     provider: 'openai',
     enabled: false,
     defaultModel: 'gpt-4o-mini',
+    authType: 'api_key'
+  },
+  {
+    provider: 'mistral',
+    enabled: false,
+    defaultModel: 'mistral-small-latest',
+    authType: 'api_key'
+  },
+  {
+    provider: 'deepseek',
+    enabled: false,
+    defaultModel: 'deepseek-chat',
+    authType: 'api_key'
+  },
+  {
+    provider: 'perplexity',
+    enabled: false,
+    defaultModel: 'sonar',
     authType: 'api_key'
   },
   {
@@ -503,10 +640,18 @@ export async function chat(request: ChatRequest): Promise<ChatResponse> {
       return chatGoogle(request, model, providerConfig);
     case 'openai':
       return chatOpenAI(request, model, providerConfig);
+    case 'mistral':
+      return chatMistral(request, model, providerConfig);
+    case 'deepseek':
+      return chatDeepSeek(request, model, providerConfig);
+    case 'perplexity':
+      return chatPerplexity(request, model, providerConfig);
     case 'ollama':
       return chatOllama(request, model, providerConfig);
     case 'lmstudio':
       return chatLMStudio(request, model, providerConfig);
+    case 'custom':
+      return chatCustom(request, model, providerConfig);
     default:
       throw new Error(`Unknown provider: ${provider}`);
   }
@@ -817,6 +962,200 @@ async function chatLMStudio(
   };
 }
 
+async function chatMistral(
+  request: ChatRequest,
+  model: string,
+  config: AIProviderConfig
+): Promise<ChatResponse> {
+  const response = await fetch(`${API_BASE}/ai/mistral/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model,
+      messages: request.messages,
+      temperature: request.temperature ?? 0.7,
+      maxTokens: request.maxTokens ?? 4096,
+      systemPrompt: request.systemPrompt,
+      apiKey: config.apiKey
+    })
+  });
+
+  const result = await response.json();
+
+  if (!result.success) {
+    throw new Error(result.error || 'Mistral API error');
+  }
+
+  if (result.usage) {
+    const modelInfo = AVAILABLE_MODELS.find(m => m.id === model);
+    const cost = modelInfo
+      ? (result.usage.inputTokens * modelInfo.inputPrice / 1000000) +
+        (result.usage.outputTokens * modelInfo.outputPrice / 1000000)
+      : 0;
+
+    usageStore.addRecord({
+      provider: 'mistral',
+      model,
+      inputTokens: result.usage.inputTokens,
+      outputTokens: result.usage.outputTokens,
+      cost
+    });
+  }
+
+  return {
+    content: result.content,
+    model,
+    provider: 'mistral',
+    usage: result.usage,
+    finishReason: result.finishReason
+  };
+}
+
+async function chatDeepSeek(
+  request: ChatRequest,
+  model: string,
+  config: AIProviderConfig
+): Promise<ChatResponse> {
+  const response = await fetch(`${API_BASE}/ai/deepseek/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model,
+      messages: request.messages,
+      temperature: request.temperature ?? 0.7,
+      maxTokens: request.maxTokens ?? 4096,
+      systemPrompt: request.systemPrompt,
+      apiKey: config.apiKey
+    })
+  });
+
+  const result = await response.json();
+
+  if (!result.success) {
+    throw new Error(result.error || 'DeepSeek API error');
+  }
+
+  if (result.usage) {
+    const modelInfo = AVAILABLE_MODELS.find(m => m.id === model);
+    const cost = modelInfo
+      ? (result.usage.inputTokens * modelInfo.inputPrice / 1000000) +
+        (result.usage.outputTokens * modelInfo.outputPrice / 1000000)
+      : 0;
+
+    usageStore.addRecord({
+      provider: 'deepseek',
+      model,
+      inputTokens: result.usage.inputTokens,
+      outputTokens: result.usage.outputTokens,
+      cost
+    });
+  }
+
+  return {
+    content: result.content,
+    model,
+    provider: 'deepseek',
+    usage: result.usage,
+    finishReason: result.finishReason
+  };
+}
+
+async function chatPerplexity(
+  request: ChatRequest,
+  model: string,
+  config: AIProviderConfig
+): Promise<ChatResponse> {
+  const response = await fetch(`${API_BASE}/ai/perplexity/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model,
+      messages: request.messages,
+      temperature: request.temperature ?? 0.7,
+      maxTokens: request.maxTokens ?? 4096,
+      systemPrompt: request.systemPrompt,
+      apiKey: config.apiKey
+    })
+  });
+
+  const result = await response.json();
+
+  if (!result.success) {
+    throw new Error(result.error || 'Perplexity API error');
+  }
+
+  if (result.usage) {
+    const modelInfo = AVAILABLE_MODELS.find(m => m.id === model);
+    const cost = modelInfo
+      ? (result.usage.inputTokens * modelInfo.inputPrice / 1000000) +
+        (result.usage.outputTokens * modelInfo.outputPrice / 1000000)
+      : 0;
+
+    usageStore.addRecord({
+      provider: 'perplexity',
+      model,
+      inputTokens: result.usage.inputTokens,
+      outputTokens: result.usage.outputTokens,
+      cost
+    });
+  }
+
+  return {
+    content: result.content,
+    model,
+    provider: 'perplexity',
+    usage: result.usage,
+    finishReason: result.finishReason
+  };
+}
+
+async function chatCustom(
+  request: ChatRequest,
+  model: string,
+  config: AIProviderConfig
+): Promise<ChatResponse> {
+  if (!config.baseUrl) {
+    throw new Error('Custom provider requires a base URL');
+  }
+
+  // Custom providers use OpenAI-compatible API
+  const response = await fetch(`${config.baseUrl}/v1/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(config.apiKey ? { 'Authorization': `Bearer ${config.apiKey}` } : {})
+    },
+    body: JSON.stringify({
+      model,
+      messages: request.messages,
+      temperature: request.temperature ?? 0.7,
+      max_tokens: request.maxTokens ?? 4096
+    })
+  });
+
+  const result = await response.json();
+
+  usageStore.addRecord({
+    provider: 'custom',
+    model,
+    inputTokens: result.usage?.prompt_tokens || 0,
+    outputTokens: result.usage?.completion_tokens || 0,
+    cost: 0
+  });
+
+  return {
+    content: result.choices?.[0]?.message?.content || '',
+    model,
+    provider: 'custom',
+    usage: {
+      inputTokens: result.usage?.prompt_tokens || 0,
+      outputTokens: result.usage?.completion_tokens || 0,
+      cost: 0
+    },
+    finishReason: result.choices?.[0]?.finish_reason || 'stop'
+  };
+}
+
 // ============================================
 // Utility Functions
 // ============================================
@@ -929,7 +1268,7 @@ export function formatCost(cost: number): string {
 /**
  * Get provider display info
  */
-export function getProviderInfo(provider: AIProvider): { name: string; icon: string; color: string } {
+export function getProviderInfo(provider: AIProvider, customName?: string, customIcon?: string): { name: string; icon: string; color: string } {
   switch (provider) {
     case 'anthropic':
       return { name: 'Anthropic', icon: '🅰️', color: '#D97706' };
@@ -937,11 +1276,40 @@ export function getProviderInfo(provider: AIProvider): { name: string; icon: str
       return { name: 'Google', icon: '🔵', color: '#4285F4' };
     case 'openai':
       return { name: 'OpenAI', icon: '🟢', color: '#10A37F' };
+    case 'mistral':
+      return { name: 'Mistral AI', icon: '🔷', color: '#FF7000' };
+    case 'deepseek':
+      return { name: 'DeepSeek', icon: '🔮', color: '#4D6BFE' };
+    case 'perplexity':
+      return { name: 'Perplexity', icon: '🌐', color: '#20808D' };
     case 'ollama':
       return { name: 'Ollama', icon: '🦙', color: '#000000' };
     case 'lmstudio':
       return { name: 'LM Studio', icon: '🏠', color: '#6366F1' };
+    case 'custom':
+      return { name: customName || 'Custom', icon: customIcon || '⚙️', color: '#6B7280' };
     default:
       return { name: provider, icon: '🤖', color: '#6B7280' };
   }
+}
+
+/**
+ * Add a custom provider configuration
+ */
+export function addCustomProvider(config: {
+  name: string;
+  baseUrl: string;
+  apiKey?: string;
+  defaultModel?: string;
+  icon?: string;
+}): void {
+  aiConfigStore.setProvider('custom', {
+    provider: 'custom',
+    enabled: true,
+    baseUrl: config.baseUrl,
+    apiKey: config.apiKey,
+    defaultModel: config.defaultModel || 'custom-model',
+    customName: config.name,
+    customIcon: config.icon
+  });
 }

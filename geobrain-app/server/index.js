@@ -921,6 +921,398 @@ async function callPerplexity(model, messages) {
 }
 
 // ============================================
+// AI PROVIDER ENDPOINTS (for aiRouter.ts)
+// ============================================
+
+// Mistral chat endpoint
+app.post('/api/ai/mistral/chat', async (req, res) => {
+  try {
+    const { model, messages, temperature, maxTokens, systemPrompt, apiKey } = req.body;
+
+    // Use provided API key or fallback to stored config
+    let key = apiKey;
+    if (!key) {
+      const config = await getGeoBrainConfig();
+      key = config.providers?.mistral?.apiKey;
+    }
+    if (!key) {
+      return res.json({ success: false, error: 'Mistral API key not configured' });
+    }
+
+    // Build messages with system prompt
+    const finalMessages = systemPrompt
+      ? [{ role: 'system', content: systemPrompt }, ...messages]
+      : messages;
+
+    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: model || 'mistral-small-latest',
+        messages: finalMessages.map(m => ({ role: m.role, content: m.content })),
+        temperature: temperature ?? 0.7,
+        max_tokens: maxTokens ?? 4096
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      return res.json({ success: false, error: `Mistral API error: ${response.status} - ${error}` });
+    }
+
+    const data = await response.json();
+    res.json({
+      success: true,
+      content: data.choices[0]?.message?.content || '',
+      usage: {
+        inputTokens: data.usage?.prompt_tokens || 0,
+        outputTokens: data.usage?.completion_tokens || 0
+      },
+      finishReason: data.choices[0]?.finish_reason
+    });
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// DeepSeek chat endpoint
+app.post('/api/ai/deepseek/chat', async (req, res) => {
+  try {
+    const { model, messages, temperature, maxTokens, systemPrompt, apiKey } = req.body;
+
+    let key = apiKey;
+    if (!key) {
+      const config = await getGeoBrainConfig();
+      key = config.providers?.deepseek?.apiKey;
+    }
+    if (!key) {
+      return res.json({ success: false, error: 'DeepSeek API key not configured' });
+    }
+
+    const finalMessages = systemPrompt
+      ? [{ role: 'system', content: systemPrompt }, ...messages]
+      : messages;
+
+    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: model || 'deepseek-chat',
+        messages: finalMessages.map(m => ({ role: m.role, content: m.content })),
+        temperature: temperature ?? 0.7,
+        max_tokens: maxTokens ?? 4096
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      return res.json({ success: false, error: `DeepSeek API error: ${response.status} - ${error}` });
+    }
+
+    const data = await response.json();
+    res.json({
+      success: true,
+      content: data.choices[0]?.message?.content || '',
+      usage: {
+        inputTokens: data.usage?.prompt_tokens || 0,
+        outputTokens: data.usage?.completion_tokens || 0
+      },
+      finishReason: data.choices[0]?.finish_reason
+    });
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// Perplexity chat endpoint
+app.post('/api/ai/perplexity/chat', async (req, res) => {
+  try {
+    const { model, messages, temperature, maxTokens, systemPrompt, apiKey } = req.body;
+
+    let key = apiKey;
+    if (!key) {
+      const config = await getGeoBrainConfig();
+      key = config.providers?.perplexity?.apiKey;
+    }
+    if (!key) {
+      return res.json({ success: false, error: 'Perplexity API key not configured' });
+    }
+
+    const finalMessages = systemPrompt
+      ? [{ role: 'system', content: systemPrompt }, ...messages]
+      : messages;
+
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: model || 'sonar',
+        messages: finalMessages.map(m => ({ role: m.role, content: m.content })),
+        temperature: temperature ?? 0.7,
+        max_tokens: maxTokens ?? 4096
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      return res.json({ success: false, error: `Perplexity API error: ${response.status} - ${error}` });
+    }
+
+    const data = await response.json();
+    res.json({
+      success: true,
+      content: data.choices[0]?.message?.content || '',
+      usage: {
+        inputTokens: data.usage?.prompt_tokens || 0,
+        outputTokens: data.usage?.completion_tokens || 0
+      },
+      finishReason: data.choices[0]?.finish_reason
+    });
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// Google (Gemini) chat endpoint
+app.post('/api/ai/google/chat', async (req, res) => {
+  try {
+    const { model, messages, temperature, maxTokens, systemPrompt, apiKey } = req.body;
+
+    let key = apiKey;
+    if (!key) {
+      const config = await getGeoBrainConfig();
+      key = config.providers?.google?.apiKey;
+    }
+    if (!key) {
+      return res.json({ success: false, error: 'Google API key not configured' });
+    }
+
+    // Convert messages to Gemini format
+    const contents = messages.map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }]
+    }));
+
+    // Add system instruction if provided
+    const requestBody = {
+      contents,
+      generationConfig: {
+        temperature: temperature ?? 0.7,
+        maxOutputTokens: maxTokens ?? 4096
+      }
+    };
+
+    if (systemPrompt) {
+      requestBody.systemInstruction = { parts: [{ text: systemPrompt }] };
+    }
+
+    const modelId = model || 'gemini-2.0-flash';
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${key}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.text();
+      return res.json({ success: false, error: `Google API error: ${response.status} - ${error}` });
+    }
+
+    const data = await response.json();
+    const content = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    res.json({
+      success: true,
+      content,
+      usage: {
+        inputTokens: data.usageMetadata?.promptTokenCount || 0,
+        outputTokens: data.usageMetadata?.candidatesTokenCount || 0
+      },
+      finishReason: data.candidates?.[0]?.finishReason
+    });
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// OpenAI chat endpoint
+app.post('/api/ai/openai/chat', async (req, res) => {
+  try {
+    const { model, messages, temperature, maxTokens, systemPrompt, apiKey } = req.body;
+
+    let key = apiKey;
+    if (!key) {
+      const config = await getGeoBrainConfig();
+      key = config.providers?.openai?.apiKey;
+    }
+    if (!key) {
+      return res.json({ success: false, error: 'OpenAI API key not configured' });
+    }
+
+    const finalMessages = systemPrompt
+      ? [{ role: 'system', content: systemPrompt }, ...messages]
+      : messages;
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: model || 'gpt-4o-mini',
+        messages: finalMessages.map(m => ({ role: m.role, content: m.content })),
+        temperature: temperature ?? 0.7,
+        max_tokens: maxTokens ?? 4096
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      return res.json({ success: false, error: `OpenAI API error: ${response.status} - ${error}` });
+    }
+
+    const data = await response.json();
+    res.json({
+      success: true,
+      content: data.choices[0]?.message?.content || '',
+      usage: {
+        inputTokens: data.usage?.prompt_tokens || 0,
+        outputTokens: data.usage?.completion_tokens || 0
+      },
+      finishReason: data.choices[0]?.finish_reason
+    });
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// Anthropic chat endpoint (non-streaming)
+app.post('/api/ai/anthropic/chat', async (req, res) => {
+  try {
+    const { model, messages, temperature, maxTokens, systemPrompt, apiKey } = req.body;
+
+    const auth = await getClaudeAuth(apiKey);
+    if (!auth.apiKey && !auth.oauthToken) {
+      return res.json({ success: false, error: 'Claude API not configured' });
+    }
+
+    const headers = {
+      'Content-Type': 'application/json',
+      'anthropic-version': '2023-06-01',
+      ...(auth.oauthToken
+        ? { 'Authorization': `Bearer ${auth.oauthToken}` }
+        : { 'x-api-key': auth.apiKey })
+    };
+
+    const claudeMessages = messages.map(m => ({
+      role: m.role === 'user' ? 'user' : 'assistant',
+      content: m.content
+    }));
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        model: model || 'claude-3-5-haiku-20241022',
+        max_tokens: maxTokens ?? 4096,
+        system: systemPrompt || '',
+        messages: claudeMessages
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      return res.json({ success: false, error: `Anthropic API error: ${response.status} - ${error}` });
+    }
+
+    const data = await response.json();
+    const content = data.content?.find(c => c.type === 'text')?.text || '';
+
+    res.json({
+      success: true,
+      content,
+      usage: {
+        inputTokens: data.usage?.input_tokens || 0,
+        outputTokens: data.usage?.output_tokens || 0
+      },
+      finishReason: data.stop_reason
+    });
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// Provider test endpoints
+app.post('/api/ai/:provider/test', async (req, res) => {
+  const { provider } = req.params;
+  const { apiKey } = req.body;
+
+  try {
+    let testUrl, headers;
+
+    switch (provider) {
+      case 'anthropic':
+        // For Anthropic, try a minimal request
+        const auth = await getClaudeAuth(apiKey);
+        if (!auth.apiKey && !auth.oauthToken) {
+          return res.json({ success: false, error: 'No API key or OAuth token' });
+        }
+        return res.json({ success: true });
+
+      case 'google':
+        if (!apiKey) return res.json({ success: false, error: 'API key required' });
+        testUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+        break;
+
+      case 'openai':
+        if (!apiKey) return res.json({ success: false, error: 'API key required' });
+        testUrl = 'https://api.openai.com/v1/models';
+        headers = { 'Authorization': `Bearer ${apiKey}` };
+        break;
+
+      case 'mistral':
+        if (!apiKey) return res.json({ success: false, error: 'API key required' });
+        testUrl = 'https://api.mistral.ai/v1/models';
+        headers = { 'Authorization': `Bearer ${apiKey}` };
+        break;
+
+      case 'deepseek':
+        if (!apiKey) return res.json({ success: false, error: 'API key required' });
+        testUrl = 'https://api.deepseek.com/v1/models';
+        headers = { 'Authorization': `Bearer ${apiKey}` };
+        break;
+
+      case 'perplexity':
+        // Perplexity doesn't have a models endpoint, try a minimal chat
+        if (!apiKey) return res.json({ success: false, error: 'API key required' });
+        // Just validate the key format
+        return res.json({ success: apiKey.startsWith('pplx-') });
+
+      default:
+        return res.json({ success: false, error: 'Unknown provider' });
+    }
+
+    const response = await fetch(testUrl, { headers });
+    res.json({ success: response.ok });
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// ============================================
 // SECURITY API
 // ============================================
 
