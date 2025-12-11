@@ -11,48 +11,52 @@ import * as connections from './connections.js';
 // ============================================
 
 const DATA_KEYWORDS = {
-  // Questions de comptage
-  count: ['combien', 'nombre', 'compte', 'total', 'quantité', 'how many', 'count'],
+  // Questions de comptage (+ questions oui/non qui impliquent des données)
+  count: ['combien', 'nombre', 'compte', 'total', 'quantité', 'how many', 'count', 'statistique', 'stats', 'y a-t-il', 'est-ce qu', 'existe'],
 
-  // Entités géographiques
+  // Entités géographiques (avec variantes sans accents + abréviations)
   entities: {
-    parcelle: ['parcelle', 'parcelles', 'terrain', 'terrains', 'bien-fonds', 'biens-fonds'],
-    batiment: ['bâtiment', 'bâtiments', 'batiment', 'batiments', 'immeuble', 'immeubles', 'construction', 'constructions', 'maison', 'maisons'],
-    adresse: ['adresse', 'adresses', 'rue', 'rues', 'chemin', 'chemins', 'avenue', 'avenues', 'route', 'routes'],
-    collecteur: ['collecteur', 'collecteurs', 'conduite', 'conduites', 'canalisation', 'canalisations', 'égout', 'égouts', 'eaux usées', 'eaux pluviales'],
-    chambre: ['chambre', 'chambres', 'regard', 'regards', 'puits'],
-    hydrant: ['hydrant', 'hydrants', 'borne', 'bornes hydrantes', 'bouche incendie'],
-    route_troncon: ['tronçon', 'tronçons', 'route', 'routes', 'voirie']
+    parcelle: ['parcelle', 'parcelles', 'terrain', 'terrains', 'bien-fonds', 'biens-fonds', 'propriété', 'propriétés', 'propriete', 'proprietes', 'dp communal', 'dp cantonal', 'domaine public', 'privé', 'privée', 'prive', 'privee'],
+    batiment: ['bâtiment', 'bâtiments', 'batiment', 'batiments', 'immeuble', 'immeubles', 'construction', 'constructions', 'maison', 'maisons', 'building', 'buildings'],
+    adresse: ['adresse', 'adresses', 'rue', 'rues', 'chemin', 'chemins', 'avenue', 'avenues'],
+    collecteur: ['collecteur', 'collecteurs', 'conduite', 'conduites', 'canalisation', 'canalisations', 'égout', 'égouts', 'egout', 'egouts', 'eaux usées', 'eaux pluviales', 'assainissement', 'réseau', 'reseau', 'tuyau', 'tuyaux'],
+    chambre: ['chambre', 'chambres', 'regard', 'regards', 'puits', 'visite', 'regard d\'egout', 'regards d\'egout'],
+    hydrant: ['hydrant', 'hydrants', 'borne', 'bornes hydrantes', 'bouche incendie', 'incendie'],
+    route_troncon: ['tronçon', 'tronçons', 'troncon', 'troncons', 'voirie', 'chaussée', 'chaussee'],
+    general: ['résumé', 'resume', 'overview', 'vue d\'ensemble', 'données', 'donnees', 'infos', 'informations', 'data', 'stats', 'statistiques']
   },
 
-  // Actions
-  actions: ['liste', 'lister', 'affiche', 'afficher', 'montre', 'montrer', 'donne', 'donner', 'quels', 'quelles', 'quel', 'quelle'],
+  // Actions (+ verbes de question)
+  actions: ['liste', 'lister', 'affiche', 'afficher', 'montre', 'montrer', 'donne', 'donner', 'quels', 'quelles', 'quel', 'quelle', 'dis', 'dit', 'as-tu', 'avez-vous', 'y a'],
 
   // Agrégations
-  aggregations: ['surface', 'superficie', 'longueur', 'moyenne', 'somme', 'max', 'min', 'plus grand', 'plus petit']
+  aggregations: ['surface', 'superficie', 'longueur', 'moyenne', 'somme', 'max', 'min', 'plus grand', 'plus petit', 'totale', 'total']
 };
 
 // ============================================
 // REQUÊTES SQL PRÉDÉFINIES
 // ============================================
 
-const SQL_TEMPLATES = {
-  // Parcelles (surface_vd = surface officielle VD)
-  parcelle_count: `SELECT COUNT(*) as total FROM bdco.bdco_parcelle`,
-  parcelle_by_genre: `SELECT genre, COUNT(*) as nombre, ROUND(SUM(surface_vd)::numeric, 2) as surface_m2
-    FROM bdco.bdco_parcelle GROUP BY genre ORDER BY nombre DESC`,
-  parcelle_surface_total: `SELECT ROUND(SUM(surface_vd)::numeric, 2) as surface_totale_m2,
-    ROUND(SUM(surface_vd)::numeric / 10000, 2) as surface_totale_ha FROM bdco.bdco_parcelle`,
-  parcelle_list: `SELECT numero, identdn, genre, surface_vd as surface_m2
-    FROM bdco.bdco_parcelle ORDER BY surface_vd DESC LIMIT 20`,
+// Code commune Bussigny = VD0157 (colonne identdn commence par 'VD0157')
+const BUSSIGNY_FILTER = "identdn LIKE 'VD0157%'";
 
-  // Bâtiments
-  batiment_count: `SELECT COUNT(*) as total FROM bdco.bdco_batiment`,
+const SQL_TEMPLATES = {
+  // Parcelles (surface_vd = surface officielle VD) - FILTRÉ BUSSIGNY
+  parcelle_count: `SELECT COUNT(*) as total FROM bdco.bdco_parcelle WHERE ${BUSSIGNY_FILTER}`,
+  parcelle_by_genre: `SELECT genre, COUNT(*) as nombre, ROUND(SUM(surface_vd)::numeric, 2) as surface_m2
+    FROM bdco.bdco_parcelle WHERE ${BUSSIGNY_FILTER} GROUP BY genre ORDER BY nombre DESC`,
+  parcelle_surface_total: `SELECT ROUND(SUM(surface_vd)::numeric, 2) as surface_totale_m2,
+    ROUND(SUM(surface_vd)::numeric / 10000, 2) as surface_totale_ha FROM bdco.bdco_parcelle WHERE ${BUSSIGNY_FILTER}`,
+  parcelle_list: `SELECT numero, identdn, genre, surface_vd as surface_m2
+    FROM bdco.bdco_parcelle WHERE ${BUSSIGNY_FILTER} ORDER BY surface_vd DESC LIMIT 20`,
+
+  // Bâtiments - FILTRÉ BUSSIGNY (identdn comme pour parcelles)
+  batiment_count: `SELECT COUNT(*) as total FROM bdco.bdco_batiment WHERE identdn LIKE 'VD0157%'`,
   batiment_by_genre: `SELECT genre, COUNT(*) as nombre, ROUND(SUM(surface_vd)::numeric, 2) as surface_m2
-    FROM bdco.bdco_batiment GROUP BY genre ORDER BY nombre DESC`,
-  batiment_surface_total: `SELECT ROUND(SUM(surface_vd)::numeric, 2) as surface_totale_m2 FROM bdco.bdco_batiment`,
-  batiment_list: `SELECT numero as egid, genre, designation, surface_vd as surface_m2
-    FROM bdco.bdco_batiment ORDER BY surface_vd DESC NULLS LAST LIMIT 20`,
+    FROM bdco.bdco_batiment WHERE identdn LIKE 'VD0157%' GROUP BY genre ORDER BY nombre DESC`,
+  batiment_surface_total: `SELECT ROUND(SUM(surface_vd)::numeric, 2) as surface_totale_m2 FROM bdco.bdco_batiment WHERE identdn LIKE 'VD0157%'`,
+  batiment_list: `SELECT numero, identdn, genre, designation, surface_vd as surface_m2
+    FROM bdco.bdco_batiment WHERE identdn LIKE 'VD0157%' ORDER BY surface_vd DESC NULLS LAST LIMIT 20`,
 
   // Adresses
   adresse_count: `SELECT COUNT(*) as total FROM bdco.bdco_adresse_entree`,
@@ -81,11 +85,11 @@ const SQL_TEMPLATES = {
     ROUND(SUM(ST_Length(geom))::numeric / 1000, 2) as longueur_totale_km
     FROM route.by_rte_troncon`,
 
-  // Vue générale
+  // Vue générale - FILTRÉ BUSSIGNY
   stats_general: `
-    SELECT 'Parcelles' as type, COUNT(*)::text as valeur FROM bdco.bdco_parcelle
+    SELECT 'Parcelles' as type, COUNT(*)::text as valeur FROM bdco.bdco_parcelle WHERE ${BUSSIGNY_FILTER}
     UNION ALL
-    SELECT 'Bâtiments', COUNT(*)::text FROM bdco.bdco_batiment
+    SELECT 'Bâtiments', COUNT(*)::text FROM bdco.bdco_batiment WHERE ${BUSSIGNY_FILTER}
     UNION ALL
     SELECT 'Adresses', COUNT(*)::text FROM bdco.bdco_adresse_entree
     UNION ALL
@@ -121,6 +125,17 @@ function detectDataQuestion(message) {
     }
   }
 
+  // Si on a une entité "general", c'est une question de stats globales
+  if (detectedEntity === 'general') {
+    return {
+      isDataQuestion: true,
+      entity: 'general',
+      wantsCount: true,
+      wantsList: false,
+      wantsAggregation: false
+    };
+  }
+
   // Si on a une entité et une action/comptage
   if (detectedEntity && (hasCountKeyword || hasActionKeyword || hasAggregationKeyword)) {
     return {
@@ -132,10 +147,11 @@ function detectDataQuestion(message) {
     };
   }
 
-  // Questions générales sur les stats
-  if (lowerMsg.includes('statistique') || lowerMsg.includes('résumé') ||
+  // Questions générales sur les stats (fallback)
+  if (lowerMsg.includes('statistique') || lowerMsg.includes('résumé') || lowerMsg.includes('resume') ||
       lowerMsg.includes('overview') || lowerMsg.includes('vue d\'ensemble') ||
-      (lowerMsg.includes('données') && lowerMsg.includes('bussigny'))) {
+      (lowerMsg.includes('données') && lowerMsg.includes('bussigny')) ||
+      (lowerMsg.includes('donnees') && lowerMsg.includes('bussigny'))) {
     return {
       isDataQuestion: true,
       entity: 'general',

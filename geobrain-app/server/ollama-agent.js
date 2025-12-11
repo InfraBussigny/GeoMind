@@ -26,42 +26,49 @@ ${params || '    Aucun paramètre'}`;
 
   return `${AGENT_SYSTEM_PROMPT}
 
-## FORMAT D'APPEL D'OUTILS
+## RÈGLE ABSOLUE - APPEL D'OUTILS
 
-Quand tu dois utiliser un outil, réponds EXACTEMENT dans ce format:
+Tu as accès à des outils. Pour les utiliser, tu DOIS écrire EXACTEMENT ce format JSON entre balises:
 
 <tool_call>
-{"name": "nom_outil", "input": {"param1": "valeur1", "param2": "valeur2"}}
+{"name": "sql_query", "input": {"query": "SELECT ..."}}
 </tool_call>
 
-Tu peux appeler plusieurs outils en séquence. Après avoir reçu les résultats, continue ta réponse ou appelle un autre outil si nécessaire.
+**INTERDICTIONS:**
+- NE DIS JAMAIS "je vais exécuter" sans inclure le <tool_call> dans ta réponse
+- NE RÉPÈTE PAS la même phrase plusieurs fois
+- NE DÉCRIS PAS ce que tu vas faire - FAIS-LE directement avec <tool_call>
+
+**PROCESSUS:**
+1. L'utilisateur pose une question
+2. Tu écris IMMÉDIATEMENT le <tool_call> approprié (pas de bavardage avant)
+3. Tu reçois le résultat dans <tool_result>
+4. Tu formules ta réponse finale avec les données réelles
 
 ## OUTILS DISPONIBLES
 
 ${toolDescriptions}
 
-## EXEMPLES D'APPELS
+## EXEMPLES CORRECTS
 
-Pour compter les parcelles:
+Question: "Combien de parcelles à Bussigny?"
+Réponse correcte:
 <tool_call>
-{"name": "sql_query", "input": {"query": "SELECT COUNT(*) as total FROM bdco.bdco_parcelle"}}
+{"name": "sql_query", "input": {"query": "SELECT genre, COUNT(*) as nb FROM bdco.bdco_parcelle WHERE identdn LIKE 'VD0157%' GROUP BY genre"}}
 </tool_call>
 
-Pour lister les connexions:
+Question: "Quels types de parcelles?"
+Réponse correcte:
 <tool_call>
-{"name": "list_db_connections", "input": {}}
+{"name": "sql_query", "input": {"query": "SELECT DISTINCT genre, COUNT(*) as total FROM bdco.bdco_parcelle WHERE identdn LIKE 'VD0157%' GROUP BY genre ORDER BY total DESC"}}
 </tool_call>
 
-Pour lire un fichier:
-<tool_call>
-{"name": "read_file", "input": {"path": "C:\\\\Users\\\\zema\\\\GeoBrain\\\\memory\\\\context.md"}}
-</tool_call>
+## CONTEXTE BASE DE DONNÉES BUSSIGNY
 
-## IMPORTANT
-- Utilise TOUJOURS le format <tool_call>...</tool_call> pour appeler un outil
-- N'invente JAMAIS de données - utilise les outils pour obtenir les vraies informations
-- Après un appel d'outil, tu recevras le résultat entre <tool_result>...</tool_result>
-- Analyse le résultat et formule ta réponse finale à l'utilisateur`;
+- Code commune Bussigny: VD0157 (colonne identdn commence par 'VD0157')
+- Table parcelles: bdco.bdco_parcelle
+- Colonnes utiles: identdn (ID parcelle), genre (type: Privé, DP communal, DP cantonal), egrid, numero
+- TOUJOURS filtrer par identdn LIKE 'VD0157%' pour Bussigny uniquement`;
 }
 
 /**
@@ -156,6 +163,8 @@ export async function runOllamaAgent(model, userMessages, options = {}) {
   let iteration = 0;
   let finalResponse = '';
   const toolResults = [];
+  let lastResponseHash = '';
+  let repeatedCount = 0;
 
   while (iteration < MAX_ITERATIONS) {
     iteration++;
@@ -165,8 +174,32 @@ export async function runOllamaAgent(model, userMessages, options = {}) {
     const response = await callOllama(model, messages, baseUrl);
     console.log(`[Ollama Agent] Response: ${response.slice(0, 200)}...`);
 
-    // Parser les appels d'outils
+    // Détection de boucle : si la réponse est similaire à la précédente
+    const responseHash = response.slice(0, 100);
+    if (responseHash === lastResponseHash) {
+      repeatedCount++;
+      console.log(`[Ollama Agent] BOUCLE DÉTECTÉE (${repeatedCount}x)`);
+      if (repeatedCount >= 2) {
+        // Forcer une sortie avec un message d'erreur
+        finalResponse = "Je n'ai pas pu exécuter la requête correctement. Veuillez reformuler votre question ou essayer avec l'assistant SQL (MODE 1).";
+        break;
+      }
+    } else {
+      repeatedCount = 0;
+      lastResponseHash = responseHash;
+    }
+
+    // Détection du bavardage sans action : si le modèle dit "je vais exécuter" sans <tool_call>
     const toolCalls = parseToolCalls(response);
+    const talksAboutExecuting = /je vais (exécuter|lancer|faire|procéder|récupérer)/i.test(response);
+
+    if (toolCalls.length === 0 && talksAboutExecuting && iteration < MAX_ITERATIONS - 1) {
+      console.log(`[Ollama Agent] Bavardage détecté - forçage d'instruction`);
+      // Ajouter un message pour forcer l'action
+      messages.push({ role: 'assistant', content: response });
+      messages.push({ role: 'user', content: `STOP. Tu dois écrire le <tool_call> maintenant. Ne parle plus, écris juste:\n<tool_call>\n{"name": "sql_query", "input": {"query": "..."}}\n</tool_call>` });
+      continue;
+    }
 
     if (toolCalls.length === 0) {
       // Pas d'appel d'outil = réponse finale
