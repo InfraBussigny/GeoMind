@@ -310,12 +310,12 @@
         {/each}
 
         <!-- Custom provider section -->
-        {@const customConfig = getConfig('custom')}
-        {#if customConfig?.enabled}
+        {#if getConfig('custom')?.enabled}
+          {@const customConfig = getConfig('custom')}
           <div class="provider-card enabled" class:active={configState.activeProvider === 'custom'}>
             <div class="provider-header">
-              <span class="provider-icon">{customConfig.customIcon || '⚙️'}</span>
-              <span class="provider-name">{customConfig.customName || 'Custom'}</span>
+              <span class="provider-icon">{customConfig?.customIcon || '⚙️'}</span>
+              <span class="provider-name">{customConfig?.customName || 'Custom'}</span>
               <label class="toggle">
                 <input
                   type="checkbox"

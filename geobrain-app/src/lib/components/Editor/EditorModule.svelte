@@ -231,14 +231,14 @@ ORDER BY
 SELECT
     p.identdn,
     p.numero,
-    p.surface_rf,
-    ST_Area(p.geometry) as surface_calc
+    p.surface_vd,
+    ST_Area(p.geom) as surface_calc
 FROM
     bdco.bdco_parcelle p
 WHERE
-    p.surface_rf > 1000
+    p.surface_vd > 1000
 ORDER BY
-    p.surface_rf DESC
+    p.surface_vd DESC
 LIMIT 10;`,
       ext: 'sql'
     },

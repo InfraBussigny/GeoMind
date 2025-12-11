@@ -1,3 +1,49 @@
+## Session 15 - 11 decembre 2025 (apres-midi)
+**Theme** : Integration Qwen2.5:14b pour tool calling + Polices GIMP
+
+### Travail effectue
+
+#### 1. Telechargement et test Qwen2.5:14b
+- Modele telecharge via Ollama (9 GB)
+- Test tool calling reussi avec format `<tool_call>{"name":..., "parameters":...}</tool_call>`
+- Comparaison avec llama3.2 : Qwen2.5 respecte le format, llama3.2 non
+
+#### 2. Integration backend GeoBrain
+- Ajout de `qwen2.5:14b` dans la liste des modeles Ollama (PROVIDERS)
+- Configuration comme modele par defaut pour MODE 2 (Agent avec outils)
+- Test d'integration reussi : requete SQL sur parcelles executee correctement
+- Resultats: 10115 parcelles privees, 1219 DP communal, 486 DP cantonal
+
+#### 3. Polices GIMP (session precedente)
+- 22 polices installees dans `C:/Users/zema/AppData/Roaming/GIMP/2.10/fonts/`
+- Aileron (16 variantes), Gilroy Bold, Poppins Bold, Montserrat Bold, Nunito Sans Bold, Outfit Bold, DM Sans Bold
+
+### Fichiers modifies
+- `geobrain-app/server/index.js` : Qwen2.5:14b comme modele par defaut pour outils
+- `scripts/test_qwen_tools.ps1` : Script de test tool calling
+- `scripts/test_qwen_integration.ps1` : Script test integration backend
+
+### Configuration actuelle Ollama
+| Modele | Taille | Usage |
+|--------|--------|-------|
+| qwen2.5:14b | 9 GB | Tool calling (MODE 2) - **RECOMMANDE** |
+| llama3.2 | 2 GB | Chat simple (MODE 3) |
+| codellama | 3.8 GB | Code (deprecie pour tools) |
+
+---
+
+## Session - 2025-12-11
+
+### Travaux effectués
+- [09:03] Chat stream ollama/llama3.2:latest: "connecte toi à la base postgresql bussigny et donn..."
+- [09:02] Chat stream ollama/codellama:latest: "non, je parlais de la commune de bussigny..."
+- [09:02] Chat stream ollama/codellama:latest: "donne moi directement le nombre de parcelles privé..."
+- [09:01] Chat stream ollama/codellama:latest: "coucou, tu peux me sortir des données sur les parc..."
+- [08:54] Chat stream ollama/codellama:latest: "Est-ce que tu peux me donner des datas sur les par..."
+- [08:54] Chat stream ollama/codellama:latest: "Coucou..."
+
+---
+
 ## Session 14 - 11 decembre 2025 08h00
 **Theme** : Settings IA multi-providers + Endpoints backend + Installation Ollama
 

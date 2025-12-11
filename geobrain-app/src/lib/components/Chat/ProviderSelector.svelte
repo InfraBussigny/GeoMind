@@ -26,7 +26,10 @@
       openai: 'O',
       mistral: 'M',
       deepseek: 'D',
-      perplexity: 'P'
+      perplexity: 'P',
+      ollama: '🦙',
+      lmstudio: 'L',
+      google: 'G'
     };
     return icons[providerId] || '?';
   }
@@ -37,7 +40,10 @@
       openai: '#10A37F',
       mistral: '#FF6B35',
       deepseek: '#0066FF',
-      perplexity: '#6366F1'
+      perplexity: '#6366F1',
+      ollama: '#FFFFFF',
+      lmstudio: '#00D9FF',
+      google: '#4285F4'
     };
     return colors[providerId] || '#666';
   }

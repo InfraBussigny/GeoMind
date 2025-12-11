@@ -15,15 +15,16 @@
           "key_columns": {
             "gid": "Identifiant unique interne",
             "numero": "Numéro de parcelle (ex: 1234)",
+            "egris_egrid": "Identifiant EGRID (registre foncier fédéral)",
             "identdn": "Identifiant cantonal unique (format: VD0157-XXXX, 0157 = code commune Bussigny)",
             "id_genre": "Code du genre de parcelle",
             "genre": "Type de parcelle (Bien-fonds, DDP, etc.)",
-            "surface_rf": "Surface officielle RF en m²",
+            "surface_vd": "Surface officielle VD en m²",
             "surface_calcul": "Surface calculée géométriquement en m²"
           },
           "common_queries": [
             "Compter les parcelles: SELECT COUNT(*) FROM bdco.bdco_parcelle",
-            "Surface totale: SELECT SUM(surface_rf) FROM bdco.bdco_parcelle",
+            "Surface totale: SELECT SUM(surface_vd) FROM bdco.bdco_parcelle",
             "Par genre: SELECT genre, COUNT(*) FROM bdco.bdco_parcelle GROUP BY genre"
           ]
         },
@@ -265,7 +266,7 @@
   },
   "example_queries": {
     "count_parcelles": "SELECT COUNT(*) as total FROM bdco.bdco_parcelle",
-    "parcelles_by_genre": "SELECT genre, COUNT(*) as nombre, SUM(surface_rf) as surface_totale FROM bdco.bdco_parcelle GROUP BY genre ORDER BY nombre DESC",
+    "parcelles_by_genre": "SELECT genre, COUNT(*) as nombre, SUM(surface_vd) as surface_totale FROM bdco.bdco_parcelle GROUP BY genre ORDER BY nombre DESC",
     "count_batiments": "SELECT COUNT(*) as total, SUM(surface_vd) as surface_totale FROM bdco.bdco_batiment",
     "longueur_collecteurs": "SELECT fonction_hydro, SUM(ST_Length(geom)) as longueur_m FROM assainissement.by_ass_collecteur GROUP BY fonction_hydro",
     "chambres_par_etat": "SELECT etat, COUNT(*) FROM assainissement.by_ass_chambre GROUP BY etat",

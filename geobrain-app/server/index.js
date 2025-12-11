@@ -17,6 +17,8 @@ import { TOOL_DEFINITIONS, executeTool, AGENT_SYSTEM_PROMPT } from './tools.js';
 import { selectModel, MODELS } from './model-selector.js';
 import { orchestrate, generateEnrichedSystemPrompt, identifyRelevantAgents, listAgents } from './sub-agents.js';
 import security from './security.js';
+import { runOllamaAgent, chatWithTools as ollamaChat } from './ollama-agent.js';
+import { processSQLAssistant, buildEnrichedPrompt } from './sql-assistant.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -117,6 +119,36 @@ const PROVIDERS = {
     ],
     authType: 'apikey',
     baseUrl: 'https://api.perplexity.ai'
+  },
+  google: {
+    name: 'Google Gemini',
+    models: [
+      { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', default: true },
+      { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash' },
+      { id: 'gemini-2.0-flash-exp', name: 'Gemini 2.0 Flash' },
+    ],
+    authType: 'apikey',
+    baseUrl: 'https://generativelanguage.googleapis.com/v1beta'
+  },
+  ollama: {
+    name: 'Ollama (Local)',
+    models: [
+      { id: 'qwen2.5:14b', name: 'Qwen 2.5 14B (Tools)', default: true, forTools: true },
+      { id: 'llama3.2', name: 'Llama 3.2 (Chat rapide)' },
+      { id: 'codellama', name: 'CodeLlama' },
+      { id: 'mistral', name: 'Mistral' },
+      { id: 'phi3', name: 'Phi-3' },
+    ],
+    authType: 'local',
+    baseUrl: 'http://localhost:11434'
+  },
+  lmstudio: {
+    name: 'LM Studio (Local)',
+    models: [
+      { id: 'local-model', name: 'Local Model', default: true },
+    ],
+    authType: 'local',
+    baseUrl: 'http://localhost:1234/v1'
   }
 };
 
@@ -124,14 +156,58 @@ const PROVIDERS = {
 // API ROUTES
 // ============================================
 
+// Helper: Check if local server is running
+async function checkLocalServer(url, timeout = 2000) {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+// Helper: Get Ollama models dynamically
+async function getOllamaModels() {
+  try {
+    const response = await fetch('http://localhost:11434/api/tags');
+    if (response.ok) {
+      const data = await response.json();
+      if (data.models && data.models.length > 0) {
+        return data.models.map((m, i) => ({
+          id: m.name,
+          name: m.name.replace(':latest', ''),
+          default: i === 0
+        }));
+      }
+    }
+  } catch {}
+  return PROVIDERS.ollama.models; // Fallback to default list
+}
+
 // Get available providers and their status
 app.get('/api/providers', async (req, res) => {
   const claudeCredentials = await getClaudeCredentials();
   const config = await getGeoBrainConfig();
 
-  const providers = Object.entries(PROVIDERS).map(([id, provider]) => {
+  // Check local servers in parallel
+  const [ollamaRunning, lmstudioRunning] = await Promise.all([
+    checkLocalServer('http://localhost:11434/api/tags'),
+    checkLocalServer('http://localhost:1234/v1/models')
+  ]);
+
+  // Get dynamic Ollama models if running
+  let ollamaModels = PROVIDERS.ollama.models;
+  if (ollamaRunning) {
+    ollamaModels = await getOllamaModels();
+  }
+
+  const providers = await Promise.all(Object.entries(PROVIDERS).map(async ([id, provider]) => {
     let isConfigured = false;
     let authMethod = null;
+    let models = provider.models;
 
     if (config.providers?.[id]?.apiKey) {
       isConfigured = true;
@@ -139,15 +215,23 @@ app.get('/api/providers', async (req, res) => {
     } else if (id === 'claude' && claudeCredentials?.claudeAiOauth) {
       isConfigured = true;
       authMethod = 'Claude Code OAuth';
+    } else if (id === 'ollama' && ollamaRunning) {
+      isConfigured = true;
+      authMethod = 'Local Server';
+      models = ollamaModels;
+    } else if (id === 'lmstudio' && lmstudioRunning) {
+      isConfigured = true;
+      authMethod = 'Local Server';
     }
 
     return {
       id,
       ...provider,
+      models,
       isConfigured,
       authMethod
     };
-  });
+  }));
 
   res.json(providers);
 });
@@ -219,6 +303,132 @@ app.post('/api/memory/log', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+// ============================================
+// PROVIDER ROUTER FUNCTION
+// ============================================
+
+/**
+ * Routes chat requests to the appropriate provider
+ */
+async function callProvider(provider, model, messages, tools) {
+  const config = await getGeoBrainConfig();
+
+  switch (provider) {
+    case 'ollama': {
+      // Utiliser l'agent avec outils pour Ollama
+      const result = await runOllamaAgent(model || 'llama3.2', messages, {
+        baseUrl: 'http://localhost:11434'
+      });
+      return {
+        content: result.content,
+        model: result.model,
+        provider: 'ollama',
+        toolCalls: result.toolCalls
+      };
+    }
+
+    case 'lmstudio': {
+      const response = await fetch('http://localhost:1234/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: model || 'local-model',
+          messages: messages.map(m => ({ role: m.role, content: m.content })),
+          temperature: 0.7,
+          max_tokens: 4096
+        })
+      });
+      const data = await response.json();
+      return {
+        content: data.choices?.[0]?.message?.content || '',
+        model: data.model,
+        provider: 'lmstudio'
+      };
+    }
+
+    case 'openai': {
+      const apiKey = config.providers?.openai?.apiKey;
+      if (!apiKey) throw new Error('OpenAI API key not configured');
+
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: model || 'gpt-4o',
+          messages: messages.map(m => ({ role: m.role, content: m.content })),
+          temperature: 0.7,
+          max_tokens: 4096
+        })
+      });
+      const data = await response.json();
+      if (data.error) throw new Error(data.error.message);
+      return {
+        content: data.choices?.[0]?.message?.content || '',
+        model: data.model,
+        provider: 'openai'
+      };
+    }
+
+    case 'mistral': {
+      const apiKey = config.providers?.mistral?.apiKey;
+      if (!apiKey) throw new Error('Mistral API key not configured');
+
+      const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: model || 'mistral-large-latest',
+          messages: messages.map(m => ({ role: m.role, content: m.content })),
+          temperature: 0.7,
+          max_tokens: 4096
+        })
+      });
+      const data = await response.json();
+      if (data.error) throw new Error(data.error.message);
+      return {
+        content: data.choices?.[0]?.message?.content || '',
+        model: data.model,
+        provider: 'mistral'
+      };
+    }
+
+    case 'deepseek': {
+      const apiKey = config.providers?.deepseek?.apiKey;
+      if (!apiKey) throw new Error('DeepSeek API key not configured');
+
+      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: model || 'deepseek-chat',
+          messages: messages.map(m => ({ role: m.role, content: m.content })),
+          temperature: 0.7,
+          max_tokens: 4096
+        })
+      });
+      const data = await response.json();
+      if (data.error) throw new Error(data.error.message);
+      return {
+        content: data.choices?.[0]?.message?.content || '',
+        model: data.model,
+        provider: 'deepseek'
+      };
+    }
+
+    default:
+      throw new Error(`Provider ${provider} not supported in streaming fallback`);
+  }
+}
 
 // ============================================
 // CHAT API
@@ -1255,6 +1465,207 @@ app.post('/api/ai/anthropic/chat', async (req, res) => {
   }
 });
 
+// Ollama chat endpoint (local) - AVEC SQL ASSISTANT ET CONTEXTE PARTAGÉ
+app.post('/api/ai/ollama/chat', async (req, res) => {
+  try {
+    const { model, messages, temperature, systemPrompt, baseUrl, useTools = true, useSQLAssistant = true } = req.body;
+    const ollamaUrl = baseUrl || 'http://localhost:11434';
+
+    // Extraire le dernier message utilisateur
+    const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content || '';
+
+    // Construire le contexte partagé (mémoire, personnalité, connaissances)
+    // Utilise un max de 2000 tokens pour les modèles locaux (plus légers)
+    const sharedContext = await memory.buildContext(lastUserMessage, 2000);
+
+    // MODE 1: SQL Assistant (plus fiable pour les petits modèles)
+    if (useSQLAssistant) {
+      console.log(`[Ollama] Checking SQL Assistant for: "${lastUserMessage.slice(0, 50)}..."`);
+
+      const sqlResult = await processSQLAssistant(lastUserMessage);
+
+      if (sqlResult.activated) {
+        console.log(`[Ollama] SQL Assistant activated for entity: ${sqlResult.entity}`);
+
+        // Construire le prompt enrichi avec les données SQL ET le contexte partagé
+        const enrichedMessages = [
+          {
+            role: 'system',
+            content: `${sharedContext}
+
+---
+## MODE SQL ASSISTANT
+Tu dois répondre aux questions en utilisant UNIQUEMENT les données fournies ci-dessous.
+Ne fais JAMAIS de suppositions ou d'estimations. Cite les chiffres exacts.
+Réponds de manière concise et professionnelle.`
+          },
+          ...messages.slice(0, -1), // Messages précédents
+          {
+            role: 'user',
+            content: buildEnrichedPrompt(lastUserMessage, sqlResult)
+          }
+        ];
+
+        // Appeler Ollama avec le contexte enrichi
+        const response = await fetch(`${ollamaUrl}/api/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: model || 'llama3.2',
+            messages: enrichedMessages.map(m => ({ role: m.role, content: m.content })),
+            stream: false,
+            options: {
+              temperature: 0.3, // Plus bas pour plus de précision
+              num_predict: 2048
+            }
+          })
+        });
+
+        if (!response.ok) {
+          const error = await response.text();
+          return res.json({ success: false, error: `Ollama error: ${response.status} - ${error}` });
+        }
+
+        const data = await response.json();
+        return res.json({
+          success: true,
+          content: data.message?.content || '',
+          sqlAssistant: {
+            activated: true,
+            entity: sqlResult.entity,
+            query: sqlResult.results?.query,
+            rowCount: sqlResult.results?.rowCount
+          },
+          usage: {
+            inputTokens: data.prompt_eval_count || 0,
+            outputTokens: data.eval_count || 0
+          },
+          finishReason: 'stop',
+          model: data.model
+        });
+      }
+    }
+
+    // MODE 2: Agent avec outils (pour questions complexes)
+    // Qwen2.5:14b est le modèle recommandé pour le tool calling (92% accuracy)
+    if (useTools) {
+      const toolModel = model || 'qwen2.5:14b'; // Qwen2.5 par défaut pour les outils
+      console.log(`[Ollama] MODE 2 - Agent avec outils, modèle: ${toolModel}`);
+      console.log(`[Ollama] Shared context length: ${sharedContext.length} chars`);
+
+      const result = await runOllamaAgent(toolModel, messages, {
+        baseUrl: ollamaUrl,
+        sharedContext: sharedContext, // Passer le contexte partagé à l'agent
+        onToolCall: (name, input) => {
+          console.log(`[Ollama] Tool called: ${name}`, input);
+        },
+        onToolResult: (name, result) => {
+          console.log(`[Ollama] Tool result for ${name}:`, result.success ? 'success' : 'error');
+        }
+      });
+
+      return res.json({
+        success: true,
+        content: result.content,
+        toolCalls: result.toolCalls,
+        iterations: result.iterations,
+        usage: {
+          inputTokens: 0,
+          outputTokens: 0
+        },
+        finishReason: 'stop',
+        model: result.model
+      });
+    }
+
+    // MODE 3: Simple chat (fallback) - AVEC CONTEXTE PARTAGÉ
+    // Combiner le contexte partagé avec le system prompt optionnel
+    const combinedSystemPrompt = sharedContext + (systemPrompt ? `\n\n---\n\n${systemPrompt}` : '');
+
+    console.log(`[Ollama] MODE 3 - Simple chat with shared context (${sharedContext.length} chars)`);
+
+    const finalMessages = [
+      { role: 'system', content: combinedSystemPrompt },
+      ...messages
+    ];
+
+    const response = await fetch(`${ollamaUrl}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: model || 'llama3.2',
+        messages: finalMessages.map(m => ({ role: m.role, content: m.content })),
+        stream: false,
+        options: {
+          temperature: temperature ?? 0.7
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      return res.json({ success: false, error: `Ollama error: ${response.status} - ${error}` });
+    }
+
+    const data = await response.json();
+    res.json({
+      success: true,
+      content: data.message?.content || '',
+      usage: {
+        inputTokens: data.prompt_eval_count || 0,
+        outputTokens: data.eval_count || 0
+      },
+      finishReason: data.done ? 'stop' : 'length',
+      model: data.model
+    });
+  } catch (error) {
+    console.error('[Ollama] Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// LM Studio chat endpoint (local, OpenAI compatible)
+app.post('/api/ai/lmstudio/chat', async (req, res) => {
+  try {
+    const { model, messages, temperature, maxTokens, systemPrompt, baseUrl } = req.body;
+
+    // Build messages with system prompt
+    const finalMessages = systemPrompt
+      ? [{ role: 'system', content: systemPrompt }, ...messages]
+      : messages;
+
+    const lmstudioUrl = baseUrl || 'http://localhost:1234/v1';
+    const response = await fetch(`${lmstudioUrl}/chat/completions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: model || 'local-model',
+        messages: finalMessages.map(m => ({ role: m.role, content: m.content })),
+        temperature: temperature ?? 0.7,
+        max_tokens: maxTokens ?? 4096
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      return res.json({ success: false, error: `LM Studio error: ${response.status} - ${error}` });
+    }
+
+    const data = await response.json();
+    res.json({
+      success: true,
+      content: data.choices[0]?.message?.content || '',
+      usage: {
+        inputTokens: data.usage?.prompt_tokens || 0,
+        outputTokens: data.usage?.completion_tokens || 0
+      },
+      finishReason: data.choices[0]?.finish_reason
+    });
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
+});
+
 // Provider test endpoints
 app.post('/api/ai/:provider/test', async (req, res) => {
   const { provider } = req.params;
@@ -1300,6 +1711,16 @@ app.post('/api/ai/:provider/test', async (req, res) => {
         if (!apiKey) return res.json({ success: false, error: 'API key required' });
         // Just validate the key format
         return res.json({ success: apiKey.startsWith('pplx-') });
+
+      case 'ollama':
+        // Test Ollama local server
+        testUrl = 'http://localhost:11434/api/tags';
+        break;
+
+      case 'lmstudio':
+        // Test LM Studio local server
+        testUrl = 'http://localhost:1234/v1/models';
+        break;
 
       default:
         return res.json({ success: false, error: 'Unknown provider' });

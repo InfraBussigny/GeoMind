@@ -547,7 +547,7 @@ SRID: 2056 (MN95 / Swiss CH1903+ LV95)
 ### SCHÉMA BDCO - Cadastre communal (source: RF Vaud)
 | Table | Description | Géométrie | Colonnes clés |
 |-------|-------------|-----------|---------------|
-| bdco_parcelle | Parcelles cadastrales | POLYGON | numero, identdn (VD0157-XXXX), genre, surface_rf (m²) |
+| bdco_parcelle | Parcelles cadastrales | POLYGON | numero, identdn (VD0157-XXXX), genre, surface_vd (m²) |
 | bdco_batiment | Bâtiments hors-sol | POLYGON | numero (EGID), genre, designation, surface_vd (m²) |
 | bdco_batiment_souterrain | Constructions souterraines | POLYGON | numero, surface_vd |
 | bdco_adresse_entree | Adresses (points d'entrée) | POINT | numero_maison, texte (nom rue), designation |
@@ -584,7 +584,7 @@ SRID: 2056 (MN95 / Swiss CH1903+ LV95)
 SELECT COUNT(*) FROM bdco.bdco_parcelle
 
 -- Parcelles par genre avec surface
-SELECT genre, COUNT(*) as nb, SUM(surface_rf) as surface_m2
+SELECT genre, COUNT(*) as nb, SUM(surface_vd) as surface_m2
 FROM bdco.bdco_parcelle GROUP BY genre ORDER BY nb DESC
 
 -- Bâtiments
@@ -615,7 +615,7 @@ SELECT DISTINCT texte FROM bdco.bdco_adresse_rue_lin ORDER BY texte
 ### 3. CLARIFIER LES AMBIGUÏTÉS
 - "Parcelles" = bdco.bdco_parcelle (cadastre officiel)
 - "Bâtiments" = bdco.bdco_batiment (hors-sol uniquement)
-- "Surface" = préciser si surface_rf (officielle) ou surface_calcul (géométrique)
+- "Surface" = préciser si surface_vd (officielle VD) ou surface_calcul (géométrique)
 - Si la demande est ambiguë → poser une question de clarification
 
 ### 4. FORMAT DES RÉPONSES
