@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Script pour afficher un pop-up avec du texte Lorem Ipsum
-Auteur: GeoBrain pour Marc - SIT Bussigny
+Auteur: GeoMind pour Marc - SIT Bussigny
 """
 
 import tkinter as tk

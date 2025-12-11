@@ -1,5 +1,5 @@
 /**
- * GeoBrain Memory Service
+ * GeoMind Memory Service
  * Système de mémoire à 3 niveaux pour l'assistant IA
  *
  * Niveaux:

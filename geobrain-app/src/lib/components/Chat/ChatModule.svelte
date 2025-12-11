@@ -192,7 +192,7 @@ L'assistant t'accompagne dans tes tâches quotidiennes.`;
       content: responseContent,
       timestamp: new Date(),
       provider: 'system',
-      model: 'GeoBrain'
+      model: 'GeoMind'
     };
 
     messages.update(m => [...m, assistantMessage]);
@@ -648,7 +648,7 @@ L'assistant t'accompagne dans tes tâches quotidiennes.`;
   }
 
   function getProviderIcon(providerId: string): string {
-    // GeoBrain utilise toujours son propre logo
+    // GeoMind utilise toujours son propre logo
     return 'G';
   }
 
@@ -683,7 +683,7 @@ L'assistant t'accompagne dans tes tâches quotidiennes.`;
   <div class="chat-module">
     <header class="chat-header">
       <div class="header-left">
-        <h1>Assistant GeoBrain</h1>
+        <h1>Assistant GeoMind</h1>
         {#if $backendConnected}
           <span class="status connected">Backend connecte</span>
         {:else}
@@ -714,9 +714,10 @@ L'assistant t'accompagne dans tes tâches quotidiennes.`;
       {#if $messages.length === 0}
         <div class="welcome-message">
           <div class="welcome-icon">
-            <img src="/images/Logo_GeoBrain.png" alt="GeoBrain" class="welcome-logo" />
+            <img src="/images/Logo_GeoMind.png" alt="GeoMind" class="welcome-logo" />
           </div>
-          <h2>Bienvenue dans GeoBrain</h2>
+          <h2>Bienvenue dans GeoMind</h2>
+          <p class="welcome-subtitle">Spatial Intelligence</p>
           <p>Assistant IA pour les geodonnees et le SIT de Bussigny</p>
 
           {#if !$backendConnected}
@@ -1150,7 +1151,7 @@ L'assistant t'accompagne dans tes tâches quotidiennes.`;
   }
 
   .welcome-logo {
-    width: 120px;
+    width: 180px;
     height: auto;
     filter: drop-shadow(0 0 20px var(--cyber-green-glow));
   }

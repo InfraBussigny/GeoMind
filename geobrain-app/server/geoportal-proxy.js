@@ -1,8 +1,8 @@
 /**
- * GeoBrain - Proxy Geoportail Bussigny
+ * GeoMind - Proxy Geoportail Bussigny
  *
  * Ce module gere l'authentification et le proxy des requetes vers geo.bussigny.ch
- * Il permet d'acceder aux couches protegees depuis GeoBrain.
+ * Il permet d'acceder aux couches protegees depuis GeoMind.
  *
  * Architecture :
  * 1. Login : Recupere csrf_token, POST credentials, stocke cookies
@@ -85,7 +85,7 @@ async function getCsrfToken() {
     const response = await sessionData.fetchWithCookies(AUTH_URL, {
       method: 'GET',
       headers: {
-        'User-Agent': 'GeoBrain/1.0',
+        'User-Agent': 'GeoMind/1.0',
         'Accept': 'text/html'
       }
     });
@@ -129,7 +129,7 @@ export async function login(username, password, remember = false) {
     const response = await sessionData.fetchWithCookies(AUTH_URL, {
       method: 'POST',
       headers: {
-        'User-Agent': 'GeoBrain/1.0',
+        'User-Agent': 'GeoMind/1.0',
         'Content-Type': 'application/x-www-form-urlencoded',
         'Accept': 'text/html,application/xhtml+xml',
         'Origin': GEOPORTAL_BASE,
@@ -234,7 +234,7 @@ export async function proxyRequest(targetPath, options = {}) {
     const response = await sessionData.fetchWithCookies(url, {
       method: options.method || 'GET',
       headers: {
-        'User-Agent': 'GeoBrain/1.0',
+        'User-Agent': 'GeoMind/1.0',
         ...options.headers
       }
     });

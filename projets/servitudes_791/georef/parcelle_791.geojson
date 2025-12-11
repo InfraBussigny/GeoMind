@@ -1,0 +1,48 @@
+{
+  "type": "FeatureCollection",
+  "name": "parcelle_791",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:EPSG::2056"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "numero": 791,
+        "adresse": "Chemin du Cèdre 35",
+        "commune": "Bussigny",
+        "type": "parcelle_sujet"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              2533040,
+              1155400
+            ],
+            [
+              2533160,
+              1155400
+            ],
+            [
+              2533160,
+              1155480
+            ],
+            [
+              2533040,
+              1155480
+            ],
+            [
+              2533040,
+              1155400
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

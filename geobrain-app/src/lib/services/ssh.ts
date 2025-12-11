@@ -1,5 +1,5 @@
 /**
- * GeoBrain SSH Service
+ * GeoMind SSH Service
  * Gestion des connexions SSH, tunnels et SFTP via le backend
  */
 

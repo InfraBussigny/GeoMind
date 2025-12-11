@@ -26,8 +26,8 @@ const DATA_KEYWORDS = {
     general: ['résumé', 'resume', 'overview', 'vue d\'ensemble', 'données', 'donnees', 'infos', 'informations', 'data', 'stats', 'statistiques']
   },
 
-  // Actions (+ verbes de question)
-  actions: ['liste', 'lister', 'affiche', 'afficher', 'montre', 'montrer', 'donne', 'donner', 'quels', 'quelles', 'quel', 'quelle', 'dis', 'dit', 'as-tu', 'avez-vous', 'y a'],
+  // Actions (+ verbes de question + articles définis qui impliquent une liste)
+  actions: ['liste', 'lister', 'affiche', 'afficher', 'montre', 'montrer', 'donne', 'donner', 'quels', 'quelles', 'quel', 'quelle', 'dis', 'dit', 'as-tu', 'avez-vous', 'y a', 'les ', 'des ', 'tous les', 'toutes les'],
 
   // Agrégations
   aggregations: ['surface', 'superficie', 'longueur', 'moyenne', 'somme', 'max', 'min', 'plus grand', 'plus petit', 'totale', 'total']
@@ -145,6 +145,33 @@ function detectDataQuestion(message) {
       wantsList: hasActionKeyword && !hasCountKeyword,
       wantsAggregation: hasAggregationKeyword
     };
+  }
+
+  // Fallback : entité + "bussigny" sans verbe = on suppose qu'on veut des infos
+  const mentionsBussigny = lowerMsg.includes('bussigny');
+  if (detectedEntity && mentionsBussigny) {
+    return {
+      isDataQuestion: true,
+      entity: detectedEntity,
+      wantsCount: true, // Par défaut on compte
+      wantsList: false,
+      wantsAggregation: false
+    };
+  }
+
+  // Fallback : juste une entité seule (ex: "parcelles", "batiments") = on donne les stats
+  if (detectedEntity && !hasCountKeyword && !hasActionKeyword && !hasAggregationKeyword) {
+    // Vérifier que c'est pas juste un mot au milieu d'une phrase non pertinente
+    const words = lowerMsg.split(/\s+/).filter(w => w.length > 2);
+    if (words.length <= 3) { // Question courte = probablement une demande de données
+      return {
+        isDataQuestion: true,
+        entity: detectedEntity,
+        wantsCount: true,
+        wantsList: false,
+        wantsAggregation: false
+      };
+    }
   }
 
   // Questions générales sur les stats (fallback)

@@ -1,5 +1,5 @@
 /**
- * GeoBrain File Converter Service
+ * GeoMind File Converter Service
  * Conversion de fichiers entre différents formats
  *
  * Formats supportés:
@@ -78,7 +78,7 @@ export function textToMarkdown(text: string, options: ConversionOptions = {}): C
       const now = new Date().toISOString();
       content = `---
 created: ${now}
-source: GeoBrain Converter
+source: GeoMind Converter
 ---
 
 ${content}`;
@@ -465,7 +465,7 @@ export function geojsonToKml(geojsonString: string, options: ConversionOptions =
     let kml = `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
-    <name>${options.filename || 'GeoBrain Export'}</name>
+    <name>${options.filename || 'GeoMind Export'}</name>
 `;
 
     for (const feature of features) {

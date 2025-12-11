@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "GeoBrain",
+  "productName": "GeoMind",
   "version": "1.0.0",
-  "identifier": "ch.bussigny.geobrain",
+  "identifier": "ch.bussigny.geomind",
   "build": {
     "frontendDist": "../build",
     "devUrl": "http://localhost:5173",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "GeoBrain - Bussigny SIT",
+        "title": "GeoMind - Spatial Intelligence",
         "width": 1400,
         "height": 900,
         "minWidth": 1000,

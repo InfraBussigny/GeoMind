@@ -138,7 +138,7 @@ export const PROTECTED_PATHS = [
 ];
 
 // Dossier sandbox pour le mode standard
-export const SANDBOX_PATH = 'C:/Users/zema/GeoBrain/sandbox';
+export const SANDBOX_PATH = 'C:/Users/zema/GeoMind/sandbox';
 
 // Charger les préférences depuis localStorage
 function loadPreference<T>(key: string, defaultValue: T): T {
@@ -163,12 +163,12 @@ function savePreference(key: string, value: any) {
 
 // Theme store (sombre par défaut pour le mode expert)
 function createThemeStore() {
-  const { subscribe, set, update } = writable<ThemeMode>(loadPreference('geobrain-theme', 'dark'));
+  const { subscribe, set, update } = writable<ThemeMode>(loadPreference('geomind-theme', 'dark'));
 
   return {
     subscribe,
     set: (value: ThemeMode) => {
-      savePreference('geobrain-theme', value);
+      savePreference('geomind-theme', value);
       set(value);
     },
     toggle: () => {
@@ -185,37 +185,37 @@ function createThemeStore() {
 
 // App mode store (expert par défaut)
 function createAppModeStore() {
-  const { subscribe, set, update } = writable<AppMode>(loadPreference('geobrain-mode', 'expert'));
+  const { subscribe, set, update } = writable<AppMode>(loadPreference('geomind-mode', 'standard'));
 
   return {
     subscribe,
     set: (value: AppMode) => {
-      savePreference('geobrain-mode', value);
+      savePreference('geomind-mode', value);
       set(value);
     },
     activateExpert: () => {
-      savePreference('geobrain-mode', 'expert');
+      savePreference('geomind-mode', 'expert');
       set('expert');
     },
     activateGod: () => {
-      savePreference('geobrain-mode', 'god');
+      savePreference('geomind-mode', 'god');
       set('god');
     },
     activateBfsa: () => {
-      savePreference('geobrain-mode', 'bfsa');
+      savePreference('geomind-mode', 'bfsa');
       set('bfsa');
     },
     deactivateToStandard: () => {
-      savePreference('geobrain-mode', 'standard');
+      savePreference('geomind-mode', 'standard');
       set('standard');
     },
     deactivateToExpert: () => {
-      savePreference('geobrain-mode', 'expert');
+      savePreference('geomind-mode', 'expert');
       set('expert');
     },
     // Alias pour rétrocompatibilité
     deactivateExpert: () => {
-      savePreference('geobrain-mode', 'standard');
+      savePreference('geomind-mode', 'standard');
       set('standard');
     }
   };
@@ -230,8 +230,8 @@ export const visibleModules = derived(appMode, ($mode) => {
     // Expert, God et BFSA: tous les modules
     return ['chat', 'canvas', 'editor', 'data', 'carto', 'ssh', 'comm', 'ai', 'docgen', 'connections', 'settings'] as ModuleType[];
   }
-  // Mode standard: seulement Assistant et Cartes
-  return ['chat', 'canvas'] as ModuleType[];
+  // Mode standard: Assistant, Cartes et Paramètres
+  return ['chat', 'canvas', 'settings'] as ModuleType[];
 });
 
 // Phrases secrètes pour activer/désactiver les modes

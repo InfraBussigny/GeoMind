@@ -55,13 +55,13 @@
         {/if}
       {:else}
         <img
-          src="/images/Logo_GeoBrain.png"
-          alt="GeoBrain"
+          src="/images/Logo_GeoMind_nosubtitle.png"
+          alt="GeoMind"
           class="logo-img"
           class:collapsed={$sidebarCollapsed}
         />
         {#if !$sidebarCollapsed}
-          <span class="logo-subtitle">Multitool SIT</span>
+          <span class="logo-subtitle">Spatial Intelligence</span>
         {/if}
       {/if}
     </a>
@@ -271,21 +271,22 @@
   .logo-link {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     gap: 4px;
     text-decoration: none;
   }
 
   .logo-img {
-    width: 140px;
+    width: 180px;
     height: auto;
     object-fit: contain;
     filter: drop-shadow(0 0 10px var(--cyber-green-glow));
     transition: all var(--transition-fast);
+    margin-left: -40px;
   }
 
   .logo-img.collapsed {
-    width: 40px;
+    width: 48px;
   }
 
   .logo-img:hover {
@@ -293,12 +294,14 @@
   }
 
   .logo-subtitle {
-    font-size: 10px;
+    font-size: 8px;
     font-family: var(--font-mono);
     color: var(--text-muted);
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 1.5px;
     margin-top: 4px;
+    margin-left: 10px;
+    white-space: nowrap;
   }
 
   /* Style spécifique BFSA */

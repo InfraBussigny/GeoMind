@@ -1,5 +1,5 @@
 /**
- * GeoBrain AI Router Service
+ * GeoMind AI Router Service
  * Multi-provider AI routing: Anthropic, Google, OpenAI, Local (Ollama/LM Studio)
  */
 

@@ -1,5 +1,5 @@
 /**
- * GeoBrain Map Sources Service
+ * GeoMind Map Sources Service
  * Gestion des sources cartographiques (WMS, WFS, WMTS, GeoJSON)
  */
 

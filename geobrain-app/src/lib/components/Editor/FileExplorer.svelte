@@ -17,7 +17,7 @@
     onFileSelect?: (path: string, content: string) => void;
   }
 
-  let { rootPath = 'C:/Users/zema/GeoBrain', onFileSelect }: Props = $props();
+  let { rootPath = 'C:/Users/zema/GeoMind', onFileSelect }: Props = $props();
 
   let files = $state<FileNode[]>([]);
   let drives = $state<FileNode[]>([]);

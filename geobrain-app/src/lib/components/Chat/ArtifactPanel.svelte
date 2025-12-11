@@ -329,7 +329,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title} - GeoBrain Export</title>
+  <title>${title} - GeoMind Export</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -394,12 +394,12 @@
     <h1>${title}</h1>
     <div class="meta">
       <span class="badge">${language.toUpperCase()}</span>
-      <span>Exporté depuis GeoBrain - ${new Date().toLocaleDateString('fr-CH')}</span>
+      <span>Exporté depuis GeoMind - ${new Date().toLocaleDateString('fr-CH')}</span>
     </div>
   </div>
   <pre><code>${escapeHtml(content)}</code></pre>
   <div class="footer">
-    Généré par GeoBrain - Commune de Bussigny
+    Généré par GeoMind - Commune de Bussigny
   </div>
 </body>
 </html>`;
@@ -409,14 +409,14 @@
   function generateMarkdown(content: string, title: string, language: string): string {
     return `# ${title}
 
-> Exporté depuis GeoBrain - ${new Date().toLocaleDateString('fr-CH')}
+> Exporté depuis GeoMind - ${new Date().toLocaleDateString('fr-CH')}
 
 \`\`\`${language}
 ${content}
 \`\`\`
 
 ---
-*Généré par GeoBrain - Commune de Bussigny*
+*Généré par GeoMind - Commune de Bussigny*
 `;
   }
 
@@ -1071,7 +1071,7 @@ ${content}
   }
 
   /* ========================================
-     Thème Highlight.js Cyber GeoBrain
+     Thème Highlight.js Cyber GeoMind
      ======================================== */
 
   :global(.hljs) {

@@ -44,7 +44,7 @@
 </script>
 
 <svelte:head>
-  <title>{$appMode === 'bfsa' ? 'GeoBFSA - Nyon' : 'GeoBrain - Bussigny SIT'}</title>
+  <title>{$appMode === 'bfsa' ? 'GeoBFSA - Nyon' : 'GeoMind - Spatial Intelligence'}</title>
 </svelte:head>
 
 <!-- Moteur de glitch pour le God Mode -->
@@ -56,7 +56,7 @@
     <main class="main-content">
       {@render children()}
     </main>
-    <StatusBar currentProject={$appMode === 'bfsa' ? 'GeoBFSA Nyon' : 'GeoBrain Bussigny'} />
+    <StatusBar currentProject={$appMode === 'bfsa' ? 'GeoBFSA Nyon' : 'GeoMind Bussigny'} />
   </div>
 </div>
 

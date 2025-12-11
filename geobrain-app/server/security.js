@@ -1,5 +1,5 @@
 /**
- * GeoBrain Security Module
+ * GeoMind Security Module
  * Gestion des permissions selon le mode (standard/expert/god)
  * Avec gardes-fous même pour le God mode
  */
@@ -138,7 +138,7 @@ const PROTECTED_PATHS = [
 ];
 
 // Dossier sandbox
-const SANDBOX_PATH = 'C:/Users/zema/GeoBrain/sandbox';
+const SANDBOX_PATH = 'C:/Users/zema/GeoMind/sandbox';
 
 // Mots-clés SQL dangereux
 const DANGEROUS_SQL = ['DELETE', 'DROP', 'TRUNCATE', 'ALTER', 'UPDATE', 'INSERT', 'CREATE', 'GRANT', 'REVOKE'];

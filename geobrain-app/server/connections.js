@@ -1,5 +1,5 @@
 /**
- * GeoBrain - Connection Manager
+ * GeoMind - Connection Manager
  * Gestion des connexions aux serveurs internes (PostgreSQL, SSH, WMS/WFS)
  * Avec chiffrement des credentials
  */

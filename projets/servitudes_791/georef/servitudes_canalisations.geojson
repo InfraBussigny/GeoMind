@@ -1,0 +1,84 @@
+{
+  "type": "FeatureCollection",
+  "name": "servitudes_canalisations",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:EPSG::2056"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id_servitude": "010-2002/004259",
+        "type": "Canalisations eau/égout",
+        "date_creation": "1955-06-16",
+        "role_791": "servant",
+        "fonds_servant": "746, 747, 791, 792, 807, 809, 810, 1615, 1626, 1757",
+        "fonds_dominant": "Commune de Bussigny",
+        "couleur_plan": "bleu/rouge",
+        "type_cana": "mixte"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            2532900,
+            1155380
+          ],
+          [
+            2532950,
+            1155400
+          ],
+          [
+            2533000,
+            1155420
+          ],
+          [
+            2533050,
+            1155440
+          ],
+          [
+            2533100,
+            1155450
+          ],
+          [
+            2533150,
+            1155460
+          ],
+          [
+            2533200,
+            1155480
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id_servitude": "007-2013/002287",
+        "type": "Canalisations quelconques",
+        "date_creation": "2013-07-30",
+        "role_791": "servant",
+        "fonds_servant": "791",
+        "fonds_dominant": "3417",
+        "couleur_plan": "non défini",
+        "note": "Assiette non encore définie selon extrait RF"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            2533080,
+            1155460
+          ],
+          [
+            2533110,
+            1155520
+          ]
+        ]
+      }
+    }
+  ]
+}

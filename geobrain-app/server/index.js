@@ -1,5 +1,5 @@
 /**
- * GeoBrain Backend Server
+ * GeoMind Backend Server
  * Gère les appels API aux LLMs et les opérations système
  */
 
@@ -46,19 +46,19 @@ async function getClaudeCredentials() {
   return null;
 }
 
-async function getGeoBrainConfig() {
+async function getGeoMindConfig() {
   try {
     if (existsSync(GEOBRAIN_CONFIG_PATH)) {
       const data = await readFile(GEOBRAIN_CONFIG_PATH, 'utf-8');
       return JSON.parse(data);
     }
   } catch (error) {
-    console.error('Error reading GeoBrain config:', error);
+    console.error('Error reading GeoMind config:', error);
   }
   return { providers: {} };
 }
 
-async function saveGeoBrainConfig(config) {
+async function saveGeoMindConfig(config) {
   const dir = dirname(GEOBRAIN_CONFIG_PATH);
   if (!existsSync(dir)) {
     await import('fs').then(fs => fs.promises.mkdir(dir, { recursive: true }));
@@ -190,7 +190,7 @@ async function getOllamaModels() {
 // Get available providers and their status
 app.get('/api/providers', async (req, res) => {
   const claudeCredentials = await getClaudeCredentials();
-  const config = await getGeoBrainConfig();
+  const config = await getGeoMindConfig();
 
   // Check local servers in parallel
   const [ollamaRunning, lmstudioRunning] = await Promise.all([
@@ -254,10 +254,10 @@ app.post('/api/providers/:providerId/config', async (req, res) => {
     return res.status(404).json({ error: 'Provider not found' });
   }
 
-  const config = await getGeoBrainConfig();
+  const config = await getGeoMindConfig();
   config.providers = config.providers || {};
   config.providers[providerId] = { apiKey };
-  await saveGeoBrainConfig(config);
+  await saveGeoMindConfig(config);
 
   res.json({ success: true });
 });
@@ -312,7 +312,7 @@ app.post('/api/memory/log', async (req, res) => {
  * Routes chat requests to the appropriate provider
  */
 async function callProvider(provider, model, messages, tools) {
-  const config = await getGeoBrainConfig();
+  const config = await getGeoMindConfig();
 
   switch (provider) {
     case 'ollama': {
@@ -853,7 +853,7 @@ app.post('/api/chat/agent', async (req, res) => {
 
 async function getClaudeAuth() {
   // Prioriser la clé API sur l'OAuth (l'OAuth Claude Code ne fonctionne pas pour l'API directe)
-  const config = await getGeoBrainConfig();
+  const config = await getGeoMindConfig();
   if (config.providers?.claude?.apiKey) {
     return {
       type: 'apikey',
@@ -1025,7 +1025,7 @@ async function streamClaude(model, messages, tools, res, systemPrompt = null) {
 // ============================================
 
 async function callOpenAI(model, messages, tools) {
-  const config = await getGeoBrainConfig();
+  const config = await getGeoMindConfig();
   const apiKey = config.providers?.openai?.apiKey;
   if (!apiKey) throw new Error('OpenAI API key not configured');
 
@@ -1053,7 +1053,7 @@ async function callOpenAI(model, messages, tools) {
 }
 
 async function callMistral(model, messages, tools) {
-  const config = await getGeoBrainConfig();
+  const config = await getGeoMindConfig();
   const apiKey = config.providers?.mistral?.apiKey;
   if (!apiKey) throw new Error('Mistral API key not configured');
 
@@ -1079,7 +1079,7 @@ async function callMistral(model, messages, tools) {
 }
 
 async function callDeepSeek(model, messages, tools) {
-  const config = await getGeoBrainConfig();
+  const config = await getGeoMindConfig();
   const apiKey = config.providers?.deepseek?.apiKey;
   if (!apiKey) throw new Error('DeepSeek API key not configured');
 
@@ -1105,7 +1105,7 @@ async function callDeepSeek(model, messages, tools) {
 }
 
 async function callPerplexity(model, messages) {
-  const config = await getGeoBrainConfig();
+  const config = await getGeoMindConfig();
   const apiKey = config.providers?.perplexity?.apiKey;
   if (!apiKey) throw new Error('Perplexity API key not configured');
 
@@ -1142,7 +1142,7 @@ app.post('/api/ai/mistral/chat', async (req, res) => {
     // Use provided API key or fallback to stored config
     let key = apiKey;
     if (!key) {
-      const config = await getGeoBrainConfig();
+      const config = await getGeoMindConfig();
       key = config.providers?.mistral?.apiKey;
     }
     if (!key) {
@@ -1195,7 +1195,7 @@ app.post('/api/ai/deepseek/chat', async (req, res) => {
 
     let key = apiKey;
     if (!key) {
-      const config = await getGeoBrainConfig();
+      const config = await getGeoMindConfig();
       key = config.providers?.deepseek?.apiKey;
     }
     if (!key) {
@@ -1247,7 +1247,7 @@ app.post('/api/ai/perplexity/chat', async (req, res) => {
 
     let key = apiKey;
     if (!key) {
-      const config = await getGeoBrainConfig();
+      const config = await getGeoMindConfig();
       key = config.providers?.perplexity?.apiKey;
     }
     if (!key) {
@@ -1299,7 +1299,7 @@ app.post('/api/ai/google/chat', async (req, res) => {
 
     let key = apiKey;
     if (!key) {
-      const config = await getGeoBrainConfig();
+      const config = await getGeoMindConfig();
       key = config.providers?.google?.apiKey;
     }
     if (!key) {
@@ -1364,7 +1364,7 @@ app.post('/api/ai/openai/chat', async (req, res) => {
 
     let key = apiKey;
     if (!key) {
-      const config = await getGeoBrainConfig();
+      const config = await getGeoMindConfig();
       key = config.providers?.openai?.apiKey;
     }
     if (!key) {
@@ -2045,7 +2045,7 @@ function trackUsage(model, inputTokens, outputTokens) {
 
 app.get('/api/usage', async (req, res) => {
   try {
-    const config = await getGeoBrainConfig();
+    const config = await getGeoMindConfig();
     const monthlyLimit = config.monthlyTokenLimit || null;
 
     // Récupérer les stats mensuelles depuis le fichier (si existant)
@@ -2504,7 +2504,7 @@ async function startServer() {
   const server = app.listen(PORT, () => {
     console.log(`
 ╔════════════════════════════════════════════╗
-║         GeoBrain Backend Server            ║
+║          GeoMind Backend Server            ║
 ║════════════════════════════════════════════║
 ║  Running on: http://localhost:${PORT}         ║
 ║  Press Ctrl+C to stop                      ║

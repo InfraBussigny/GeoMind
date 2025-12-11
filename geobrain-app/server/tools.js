@@ -1,5 +1,5 @@
 /**
- * GeoBrain Tools - Outils disponibles pour l'Assistant IA
+ * GeoMind Tools - Outils disponibles pour l'Assistant IA
  * Définitions des outils au format Claude API et fonctions d'exécution
  */
 
@@ -522,7 +522,7 @@ export async function executeTool(toolName, toolInput) {
 // SYSTEM PROMPT POUR L'AGENT
 // ============================================
 
-export const AGENT_SYSTEM_PROMPT = `Tu es GeoBrain, l'assistant IA de Marc, responsable SIT à la commune de Bussigny.
+export const AGENT_SYSTEM_PROMPT = `Tu es GeoMind, l'assistant IA de Marc, responsable SIT à la commune de Bussigny.
 
 ## OUTILS DISPONIBLES
 

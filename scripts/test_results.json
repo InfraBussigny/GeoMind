@@ -1,0 +1,94 @@
+﻿{
+    "date":  "2025-12-11 13:49",
+    "categories":  {
+                       "ASSAINI":  {
+                                       "ok":  8,
+                                       "errors":  [
+
+                                                  ],
+                                       "fail":  0
+                                   },
+                       "NATUREL":  {
+                                       "ok":  8,
+                                       "errors":  [
+
+                                                  ],
+                                       "fail":  0
+                                   },
+                       "HYDRANT":  {
+                                       "ok":  4,
+                                       "errors":  [
+
+                                                  ],
+                                       "fail":  0
+                                   },
+                       "EDGE":  {
+                                    "ok":  4,
+                                    "errors":  [
+                                                   {
+                                                       "q":  "surface",
+                                                       "reason":  "SANS_DATA",
+                                                       "preview":  "To provide you with useful information, could you please clarify what specific aspect of \"surface\" y",
+                                                       "id":  40
+                                                   },
+                                                   {
+                                                       "q":  "Combien?",
+                                                       "reason":  "SANS_DATA",
+                                                       "preview":  "\"Combien?\" is a French word that translates to \"How much?\" or \"How many?\" in English. It\u0027s used to a",
+                                                       "id":  41
+                                                   }
+                                               ],
+                                    "fail":  2
+                                },
+                       "ADRESSE":  {
+                                       "ok":  6,
+                                       "errors":  [
+
+                                                  ],
+                                       "fail":  0
+                                   },
+                       "PARCELLE":  {
+                                        "ok":  10,
+                                        "errors":  [
+
+                                                   ],
+                                        "fail":  0
+                                    },
+                       "BATIMENT":  {
+                                        "ok":  7,
+                                        "errors":  [
+                                                       {
+                                                           "q":  "Liste des maisons",
+                                                           "reason":  "SANS_DATA",
+                                                           "preview":  "Selon la requête SQL fournie et les résultats obtenus, il n\u0027y a pas d\u0027entrées correspondant aux \"mai",
+                                                           "id":  15
+                                                       }
+                                                   ],
+                                        "fail":  1
+                                    },
+                       "ROUTE":  {
+                                     "ok":  3,
+                                     "errors":  [
+                                                    {
+                                                        "q":  "Kilometres de routes a Bussigny",
+                                                        "reason":  "ERREUR",
+                                                        "preview":  "Je n\u0027ai pas d\u0027informations précises sur le nombre exact de kilomètres de routes à Bussigny. La taill",
+                                                        "id":  52
+                                                    }
+                                                ],
+                                     "fail":  1
+                                 },
+                       "GENERAL":  {
+                                       "ok":  6,
+                                       "errors":  [
+
+                                                  ],
+                                       "fail":  0
+                                   }
+                   },
+    "total":  {
+                  "ok":  56,
+                  "pct":  93,
+                  "fail":  4
+              }
+}

@@ -166,7 +166,7 @@ function identifyRelevantAgents(message) {
  * @returns {string} Prompt système enrichi
  */
 function generateEnrichedSystemPrompt(activeAgents = []) {
-  let prompt = `Tu es GeoBrain, l'assistant IA spécialisé en géodonnées et SIT de la commune de Bussigny.
+  let prompt = `Tu es GeoMind, l'assistant IA spécialisé en géodonnées et SIT de la commune de Bussigny.
 
 ## Tes capacités
 Tu disposes de plusieurs modules spécialisés que tu peux activer selon les besoins :
@@ -190,7 +190,7 @@ ${isActive ? `\nDirectives : ${agent.systemPrompt}\n` : ''}
 - Contexte géospatial suisse (EPSG:2056, standards ASIT-VD)
 
 ## Mémoire
-Tu as accès à la mémoire de GeoBrain dans C:\\Users\\zema\\GeoBrain\\memory\\
+Tu as accès à la mémoire de GeoMind dans C:\\Users\\zema\\GeoMind\\memory\\
 - context.md : infrastructure et contexte professionnel
 - sessions.md : historique des travaux
 - corrections.md : erreurs à éviter

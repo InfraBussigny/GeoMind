@@ -1,5 +1,5 @@
 /**
- * GeoBrain Ghostwriter Service
+ * GeoMind Ghostwriter Service
  * Auto-complétion intelligente pour le chat et l'éditeur
  *
  * Fonctionnalités:

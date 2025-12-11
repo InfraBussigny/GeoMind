@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { providers, backendConnected, appMode, glitchSettings } from '$lib/stores/app';
   import { getProviders, saveProviderConfig } from '$lib/services/api';
+  import ThemeToggle from '../ThemeToggle.svelte';
 
   // Types
   interface Connection {
@@ -411,10 +412,94 @@
 <div class="settings-module">
   <header class="settings-header">
     <h1>Parametres</h1>
-    <p>Configuration des providers IA et de la memoire</p>
+    <p>Configuration de GeoMind</p>
   </header>
 
   <div class="settings-content">
+    <!-- A Propos Section - Always visible -->
+    <section class="settings-section about-section">
+      <h2>A propos</h2>
+      <div class="about-info">
+        <div class="about-logo">
+          <img src="/images/Logo_GeoMind.png" alt="GeoMind" class="about-logo-img" />
+        </div>
+        <div class="about-details">
+          <h3>GeoMind</h3>
+          <p class="about-subtitle">Spatial Intelligence</p>
+          <p class="about-version">Version 1.0.0</p>
+          <p class="about-description">
+            Assistant IA specialise en geodonnees et systemes d'information du territoire (SIT)
+            pour la commune de Bussigny.
+          </p>
+          <p class="about-mode">
+            Mode actuel : <span class="mode-badge {$appMode}">{$appMode}</span>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Theme Section - Always visible -->
+    <section class="settings-section theme-section">
+      <h2>Apparence</h2>
+      <div class="theme-options">
+        <p class="section-description">Choisissez le theme de l'interface</p>
+        <div class="theme-toggle-container">
+          <span class="theme-label">Theme clair/sombre</span>
+          <div class="theme-toggle-wrapper">
+            <ThemeToggle />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ollama Models Section - Always visible -->
+    <section class="settings-section ollama-section">
+      <h2>Modele IA Local</h2>
+      <p class="section-description">
+        GeoMind utilise Ollama pour l'IA locale. Selectionnez le modele a utiliser.
+      </p>
+      <div class="ollama-info">
+        <div class="ollama-status">
+          <span class="status-label">Provider actif :</span>
+          <span class="status-value">Ollama (Local)</span>
+        </div>
+        <div class="ollama-model">
+          <span class="status-label">Modele par defaut :</span>
+          <span class="status-value">qwen2.5:14b</span>
+        </div>
+        <p class="ollama-note">
+          Les modeles Ollama s'executent localement sur votre machine, sans envoi de donnees vers le cloud.
+        </p>
+      </div>
+    </section>
+
+    <!-- Connections Status - Always visible (read-only in standard mode) -->
+    <section class="settings-section connections-status-section">
+      <h2>Etat des connexions</h2>
+      <p class="section-description">
+        Statut des connexions aux serveurs de donnees
+        {#if $appMode === 'standard'}
+          <span class="readonly-badge">(lecture seule)</span>
+        {/if}
+      </p>
+      {#if connections.length > 0}
+        <div class="connections-status-list">
+          {#each connections as conn}
+            <div class="connection-status-item">
+              <span class="conn-icon">{getConnectionIcon(conn.type)}</span>
+              <span class="conn-name">{conn.name}</span>
+              <span class="conn-type">{conn.type}</span>
+              <span class="conn-status" class:connected={conn.status === 'connected'}>
+                {conn.status === 'connected' ? 'Connecte' : 'Deconnecte'}
+              </span>
+            </div>
+          {/each}
+        </div>
+      {:else}
+        <p class="text-muted">Aucune connexion configuree</p>
+      {/if}
+    </section>
+
     <!-- Server Section - Expert/God only -->
     {#if $appMode !== 'standard'}
       <section class="settings-section server-section">
@@ -780,7 +865,7 @@
     <!-- Memory Section -->
     <section class="settings-section">
       <div class="section-header">
-        <h2>Memoire GeoBrain</h2>
+        <h2>Memoire GeoMind</h2>
         <button class="btn-secondary" onclick={reloadMemory}>Recharger</button>
       </div>
 
@@ -800,7 +885,7 @@
           </div>
         </div>
         <p class="memory-path">
-          Dossier memoire : <code>C:\Users\zema\GeoBrain\memory\</code>
+          Dossier memoire : <code>C:\Users\zema\GeoMind\memory\</code>
         </p>
       {:else}
         <p class="text-muted">Chargement de la memoire...</p>
@@ -888,12 +973,12 @@
       <h2>Stockage</h2>
       <div class="storage-info">
         <div class="storage-item">
-          <span class="storage-label">Configuration GeoBrain</span>
+          <span class="storage-label">Configuration GeoMind</span>
           <code>~/.geobrain/config.json</code>
         </div>
         <div class="storage-item">
           <span class="storage-label">Memoire et contexte</span>
-          <code>C:\Users\zema\GeoBrain\memory\</code>
+          <code>C:\Users\zema\GeoMind\memory\</code>
         </div>
         <div class="storage-item">
           <span class="storage-label">Credentials Claude Code</span>
@@ -1824,5 +1909,199 @@
     border-color: var(--error);
     color: var(--error);
     background: rgba(255, 68, 68, 0.1);
+  }
+
+  /* About Section */
+  .about-section .about-info {
+    display: flex;
+    gap: var(--spacing-lg);
+    align-items: center;
+    padding: var(--spacing-lg);
+    background: var(--noir-surface);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+  }
+
+  .about-logo-img {
+    width: 180px;
+    height: auto;
+    border-radius: var(--border-radius);
+  }
+
+  .about-details h3 {
+    font-size: var(--font-size-xl);
+    font-family: var(--font-mono);
+    color: var(--cyber-green);
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .about-subtitle {
+    font-size: var(--font-size-md);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .about-version {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .about-description {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .about-mode {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+  }
+
+  .mode-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .mode-badge.standard {
+    background: rgba(0, 200, 255, 0.15);
+    color: var(--accent-cyan);
+    border: 1px solid var(--accent-cyan);
+  }
+
+  .mode-badge.expert {
+    background: rgba(0, 255, 136, 0.15);
+    color: var(--cyber-green);
+    border: 1px solid var(--cyber-green);
+  }
+
+  .mode-badge.god {
+    background: rgba(255, 0, 128, 0.15);
+    color: var(--accent-pink);
+    border: 1px solid var(--accent-pink);
+  }
+
+  .mode-badge.bfsa {
+    background: rgba(255, 170, 0, 0.15);
+    color: #ffaa00;
+    border: 1px solid #ffaa00;
+  }
+
+  /* Theme Section */
+  .theme-section .theme-toggle-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    background: var(--noir-surface);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+  }
+
+  .theme-label {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+  }
+
+  /* Ollama Section */
+  .ollama-section .ollama-info {
+    padding: var(--spacing-md);
+    background: var(--noir-surface);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+  }
+
+  .ollama-status, .ollama-model {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .ollama-model {
+    border-bottom: none;
+  }
+
+  .status-label {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+  }
+
+  .status-value {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    color: var(--cyber-green);
+    font-weight: 500;
+  }
+
+  .ollama-note {
+    margin-top: var(--spacing-md);
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  /* Connections Status Section */
+  .connections-status-section .readonly-badge {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .connections-status-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .connection-status-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--noir-surface);
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-color);
+  }
+
+  .conn-icon {
+    font-size: 18px;
+  }
+
+  .conn-name {
+    flex: 1;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+  }
+
+  .conn-type {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  .conn-status {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(255, 68, 68, 0.15);
+    color: var(--error);
+  }
+
+  .conn-status.connected {
+    background: rgba(0, 255, 136, 0.15);
+    color: var(--cyber-green);
   }
 </style>

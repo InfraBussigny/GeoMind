@@ -1,0 +1,305 @@
+{
+  "type": "FeatureCollection",
+  "name": "servitudes_791",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:EPSG::2056"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id_servitude": "010-2001/003598",
+        "type": "Passage pied, véhicules, canalisations",
+        "date_creation": "1940-10-31",
+        "role_791": "beneficiaire",
+        "fonds_servant": "753, 762, 763, 790, 791, 792, 793, 795, 805, 856, 1671, 1672, 1673, 1799, 1936",
+        "fonds_dominant": "Réciproque quartier Lavanchy",
+        "couleur_plan": "jaune"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              2532950,
+              1155350
+            ],
+            [
+              2532960,
+              1155350
+            ],
+            [
+              2533000,
+              1155400
+            ],
+            [
+              2533050,
+              1155450
+            ],
+            [
+              2533100,
+              1155500
+            ],
+            [
+              2533150,
+              1155550
+            ],
+            [
+              2533200,
+              1155600
+            ],
+            [
+              2533250,
+              1155650
+            ],
+            [
+              2533240,
+              1155660
+            ],
+            [
+              2533190,
+              1155610
+            ],
+            [
+              2533140,
+              1155560
+            ],
+            [
+              2533090,
+              1155510
+            ],
+            [
+              2533040,
+              1155460
+            ],
+            [
+              2532990,
+              1155410
+            ],
+            [
+              2532950,
+              1155360
+            ],
+            [
+              2532950,
+              1155350
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id_servitude": "010-2002/004259",
+        "type": "Canalisations eau/égout",
+        "date_creation": "1955-06-16",
+        "role_791": "servant",
+        "fonds_servant": "746, 747, 791, 792, 807, 809, 810, 1615, 1626, 1757",
+        "fonds_dominant": "Commune de Bussigny",
+        "couleur_plan": "bleu/rouge",
+        "type_cana": "mixte"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            2532900,
+            1155380
+          ],
+          [
+            2532950,
+            1155400
+          ],
+          [
+            2533000,
+            1155420
+          ],
+          [
+            2533050,
+            1155440
+          ],
+          [
+            2533100,
+            1155450
+          ],
+          [
+            2533150,
+            1155460
+          ],
+          [
+            2533200,
+            1155480
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id_servitude": "010-2003/001959",
+        "type": "Passage pied et char",
+        "date_creation": "1912-06-29",
+        "role_791": "servant",
+        "fonds_servant": "791, 1615",
+        "fonds_dominant": "757",
+        "couleur_plan": "jaune"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              2533020,
+              1155480
+            ],
+            [
+              2533030,
+              1155480
+            ],
+            [
+              2533030,
+              1155520
+            ],
+            [
+              2533050,
+              1155540
+            ],
+            [
+              2533040,
+              1155550
+            ],
+            [
+              2533020,
+              1155530
+            ],
+            [
+              2533020,
+              1155480
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id_servitude": "010-2003/003622",
+        "type": "Passage à pied",
+        "date_creation": "1934-07-14",
+        "role_791": "beneficiaire",
+        "fonds_servant": "1615",
+        "fonds_dominant": "791",
+        "couleur_plan": "surface entière",
+        "note": "S'exerce sur toute la surface du fonds servant 1615"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              2533040,
+              1155340
+            ],
+            [
+              2533180,
+              1155340
+            ],
+            [
+              2533180,
+              1155380
+            ],
+            [
+              2533040,
+              1155380
+            ],
+            [
+              2533040,
+              1155340
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id_servitude": "007-2013/002286",
+        "type": "Passage pied et véhicules",
+        "date_creation": "2013-07-30",
+        "role_791": "servant",
+        "fonds_servant": "791, 1615",
+        "fonds_dominant": "3417",
+        "couleur_plan": "bleu"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              2533060,
+              1155460
+            ],
+            [
+              2533080,
+              1155460
+            ],
+            [
+              2533100,
+              1155500
+            ],
+            [
+              2533120,
+              1155540
+            ],
+            [
+              2533100,
+              1155550
+            ],
+            [
+              2533080,
+              1155510
+            ],
+            [
+              2533060,
+              1155470
+            ],
+            [
+              2533060,
+              1155460
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id_servitude": "007-2013/002287",
+        "type": "Canalisations quelconques",
+        "date_creation": "2013-07-30",
+        "role_791": "servant",
+        "fonds_servant": "791",
+        "fonds_dominant": "3417",
+        "couleur_plan": "non défini",
+        "note": "Assiette non encore définie selon extrait RF"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            2533080,
+            1155460
+          ],
+          [
+            2533110,
+            1155520
+          ]
+        ]
+      }
+    }
+  ]
+}

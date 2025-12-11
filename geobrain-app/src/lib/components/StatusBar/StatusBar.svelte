@@ -9,7 +9,7 @@
   import { getUsageStats, type UsageStats } from '$lib/services/api';
 
   // Props
-  let { currentProject = 'GeoBrain' }: { currentProject?: string } = $props();
+  let { currentProject = 'GeoMind' }: { currentProject?: string } = $props();
 
   // State
   let usageStats = $state<UsageStats | null>(null);

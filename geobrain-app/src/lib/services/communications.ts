@@ -1,5 +1,5 @@
 /**
- * GeoBrain Communications Service
+ * GeoMind Communications Service
  * Intégration Outlook (Microsoft Graph API) et 3CX
  */
 

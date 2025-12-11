@@ -1,10 +1,10 @@
 /**
- * GeoBrain Memory System
+ * GeoMind Memory System
  * Gestion de la mémoire partagée entre tous les providers IA
  *
  * Structure de la mémoire :
  * - context.md : Contexte professionnel, infrastructure, stack technique
- * - personality.md : Personnalité et compétences de GeoBrain
+ * - personality.md : Personnalité et compétences de GeoMind
  * - sessions.md : Historique des sessions et travaux
  * - corrections.md : Erreurs passées à ne pas répéter
  * - sdol.md : Projet SDOL spécifique
@@ -17,8 +17,8 @@ import { existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { homedir } from 'os';
 
-const GEOBRAIN_ROOT = join(homedir(), 'GeoBrain');
-const MEMORY_DIR = join(GEOBRAIN_ROOT, 'memory');
+const GEOMIND_ROOT = join(homedir(), 'GeoMind');
+const MEMORY_DIR = join(GEOMIND_ROOT, 'memory');
 const MEMORY_INDEX_PATH = join(MEMORY_DIR, '.index.json');
 
 // ============================================
@@ -34,7 +34,7 @@ const MEMORY_FILES = {
   },
   personality: {
     path: 'personality.md',
-    description: 'Personnalité GeoBrain, compétences, comportement',
+    description: 'Personnalité GeoMind, compétences, comportement',
     priority: 1,
     maxTokens: 1000
   },
@@ -73,7 +73,7 @@ let memoryIndex = {
  * Charge et indexe toute la mémoire
  */
 export async function loadMemory() {
-  console.log('Loading GeoBrain memory...');
+  console.log('Loading GeoMind memory...');
 
   const newIndex = {
     lastUpdate: new Date().toISOString(),
@@ -309,9 +309,9 @@ function truncateToTokens(text, maxTokens) {
 function formatContextPrompt(contextParts) {
   const sections = [];
 
-  sections.push(`# GeoBrain - Assistant SIT Bussigny
+  sections.push(`# GeoMind - Assistant SIT Bussigny
 
-Tu es GeoBrain, l'assistant spécialisé en géodonnées et systèmes d'information du territoire (SIT) de Marc Zermatten, responsable SIT à la commune de Bussigny.
+Tu es GeoMind, l'assistant spécialisé en géodonnées et systèmes d'information du territoire (SIT) de Marc Zermatten, responsable SIT à la commune de Bussigny.
 
 ## Tes compétences
 - Expert QGIS, PostgreSQL/PostGIS, Oracle Spatial, FME
@@ -333,7 +333,7 @@ Tu es GeoBrain, l'assistant spécialisé en géodonnées et systèmes d'informat
 
   sections.push(`\n---\n## IMPORTANT
 - Tu as accès au système de fichiers local via des outils
-- Tu peux lire et modifier les fichiers du projet GeoBrain
+- Tu peux lire et modifier les fichiers du projet GeoMind
 - Mets à jour la mémoire quand tu apprends des informations importantes
 `);
 

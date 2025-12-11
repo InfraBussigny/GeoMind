@@ -123,7 +123,7 @@
 
   {#if showText}
     <div class="logo-text">
-      <span class="logo-title">GeoBrain</span>
+      <span class="logo-title">GeoMind</span>
       <span class="logo-subtitle">Bussigny SIT</span>
     </div>
   {/if}

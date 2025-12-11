@@ -37,7 +37,7 @@
   ];
 
   function buildSystemPrompt(): string {
-    let prompt = `Tu es l'assistant de code GeoBrain, specialise en:
+    let prompt = `Tu es l'assistant de code GeoMind, specialise en:
 - SQL spatial (PostGIS, Oracle Spatial)
 - Python/PyQGIS pour les scripts de geotraitement
 - FME workbenches

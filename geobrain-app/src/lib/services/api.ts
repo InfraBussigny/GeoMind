@@ -1,5 +1,5 @@
 /**
- * GeoBrain API Service
+ * GeoMind API Service
  * Communication avec le backend pour les LLMs et outils système
  */
 

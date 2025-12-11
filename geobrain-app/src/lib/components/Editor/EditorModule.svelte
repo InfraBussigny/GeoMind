@@ -251,10 +251,10 @@ import json
 
 def main():
     """Fonction principale"""
-    print("Hello GeoBrain!")
+    print("Hello GeoMind!")
 
     # Exemple de lecture de fichier
-    data_path = "C:/Users/zema/GeoBrain/data"
+    data_path = "C:/Users/zema/GeoMind/data"
     print(f"Dossier de donnees: {data_path}")
 
 if __name__ == "__main__":
@@ -326,11 +326,11 @@ export { fetchData, config };`,
       content: `#!/bin/bash
 # Script shell exemple
 
-echo "GeoBrain - Script Shell"
+echo "GeoMind - Script Shell"
 
 # Variables
-DATA_DIR="C:/Users/zema/GeoBrain/data"
-BACKUP_DIR="C:/Users/zema/GeoBrain/backup"
+DATA_DIR="C:/Users/zema/GeoMind/data"
+BACKUP_DIR="C:/Users/zema/GeoMind/backup"
 
 # Fonction de backup
 backup_data() {

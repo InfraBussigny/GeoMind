@@ -1,4 +1,4 @@
-# GeoBrain Desktop
+# GeoMind - Spatial Intelligence
 
 Application desktop personnalisée pour le SIT de la commune de Bussigny.
 
