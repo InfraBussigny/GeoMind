@@ -1,11 +1,11 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
 <qgis projectname="Plan des servitudes - Parcelle 791" version="3.34.0-Prizren">
-  <homePath path=""/>
-  <title>Plan des servitudes - Bien-fonds 791 - Bussigny</title>
+  <homePath path="C:/Users/zema/GeoBrain/projets/servitudes_791"/>
+  <title>Plan de situation des servitudes - Bien-fonds 791 - Bussigny</title>
   <transaction mode="Disabled"/>
   <projectCrs>
     <spatialrefsys nativeFormat="Wkt">
-      <wkt>PROJCRS["CH1903+ / LV95",BASEGEOGCRS["CH1903+",DATUM["CH1903+",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4150]],CONVERSION["Swiss Oblique Mercator 1995",METHOD["Hotine Oblique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Latitude of projection centre",46.9524055555556,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of projection centre",7.43958333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8812]],PARAMETER["Azimuth of initial line",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angle from Rectified to Skew Grid",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8814]],PARAMETER["Scale factor on initial line",1,SCALEUNIT["unity",1],ID["EPSG",8815]],PARAMETER["Easting at projection centre",2600000,LENGTHUNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at projection centre",1200000,LENGTHUNIT["metre",1],ID["EPSG",8817]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Cadastre, engineering survey, topographic mapping (large and medium scale)."],AREA["Liechtenstein; Switzerland."],BBOX[45.82,5.96,47.81,10.49]],ID["EPSG",2056]]</wkt>
+      <wkt>PROJCRS["CH1903+ / LV95",BASEGEOGCRS["CH1903+",DATUM["CH1903+",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4150]],CONVERSION["Swiss Oblique Mercator 1995",METHOD["Hotine Oblique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Latitude of projection centre",46.9524055555556,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of projection centre",7.43958333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8812]],PARAMETER["Azimuth of initial line",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angle from Rectified to Skew Grid",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8814]],PARAMETER["Scale factor on initial line",1,SCALEUNIT["unity",1],ID["EPSG",8815]],PARAMETER["Easting at projection centre",2600000,LENGTHUNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at projection centre",1200000,LENGTHUNIT["metre",1],ID["EPSG",8817]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],ID["EPSG",2056]]</wkt>
       <proj4>+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs</proj4>
       <srsid>47186</srsid>
       <srid>2056</srid>
@@ -24,12 +24,7 @@
       <customproperties>
         <Option/>
       </customproperties>
-      <layer-tree-layer id="servitudes_passage" name="Servitudes de passage" source="C:/Users/zema/GeoBrain/projets/servitudes_791/servitudes_passage.gpkg|layername=servitudes_passage" providerKey="ogr" expanded="1" checked="Qt::Checked">
-        <customproperties>
-          <Option/>
-        </customproperties>
-      </layer-tree-layer>
-      <layer-tree-layer id="servitudes_canalisations" name="Servitudes de canalisations" source="C:/Users/zema/GeoBrain/projets/servitudes_791/servitudes_canalisations.gpkg|layername=servitudes_canalisations" providerKey="ogr" expanded="1" checked="Qt::Checked">
+      <layer-tree-layer id="servitudes_complet" name="Servitudes (toutes)" source="./georef/servitudes_791_complet.geojson" providerKey="ogr" expanded="1" checked="Qt::Checked">
         <customproperties>
           <Option/>
         </customproperties>
@@ -39,12 +34,47 @@
       <customproperties>
         <Option/>
       </customproperties>
-      <layer-tree-layer id="parcelle_791" name="Parcelle 791 (sujet)" source="C:/Users/zema/GeoBrain/projets/servitudes_791/parcelle_791.gpkg|layername=parcelle_791" providerKey="ogr" expanded="1" checked="Qt::Checked">
+      <layer-tree-layer id="parcelle_791" name="Parcelle 791 (sujet)" source="./georef/parcelle_791.geojson" providerKey="ogr" expanded="1" checked="Qt::Checked">
         <customproperties>
           <Option/>
         </customproperties>
       </layer-tree-layer>
-      <layer-tree-layer id="parcelles_voisines" name="Parcelles voisines" source="C:/Users/zema/GeoBrain/projets/servitudes_791/parcelles_voisines.gpkg|layername=parcelles_voisines" providerKey="ogr" expanded="1" checked="Qt::Checked">
+    </layer-tree-group>
+    <layer-tree-group name="Plans RF georef" expanded="1" checked="Qt::Unchecked">
+      <customproperties>
+        <Option/>
+      </customproperties>
+      <layer-tree-layer id="plan_2001_003598_p1" name="Plan 2001/003598 - Page 1" source="./georef/2001_003598_page1.png" providerKey="gdal" expanded="0" checked="Qt::Unchecked">
+        <customproperties>
+          <Option/>
+        </customproperties>
+      </layer-tree-layer>
+      <layer-tree-layer id="plan_2001_003598_p2" name="Plan 2001/003598 - Page 2" source="./georef/2001_003598_page2.png" providerKey="gdal" expanded="0" checked="Qt::Unchecked">
+        <customproperties>
+          <Option/>
+        </customproperties>
+      </layer-tree-layer>
+      <layer-tree-layer id="plan_2001_003598_p3" name="Plan 2001/003598 - Page 3" source="./georef/2001_003598_page3.png" providerKey="gdal" expanded="0" checked="Qt::Unchecked">
+        <customproperties>
+          <Option/>
+        </customproperties>
+      </layer-tree-layer>
+      <layer-tree-layer id="plan_2002_004259" name="Plan 2002/004259" source="./georef/2002_004259.png" providerKey="gdal" expanded="0" checked="Qt::Unchecked">
+        <customproperties>
+          <Option/>
+        </customproperties>
+      </layer-tree-layer>
+      <layer-tree-layer id="plan_2003_001959" name="Plan 2003/001959" source="./georef/2003_001959.png" providerKey="gdal" expanded="0" checked="Qt::Unchecked">
+        <customproperties>
+          <Option/>
+        </customproperties>
+      </layer-tree-layer>
+      <layer-tree-layer id="plan_2003_003622" name="Plan 2003/003622" source="./georef/2003_003622.png" providerKey="gdal" expanded="0" checked="Qt::Unchecked">
+        <customproperties>
+          <Option/>
+        </customproperties>
+      </layer-tree-layer>
+      <layer-tree-layer id="plan_2013_002286" name="Plan 2013/002286" source="./georef/2013_002286.png" providerKey="gdal" expanded="0" checked="Qt::Unchecked">
         <customproperties>
           <Option/>
         </customproperties>
@@ -59,7 +89,12 @@
           <Option/>
         </customproperties>
       </layer-tree-layer>
-      <layer-tree-layer id="orthophoto_vd" name="Orthophoto VD (WMS)" source="contextualWMSLegend=0&amp;crs=EPSG:2056&amp;dpiMode=7&amp;featureCount=10&amp;format=image/png&amp;layers=orthophoto&amp;styles=&amp;url=https://wms.geo.vd.ch/wms" providerKey="wms" expanded="0" checked="Qt::Unchecked">
+      <layer-tree-layer id="orthophoto_vd" name="Orthophoto VD (WMS)" source="contextualWMSLegend=0&amp;crs=EPSG:2056&amp;dpiMode=7&amp;featureCount=10&amp;format=image/png&amp;layers=orthophoto_2020&amp;styles=&amp;url=https://wms.geo.vd.ch/wms" providerKey="wms" expanded="0" checked="Qt::Unchecked">
+        <customproperties>
+          <Option/>
+        </customproperties>
+      </layer-tree-layer>
+      <layer-tree-layer id="swisstopo_pk" name="Carte nationale (Swisstopo)" source="contextualWMSLegend=0&amp;crs=EPSG:2056&amp;dpiMode=7&amp;featureCount=10&amp;format=image/png&amp;layers=ch.swisstopo.pixelkarte-farbe&amp;styles=&amp;tilePixelRatio=0&amp;url=https://wms.geo.admin.ch/" providerKey="wms" expanded="0" checked="Qt::Unchecked">
         <customproperties>
           <Option/>
         </customproperties>
@@ -74,10 +109,10 @@
   <mapcanvas name="theMapCanvas" annotationsVisible="1">
     <units>meters</units>
     <extent>
-      <xmin>2532800</xmin>
-      <ymin>1155200</ymin>
-      <xmax>2533400</xmax>
-      <ymax>1155700</ymax>
+      <xmin>2532350</xmin>
+      <ymin>1155750</ymin>
+      <xmax>2532600</xmax>
+      <ymax>1156050</ymax>
     </extent>
     <rotation>0</rotation>
     <destinationsrs>
@@ -95,30 +130,100 @@
     </destinationsrs>
     <rendermaptile>0</rendermaptile>
   </mapcanvas>
-  <legend updateDrawingOrder="true"/>
-  <Layouts>
-    <Layout name="Plan de situation - Servitudes parcelle 791" units="mm" printResolution="300" worldFileMap="">
-      <Snapper tolerance="5"/>
-      <Grid resolution="10" resUnits="mm" offsetX="0" offsetY="0" offsetUnits="mm">
-        <GridLineStyle>
-          <symbol alpha="1" name="gridline" type="line" clip_to_extent="1" force_rhr="0">
-            <data_defined_properties>
-              <Option type="Map">
-                <Option name="name" type="QString" value=""/>
-                <Option name="properties"/>
-                <Option name="type" type="QString" value="collection"/>
-              </Option>
-            </data_defined_properties>
-            <layer class="SimpleLine" locked="0" pass="0" enabled="1">
-              <Option type="Map">
-                <Option name="line_color" type="QString" value="0,0,0,255"/>
-                <Option name="line_style" type="QString" value="dot"/>
-                <Option name="line_width" type="QString" value="0.1"/>
-              </Option>
+  <projectlayers>
+    <!-- Parcelle 791 -->
+    <maplayer autoRefreshEnabled="0" autoRefreshTime="0" geometry="Polygon" hasScaleBasedVisibilityFlag="0" labelsEnabled="1" legendPlaceholderImage="" maxScale="0" minScale="100000000" readOnly="0" refreshOnNotifyEnabled="0" refreshOnNotifyMessage="" simplifyAlgorithm="0" simplifyDrawingHints="1" simplifyDrawingTol="1" simplifyLocal="1" simplifyMaxScale="1" styleCategories="AllStyleCategories" type="vector" wkbType="Polygon">
+      <id>parcelle_791</id>
+      <datasource>./georef/parcelle_791.geojson</datasource>
+      <layername>Parcelle 791 (sujet)</layername>
+      <provider encoding="UTF-8">ogr</provider>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:2056</authid>
+        </spatialrefsys>
+      </srs>
+      <renderer-v2 enableorderby="0" forceraster="0" symbollevels="0" type="singleSymbol">
+        <symbols>
+          <symbol alpha="1" clip_to_extent="1" force_rhr="0" name="0" type="fill">
+            <layer class="SimpleFill" enabled="1" locked="0" pass="0">
+              <prop k="border_width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
+              <prop k="color" v="255,0,0,50"/>
+              <prop k="joinstyle" v="bevel"/>
+              <prop k="offset" v="0,0"/>
+              <prop k="offset_map_unit_scale" v="3x:0,0,0,0,0,0"/>
+              <prop k="offset_unit" v="MM"/>
+              <prop k="outline_color" v="255,0,0,255"/>
+              <prop k="outline_style" v="solid"/>
+              <prop k="outline_width" v="0.8"/>
+              <prop k="outline_width_unit" v="MM"/>
+              <prop k="style" v="solid"/>
             </layer>
           </symbol>
-        </GridLineStyle>
-      </Grid>
+        </symbols>
+      </renderer-v2>
+      <labeling type="simple">
+        <settings calloutType="simple">
+          <text-style fieldName="'BF ' || numero" fontFamily="Arial" fontSize="10" fontWeight="75" textColor="255,0,0,255" textOpacity="1"/>
+          <placement centroidInside="1" dist="0" distUnits="MM" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" offsetType="0" offsetUnits="MM" placement="1" polygonPlacementFlags="2" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" priority="5" quadOffset="4" repeatDistance="0" repeatDistanceUnits="MM" rotationAngle="0" rotationUnit="AngleDegrees" xOffset="0" yOffset="0"/>
+        </settings>
+      </labeling>
+    </maplayer>
+    <!-- Servitudes completes -->
+    <maplayer autoRefreshEnabled="0" autoRefreshTime="0" geometry="Unknown" hasScaleBasedVisibilityFlag="0" labelsEnabled="0" legendPlaceholderImage="" maxScale="0" minScale="100000000" readOnly="0" refreshOnNotifyEnabled="0" refreshOnNotifyMessage="" simplifyAlgorithm="0" simplifyDrawingHints="1" simplifyDrawingTol="1" simplifyLocal="1" simplifyMaxScale="1" styleCategories="AllStyleCategories" type="vector" wkbType="Unknown">
+      <id>servitudes_complet</id>
+      <datasource>./georef/servitudes_791_complet.geojson</datasource>
+      <layername>Servitudes et parcelles</layername>
+      <provider encoding="UTF-8">ogr</provider>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:2056</authid>
+        </spatialrefsys>
+      </srs>
+      <renderer-v2 enableorderby="0" forceraster="0" symbollevels="0" type="categorizedSymbol" attr="type">
+        <categories>
+          <category label="Parcelle principale (791)" render="true" symbol="0" value="parcelle_principale"/>
+          <category label="Parcelle voisine" render="true" symbol="1" value="parcelle_voisine"/>
+          <category label="Domaine public" render="true" symbol="2" value="domaine_public"/>
+          <category label="Servitude" render="true" symbol="3" value="servitude"/>
+        </categories>
+        <symbols>
+          <symbol alpha="1" name="0" type="fill">
+            <layer class="SimpleFill" enabled="1">
+              <prop k="color" v="255,0,0,80"/>
+              <prop k="outline_color" v="255,0,0,255"/>
+              <prop k="outline_width" v="0.8"/>
+            </layer>
+          </symbol>
+          <symbol alpha="1" name="1" type="fill">
+            <layer class="SimpleFill" enabled="1">
+              <prop k="color" v="200,200,200,50"/>
+              <prop k="outline_color" v="100,100,100,255"/>
+              <prop k="outline_width" v="0.3"/>
+            </layer>
+          </symbol>
+          <symbol alpha="1" name="2" type="fill">
+            <layer class="SimpleFill" enabled="1">
+              <prop k="color" v="180,180,255,80"/>
+              <prop k="outline_color" v="0,0,180,255"/>
+              <prop k="outline_width" v="0.5"/>
+            </layer>
+          </symbol>
+          <symbol alpha="1" name="3" type="line">
+            <layer class="SimpleLine" enabled="1">
+              <prop k="line_color" v="255,165,0,255"/>
+              <prop k="line_width" v="1.5"/>
+              <prop k="line_style" v="solid"/>
+            </layer>
+          </symbol>
+        </symbols>
+      </renderer-v2>
+    </maplayer>
+  </projectlayers>
+  <legend updateDrawingOrder="true"/>
+  <Layouts>
+    <Layout name="Plan de situation A4 paysage" units="mm" printResolution="300" worldFileMap="">
+      <Snapper tolerance="5"/>
+      <Grid resolution="10" resUnits="mm" offsetX="0" offsetY="0" offsetUnits="mm"/>
       <PageCollection>
         <LayoutItem type="65638" size="297,210,mm" position="0,0,mm" frame="false" background="true" uuid="{page1}">
           <PageProperties>
@@ -127,83 +232,142 @@
           </PageProperties>
         </LayoutItem>
       </PageCollection>
-      <LayoutItem type="65639" id="carte_principale" size="200,160,mm" position="10,40,mm" frame="true" background="true" uuid="{map1}">
+      <!-- Titre principal -->
+      <LayoutItem type="65641" id="titre_commune" size="220,8,mm" position="10,8,mm" frame="false" uuid="{titre_commune}">
+        <LabelText>COMMUNE DE BUSSIGNY</LabelText>
+        <LabelFont description="Arial,16,-1,5,75,0,0,0,0,0,Bold"/>
+        <FontColor red="0" green="80" blue="0" alpha="255"/>
+        <HAlignment>left</HAlignment>
+      </LayoutItem>
+      <LayoutItem type="65641" id="titre_plan" size="220,6,mm" position="10,16,mm" frame="false" uuid="{titre_plan}">
+        <LabelText>Plan de situation des servitudes - Bien-fonds n 791</LabelText>
+        <LabelFont description="Arial,12,-1,5,75,0,0,0,0,0,Bold"/>
+        <FontColor red="0" green="0" blue="0" alpha="255"/>
+        <HAlignment>left</HAlignment>
+      </LayoutItem>
+      <LayoutItem type="65641" id="titre_adresse" size="220,5,mm" position="10,22,mm" frame="false" uuid="{titre_adresse}">
+        <LabelText>Chemin du Cedre 35, 1030 Bussigny</LabelText>
+        <LabelFont description="Arial,10,-1,5,50,0,0,0,0,0"/>
+        <FontColor red="80" green="80" blue="80" alpha="255"/>
+        <HAlignment>left</HAlignment>
+      </LayoutItem>
+      <!-- Carte principale -->
+      <LayoutItem type="65639" id="carte_principale" size="195,130,mm" position="10,32,mm" frame="true" background="true" uuid="{map1}">
         <FrameColor red="0" green="0" blue="0" alpha="255"/>
         <BackgroundColor red="255" green="255" blue="255" alpha="255"/>
-        <MapExtent xmin="2532850" ymin="1155250" xmax="2533350" ymax="1155650"/>
+        <MapExtent xmin="2532380" ymin="1155800" xmax="2532560" ymax="1156000"/>
         <MapRotation>0</MapRotation>
+        <AtlasMargin>0.1</AtlasMargin>
         <LayerSet/>
-        <Grid enabled="1">
-          <GridInterval x="50" y="50"/>
-          <GridOffset x="0" y="0"/>
-          <GridStyle>lines</GridStyle>
-          <GridLineColor red="128" green="128" blue="128" alpha="150"/>
-          <GridLineWidth>0.2</GridLineWidth>
-          <GridAnnotation left="outside" right="outside" top="outside" bottom="outside" format="0" precision="0" font="Arial,10,-1,5,50,0,0,0,0,0"/>
+        <Grid enabled="1" intervalX="25" intervalY="25" offsetX="0" offsetY="0" gridStyle="1" crossLength="3" gridFrameStyle="0" gridFrameWidth="2" gridFramePenThickness="0.3" gridFramePenColor="0,0,0,255" gridFrameFillColor1="255,255,255,255" gridFrameFillColor2="0,0,0,255" blendMode="0">
+          <lineStyle>
+            <symbol alpha="1" name="gridline" type="line">
+              <layer class="SimpleLine" enabled="1">
+                <prop k="line_color" v="128,128,128,100"/>
+                <prop k="line_width" v="0.1"/>
+              </layer>
+            </symbol>
+          </lineStyle>
+          <annotationFont description="Arial,7,-1,5,50,0,0,0,0,0"/>
+          <annotationFontColor red="0" green="0" blue="0" alpha="255"/>
+          <leftAnnotationDisplay>1</leftAnnotationDisplay>
+          <rightAnnotationDisplay>0</rightAnnotationDisplay>
+          <topAnnotationDisplay>1</topAnnotationDisplay>
+          <bottomAnnotationDisplay>0</bottomAnnotationDisplay>
+          <leftAnnotationPosition>0</leftAnnotationPosition>
+          <rightAnnotationPosition>1</rightAnnotationPosition>
+          <topAnnotationPosition>0</topAnnotationPosition>
+          <bottomAnnotationPosition>1</bottomAnnotationPosition>
+          <leftAnnotationDirection>1</leftAnnotationDirection>
+          <rightAnnotationDirection>1</rightAnnotationDirection>
+          <topAnnotationDirection>0</topAnnotationDirection>
+          <bottomAnnotationDirection>0</bottomAnnotationDirection>
+          <annotationFormat>0</annotationFormat>
+          <annotationPrecision>0</annotationPrecision>
         </Grid>
       </LayoutItem>
-      <LayoutItem type="65641" id="titre" size="200,15,mm" position="10,10,mm" frame="false" uuid="{titre}">
-        <LabelText>COMMUNE DE BUSSIGNY
-Plan de situation des servitudes - Bien-fonds n° 791
-Chemin du Cèdre 35</LabelText>
-        <LabelFont description="Arial,14,-1,5,75,0,0,0,0,0,Bold"/>
+      <!-- Legende -->
+      <LayoutItem type="65641" id="legende_titre" size="70,6,mm" position="215,32,mm" frame="false" uuid="{leg_titre}">
+        <LabelText>LEGENDE</LabelText>
+        <LabelFont description="Arial,10,-1,5,75,0,0,0,0,0,Bold"/>
         <FontColor red="0" green="0" blue="0" alpha="255"/>
-        <HAlignment>center</HAlignment>
-        <VAlignment>center</VAlignment>
-      </LayoutItem>
-      <LayoutItem type="65641" id="legende_titre" size="70,8,mm" position="220,40,mm" frame="false" uuid="{leg_titre}">
-        <LabelText>LÉGENDE</LabelText>
-        <LabelFont description="Arial,11,-1,5,75,0,0,0,0,0,Bold"/>
-        <FontColor red="0" green="0" blue="0" alpha="255"/>
-      </LayoutItem>
-      <LayoutItem type="65642" id="legende" size="70,80,mm" position="220,50,mm" frame="true" uuid="{legende}">
-        <FrameColor red="0" green="0" blue="0" alpha="255"/>
-        <LegendTitle></LegendTitle>
-        <LegendTitleAlignment>center</LegendTitleAlignment>
-        <LegendColumns>1</LegendColumns>
-      </LayoutItem>
-      <LayoutItem type="65641" id="cartouche" size="70,55,mm" position="220,135,mm" frame="true" uuid="{cartouche}">
-        <FrameColor red="0" green="0" blue="0" alpha="255"/>
-        <LabelText>COMMUNE DE BUSSIGNY
-Service de l'urbanisme
-
-Échelle: 1:500
-Système: MN95 (EPSG:2056)
-
-Document établi le: [%format_date(now(),'dd.MM.yyyy')%]
-
-Ce plan n'a pas valeur de foi publique.
-Les servitudes sont représentées à titre indicatif selon les plans annexés aux extraits du Registre foncier.</LabelText>
-        <LabelFont description="Arial,8,-1,5,50,0,0,0,0,0"/>
         <HAlignment>left</HAlignment>
+      </LayoutItem>
+      <LayoutItem type="65642" id="legende" size="72,60,mm" position="215,40,mm" frame="true" uuid="{legende}">
+        <FrameColor red="0" green="0" blue="0" alpha="255"/>
+        <BackgroundColor red="255" green="255" blue="255" alpha="255"/>
+        <LegendTitle></LegendTitle>
+        <LegendColumns>1</LegendColumns>
+        <columnSpace>2</columnSpace>
+        <symbolWidth>7</symbolWidth>
+        <symbolHeight>4</symbolHeight>
+        <styleFont description="Arial,8,-1,5,50,0,0,0,0,0"/>
+        <groupFont description="Arial,9,-1,5,75,0,0,0,0,0,Bold"/>
+        <layerFont description="Arial,8,-1,5,75,0,0,0,0,0"/>
+        <itemFont description="Arial,8,-1,5,50,0,0,0,0,0"/>
+      </LayoutItem>
+      <!-- Cartouche officiel -->
+      <LayoutItem type="65641" id="cartouche" size="72,50,mm" position="215,105,mm" frame="true" uuid="{cartouche}">
+        <FrameColor red="0" green="0" blue="0" alpha="255"/>
+        <BackgroundColor red="250" green="250" blue="250" alpha="255"/>
+        <LabelText>COMMUNE DE BUSSIGNY
+Service de l'urbanisme et
+des travaux publics
+
+Echelle: 1:500
+Systeme: MN95 (EPSG:2056)
+
+Date: [%format_date(now(),'dd.MM.yyyy')%]
+
+Ce plan n'a pas valeur de foi
+publique. Les servitudes sont
+representees a titre indicatif.</LabelText>
+        <LabelFont description="Arial,7,-1,5,50,0,0,0,0,0"/>
+        <HAlignment>left</HAlignment>
+        <VAlignment>top</VAlignment>
         <Margins left="3" top="3" right="3" bottom="3"/>
       </LayoutItem>
-      <LayoutItem type="65643" id="echelle" size="60,10,mm" position="220,195,mm" frame="false" uuid="{echelle}">
+      <!-- Echelle graphique -->
+      <LayoutItem type="65643" id="echelle" size="50,8,mm" position="215,160,mm" frame="false" uuid="{echelle}">
         <ScaleBarStyle>Single Box</ScaleBarStyle>
         <ScaleBarUnits>meters</ScaleBarUnits>
-        <ScaleBarSegments>4</ScaleBarSegments>
-        <ScaleBarSegmentSize>10</ScaleBarSegmentSize>
+        <ScaleBarSegments>5</ScaleBarSegments>
+        <ScaleBarSegmentSize>5</ScaleBarSegmentSize>
         <ScaleBarHeight>3</ScaleBarHeight>
-        <ScaleBarFont description="Arial,8,-1,5,50,0,0,0,0,0"/>
+        <ScaleBarMapUnitScale>3x:0,0,0,0,0,0</ScaleBarMapUnitScale>
+        <ScaleBarFont description="Arial,7,-1,5,50,0,0,0,0,0"/>
+        <ScaleBarFontColor red="0" green="0" blue="0" alpha="255"/>
+        <ScaleBarFillColor red="0" green="0" blue="0" alpha="255"/>
+        <ScaleBarFillColor2 red="255" green="255" blue="255" alpha="255"/>
+        <ScaleBarStrokeColor red="0" green="0" blue="0" alpha="255"/>
       </LayoutItem>
-      <LayoutItem type="65640" id="nord" size="15,15,mm" position="275,195,mm" frame="false" uuid="{nord}">
+      <!-- Fleche nord -->
+      <LayoutItem type="65640" id="nord" size="12,12,mm" position="273,160,mm" frame="false" uuid="{nord}">
         <NorthArrowStyle>default</NorthArrowStyle>
+        <NorthArrowRotation>0</NorthArrowRotation>
       </LayoutItem>
-      <LayoutItem type="65641" id="tableau_servitudes" size="200,30,mm" position="10,205,mm" frame="true" uuid="{tableau}">
-        <FrameColor red="0" green="0" blue="0" alpha="255"/>
-        <LabelText>SERVITUDES GREVANT OU BÉNÉFICIANT AU BIEN-FONDS N° 791
-
-| ID Servitude | Type | Date | Rôle BF 791 | Bénéficiaire/Servant |
-|--------------|------|------|-------------|---------------------|
-| 010-2001/003598 | Passage pied, véhicules, canalisations | 31.10.1940 | Bénéficiaire | Réciproque quartier |
-| 010-2002/004259 | Canalisations eau/égout | 16.06.1955 | Servant | Commune Bussigny |
-| 010-2003/001959 | Passage pied et char | 29.06.1912 | Servant | BF 757 |
-| 010-2003/003622 | Passage à pied | 14.07.1934 | Bénéficiaire | sur BF 1615 |
-| 007-2013/002286 | Passage pied et véhicules | 30.07.2013 | Servant | BF 3417 |
-| 007-2013/002287 | Canalisations quelconques | 30.07.2013 | Servant | BF 3417 (non défini) |</LabelText>
-        <LabelFont description="Courier New,7,-1,5,50,0,0,0,0,0"/>
+      <!-- Tableau des servitudes -->
+      <LayoutItem type="65641" id="tableau_titre" size="195,6,mm" position="10,168,mm" frame="false" uuid="{tab_titre}">
+        <LabelText>SERVITUDES GREVANT OU BENEFICIANT AU BIEN-FONDS N 791</LabelText>
+        <LabelFont description="Arial,9,-1,5,75,0,0,0,0,0,Bold"/>
+        <FontColor red="0" green="0" blue="0" alpha="255"/>
         <HAlignment>left</HAlignment>
-        <Margins left="5" top="3" right="3" bottom="3"/>
+      </LayoutItem>
+      <LayoutItem type="65641" id="tableau_servitudes" size="277,30,mm" position="10,175,mm" frame="true" uuid="{tableau}">
+        <FrameColor red="0" green="0" blue="0" alpha="255"/>
+        <BackgroundColor red="255" green="255" blue="255" alpha="255"/>
+        <LabelText>ID Servitude         | Type                                    | Date       | Role BF 791    | Beneficiaire/Servant
+---------------------|-----------------------------------------------|------------|----------------|------------------------
+SV-2001-003598       | Droit de passage pied et vehicules            | 2001       | Servant        | Parcelle 792
+SV-2002-004259       | Restriction de batir - distance a la limite   | 2002       | Servant        | Parcelle 792
+SV-2003-001959       | Conduite d'eau - raccordement                 | 2003       | Servant        | Commune de Bussigny
+SV-2003-003622       | Conduite d'egout EU/EC                        | 2003       | Servant        | Commune de Bussigny
+SV-2013-002286       | Conduite de gaz                               | 2013       | Servant        | Holdigaz SA
+SV-2013-002287       | Restriction de batir - zone protection gaz    | 2013       | Servant        | Holdigaz SA</LabelText>
+        <LabelFont description="Consolas,7,-1,5,50,0,0,0,0,0"/>
+        <HAlignment>left</HAlignment>
+        <VAlignment>top</VAlignment>
+        <Margins left="3" top="2" right="3" bottom="2"/>
       </LayoutItem>
     </Layout>
   </Layouts>

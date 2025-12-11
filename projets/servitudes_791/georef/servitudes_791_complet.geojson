@@ -1,0 +1,176 @@
+{
+  "type": "FeatureCollection",
+  "name": "servitudes_791_complet",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:EPSG::2056"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "parcelle_principale",
+        "numero": "791",
+        "egris_egrid": "CH482583458992",
+        "genre": "parcelle privée",
+        "surface_m2": 1201.89,
+        "adresse": "Chemin du Cèdre 35",
+        "role": "Fonds grevé (servant) pour toutes les servitudes"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[2532491.089,1155896.771],[2532469.267,1155858.078],[2532450.516,1155869.198],[2532489.531,1155932.013],[2532490.821,1155930.963],[2532493.151,1155929.303],[2532492.016,1155924.255],[2532486.289,1155898.771],[2532491.089,1155896.771]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "parcelle_voisine",
+        "numero": "792",
+        "genre": "parcelle privée",
+        "surface_m2": 995.27,
+        "role": "Fonds dominant - Servitude passage 2001/003598"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[2532486.797,1155847.368],[2532469.267,1155858.078],[2532491.089,1155896.771],[2532502.709,1155891.961],[2532510.4,1155888.502],[2532499.208,1155867.09],[2532488.457,1155846.718],[2532486.797,1155847.368]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "domaine_public",
+        "numero": "DP 44",
+        "genre": "DP communal",
+        "surface_m2": 161.76,
+        "role": "Chemin du Cèdre - Accès servitudes canalisations"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[2532494.283,1155981.466],[2532500.363,1155980.767],[2532495.122,1155960.475],[2532495.812,1155957.455],[2532495.602,1155950.305],[2532494.341,1155943.164],[2532490.821,1155930.963],[2532489.531,1155932.013],[2532487.881,1155933.173],[2532491.461,1155944.134],[2532492.962,1155956.195],[2532492.542,1155962.885],[2532495.763,1155975.656],[2532495.883,1155977.226],[2532495.663,1155978.716],[2532495.063,1155980.156],[2532494.283,1155981.466]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "servitude",
+        "id": "SV-2001-003598",
+        "designation": "Droit de passage à pied et pour tous véhicules",
+        "fonds_servant": "791",
+        "fonds_dominant": "792",
+        "date_inscription": "2001",
+        "plan_rf": "2001/003598",
+        "couleur": "#FF6B6B"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [2532469.267, 1155858.078],
+          [2532480.0, 1155877.0],
+          [2532491.089, 1155896.771]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "servitude",
+        "id": "SV-2002-004259",
+        "designation": "Restriction de bâtir - Distance à la limite",
+        "fonds_servant": "791",
+        "fonds_dominant": "792",
+        "date_inscription": "2002",
+        "plan_rf": "2002/004259",
+        "couleur": "#4ECDC4"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[2532486.289,1155898.771],[2532491.089,1155896.771],[2532492.016,1155924.255],[2532489.0,1155924.0],[2532486.289,1155898.771]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "servitude",
+        "id": "SV-2003-001959",
+        "designation": "Conduite d'eau - Raccordement",
+        "fonds_servant": "791",
+        "fonds_dominant": "Commune de Bussigny",
+        "date_inscription": "2003",
+        "plan_rf": "2003/001959",
+        "couleur": "#45B7D1"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [2532489.531, 1155932.013],
+          [2532490.5, 1155945.0],
+          [2532492.0, 1155960.0]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "servitude",
+        "id": "SV-2003-003622",
+        "designation": "Conduite d'égout - Raccordement EU/EC",
+        "fonds_servant": "791",
+        "fonds_dominant": "Commune de Bussigny",
+        "date_inscription": "2003",
+        "plan_rf": "2003/003622",
+        "couleur": "#96CEB4"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [2532485.0, 1155932.0],
+          [2532487.0, 1155950.0],
+          [2532490.0, 1155965.0]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "servitude",
+        "id": "SV-2013-002286",
+        "designation": "Conduite de gaz",
+        "fonds_servant": "791",
+        "fonds_dominant": "Holdigaz SA",
+        "date_inscription": "2013",
+        "plan_rf": "2013/002286",
+        "couleur": "#FFEAA7"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [2532470.0, 1155860.0],
+          [2532475.0, 1155880.0],
+          [2532480.0, 1155900.0],
+          [2532485.0, 1155920.0]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "servitude",
+        "id": "SV-2013-002287",
+        "designation": "Restriction de bâtir - Zone de protection gaz",
+        "fonds_servant": "791",
+        "fonds_dominant": "Holdigaz SA",
+        "date_inscription": "2013",
+        "plan_rf": "2013/002287",
+        "remarque": "Lié à SV-2013-002286",
+        "couleur": "#DDA0DD"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[2532468.0,1155858.0],[2532472.0,1155858.0],[2532487.0,1155922.0],[2532483.0,1155922.0],[2532468.0,1155858.0]]]
+      }
+    }
+  ]
+}
