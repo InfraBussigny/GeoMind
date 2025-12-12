@@ -54,14 +54,11 @@
         {/if}
       {:else}
         <img
-          src="/images/Logo_GeoMind_nosubtitle.png"
+          src="/images/Logo_GeoMind.png"
           alt="GeoMind"
           class="logo-img"
           class:collapsed={$sidebarCollapsed}
         />
-        {#if !$sidebarCollapsed}
-          <span class="logo-subtitle">Spatial Intelligence</span>
-        {/if}
       {/if}
     </a>
   </div>
@@ -271,16 +268,16 @@
   }
 
   .logo-img {
-    width: 180px;
+    width: 270px;
     height: auto;
     object-fit: contain;
     filter: drop-shadow(0 0 10px var(--cyber-green-glow));
     transition: all var(--transition-fast);
-    margin-left: -40px;
+    margin-left: -60px;
   }
 
   .logo-img.collapsed {
-    width: 48px;
+    width: 72px;
   }
 
   .logo-img:hover {

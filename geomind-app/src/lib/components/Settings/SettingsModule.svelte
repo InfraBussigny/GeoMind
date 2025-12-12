@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { providers, backendConnected, appMode, glitchSettings } from '$lib/stores/app';
+  import { providers, backendConnected, appMode, glitchSettings, moduleConfig, ALL_MODULES, type ModuleType } from '$lib/stores/app';
   import { getProviders, saveProviderConfig } from '$lib/services/api';
   import ThemeToggle from '../ThemeToggle.svelte';
 
@@ -53,6 +53,9 @@
   let testResult = $state<{ success: boolean; message: string; info?: any } | null>(null);
   let savingConnection = $state(false);
   let connectingId = $state<string | null>(null);
+
+  // Module visibility configuration
+  let configMode = $state<'expert' | 'god' | 'bfsa'>('expert');
 
   onMount(async () => {
     await loadProviders();
@@ -451,6 +454,64 @@
         </div>
       </div>
     </section>
+
+    <!-- Module Visibility Configuration - Expert/God/BFSA only -->
+    {#if $appMode !== 'standard'}
+      <section class="settings-section modules-config-section">
+        <h2>Modules visibles par mode</h2>
+        <p class="section-description">
+          Configurez quels modules sont disponibles dans chaque mode d'utilisation.
+          Le mode Standard (professionnel) a des modules fixes et ne peut pas etre modifie.
+        </p>
+
+        <div class="mode-selector">
+          <button
+            class="mode-btn"
+            class:active={configMode === 'expert'}
+            onclick={() => configMode = 'expert'}
+          >Expert</button>
+          <button
+            class="mode-btn"
+            class:active={configMode === 'god'}
+            onclick={() => configMode = 'god'}
+          >God</button>
+          <button
+            class="mode-btn"
+            class:active={configMode === 'bfsa'}
+            onclick={() => configMode = 'bfsa'}
+          >BFSA</button>
+        </div>
+
+        <div class="modules-grid">
+          {#each ALL_MODULES as mod}
+            <label class="module-toggle" class:disabled={mod.alwaysVisible}>
+              <input
+                type="checkbox"
+                checked={$moduleConfig[configMode]?.includes(mod.id) || mod.alwaysVisible}
+                disabled={mod.alwaysVisible}
+                onchange={() => moduleConfig.toggleModule(configMode, mod.id)}
+              />
+              <span class="module-info">
+                <span class="module-label">{mod.label}</span>
+                <span class="module-desc">{mod.description}</span>
+              </span>
+              {#if mod.alwaysVisible}
+                <span class="always-visible-badge">obligatoire</span>
+              {/if}
+            </label>
+          {/each}
+        </div>
+
+        <div class="config-actions">
+          <button class="btn-reset-config" onclick={() => moduleConfig.reset(configMode)}>
+            Reinitialiser {configMode}
+          </button>
+          <button class="btn-reset-all" onclick={() => moduleConfig.reset()}>
+            Tout reinitialiser
+          </button>
+        </div>
+      </section>
+    {/if}
 
     <!-- Ollama Models Section - Always visible -->
     <section class="settings-section ollama-section">
@@ -1923,7 +1984,7 @@
   }
 
   .about-logo-img {
-    width: 180px;
+    width: 270px;
     height: auto;
     border-radius: var(--border-radius);
   }
@@ -2103,5 +2164,134 @@
   .conn-status.connected {
     background: rgba(0, 255, 136, 0.15);
     color: var(--cyber-green);
+  }
+
+  /* Module Visibility Configuration */
+  .modules-config-section .mode-selector {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .mode-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--noir-surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    transition: all 0.2s;
+  }
+
+  .mode-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-bright);
+  }
+
+  .mode-btn.active {
+    background: var(--cyber-green);
+    color: var(--noir-profond);
+    border-color: var(--cyber-green);
+  }
+
+  .modules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .module-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: var(--noir-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .module-toggle:hover:not(.disabled) {
+    border-color: var(--cyber-green);
+    background: rgba(0, 255, 136, 0.05);
+  }
+
+  .module-toggle.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .module-toggle input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--cyber-green);
+    cursor: pointer;
+  }
+
+  .module-toggle input[type="checkbox"]:disabled {
+    cursor: not-allowed;
+  }
+
+  .module-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+  }
+
+  .module-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+  }
+
+  .module-desc {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+  }
+
+  .always-visible-badge {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    background: rgba(255, 193, 7, 0.15);
+    color: #ffc107;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+  }
+
+  .config-actions {
+    display: flex;
+    gap: 12px;
+  }
+
+  .btn-reset-config,
+  .btn-reset-all {
+    padding: 8px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    transition: all 0.2s;
+  }
+
+  .btn-reset-config:hover {
+    background: var(--bg-hover);
+    color: var(--text-bright);
+    border-color: var(--text-muted);
+  }
+
+  .btn-reset-all:hover {
+    background: rgba(255, 68, 68, 0.1);
+    color: var(--error);
+    border-color: var(--error);
   }
 </style>

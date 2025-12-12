@@ -1151,7 +1151,7 @@ L'assistant t'accompagne dans tes tâches quotidiennes.`;
   }
 
   .welcome-logo {
-    width: 180px;
+    width: 270px;
     height: auto;
     filter: drop-shadow(0 0 20px var(--cyber-green-glow));
   }
