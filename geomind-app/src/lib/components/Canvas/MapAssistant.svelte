@@ -36,29 +36,28 @@
   let inputRef: HTMLInputElement;
   let showQuickActions = $state(true);
 
-  // Subscribe to stores
-  $effect(() => {
+  // Subscribe to stores on mount (not in $effect to avoid loops)
+  onMount(() => {
     const unsub1 = assistantMessagesStore.subscribe(m => messages = m);
     const unsub2 = assistantLoadingStore.subscribe(l => isLoading = l);
+
+    // Set initial context
+    mapContextStore.set(context);
+
     return () => {
       unsub1();
       unsub2();
     };
   });
 
-  // Update context store when prop changes
-  $effect(() => {
-    mapContextStore.set(context);
-  });
-
-  // Auto-scroll on new messages
-  $effect(() => {
-    if (messages.length > 0 && messagesContainer) {
+  // Auto-scroll function (called manually)
+  function scrollToBottom() {
+    if (messagesContainer) {
       setTimeout(() => {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
       }, 50);
     }
-  });
+  }
 
   // Send message to AI
   async function sendMessage(userMessage?: string) {
@@ -71,6 +70,7 @@
 
     // Add user message
     addAssistantMessage('user', message);
+    scrollToBottom();
 
     // Build system prompt with context
     const systemPrompt = getMapAssistantSystemPrompt(context);
@@ -110,6 +110,7 @@
               }];
             }
           });
+          scrollToBottom();
         },
         () => {
           // On complete - parse actions
@@ -147,7 +148,7 @@
     } else {
       addAssistantMessage('system', `✗ ${result.message}`);
     }
-
+    scrollToBottom();
     assistantLoadingStore.set(false);
   }
 

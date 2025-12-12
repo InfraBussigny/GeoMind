@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import PostGISViewer from './PostGISViewer.svelte';
   import MapAssistant from './MapAssistant.svelte';
   import { setMapController, type MapContext, type MapController } from '$lib/services/mapAssistant';
 
   // Assistant state
   let showAssistant = $state(true);
-  let postGISViewerRef = $state<PostGISViewer | null>(null);
+  let postGISViewerRef: PostGISViewer | null = null;
 
-  // Map context for assistant
-  let mapContext = $state<MapContext>({
+  // Map context for assistant (not reactive to avoid loops)
+  let mapContext: MapContext = {
     activeTab: 'geoportail',
     connectionId: null,
     activeLayers: [],
@@ -17,29 +17,32 @@
     currentZoom: 10,
     currentCenter: [2538000, 1152000],
     selectedFeature: null
-  });
+  };
 
-  // Update context when tab changes
-  $effect(() => {
-    mapContext = { ...mapContext, activeTab: activeTab };
-  });
+  // Periodic context sync interval
+  let contextSyncInterval: ReturnType<typeof setInterval> | null = null;
 
-  // Setup map controller when PostGISViewer is ready
-  $effect(() => {
-    if (postGISViewerRef && activeTab === 'postgis') {
+  // Setup map controller when PostGISViewer reports ready
+  function handleViewerReady() {
+    if (postGISViewerRef) {
       const controller: MapController = {
-        zoomTo: (x, y, zoom) => postGISViewerRef.zoomTo(x, y, zoom),
-        zoomToExtent: (minX, minY, maxX, maxY) => postGISViewerRef.zoomToExtent(minX, minY, maxX, maxY),
-        toggleLayer: (name, visible) => postGISViewerRef.toggleLayerByName(name, visible),
-        addLayer: (name) => postGISViewerRef.addLayerByName(name),
-        removeLayer: (name) => postGISViewerRef.removeLayerByName(name),
-        getActiveLayers: () => postGISViewerRef.getActiveLayers(),
-        executeSQL: (query) => postGISViewerRef.executeSQL(query),
-        highlightFeature: (geojson) => postGISViewerRef.highlightFeature(geojson)
+        zoomTo: (x, y, zoom) => postGISViewerRef?.zoomTo(x, y, zoom),
+        zoomToExtent: (minX, minY, maxX, maxY) => postGISViewerRef?.zoomToExtent(minX, minY, maxX, maxY),
+        toggleLayer: (name, visible) => postGISViewerRef?.toggleLayerByName(name, visible),
+        addLayer: (name) => postGISViewerRef?.addLayerByName(name),
+        removeLayer: (name) => postGISViewerRef?.removeLayerByName(name),
+        getActiveLayers: () => postGISViewerRef?.getActiveLayers() ?? [],
+        executeSQL: (query) => postGISViewerRef?.executeSQL(query) ?? Promise.resolve(null),
+        highlightFeature: (geojson) => postGISViewerRef?.highlightFeature(geojson)
       };
       setMapController(controller);
+      syncMapContext();
+    }
+  }
 
-      // Update context from viewer state
+  // Sync context from viewer (called manually, not in $effect)
+  function syncMapContext() {
+    if (postGISViewerRef) {
       const state = postGISViewerRef.getMapState();
       const tables = postGISViewerRef.getAvailableTables();
       mapContext = {
@@ -51,41 +54,7 @@
         currentCenter: state.center as [number, number]
       };
     }
-  });
-
-  // Periodic context sync when PostGIS is active
-  let contextSyncInterval: ReturnType<typeof setInterval> | null = null;
-
-  $effect(() => {
-    if (activeTab === 'postgis' && postGISViewerRef) {
-      // Sync context every 2 seconds
-      contextSyncInterval = setInterval(() => {
-        if (postGISViewerRef) {
-          const state = postGISViewerRef.getMapState();
-          const tables = postGISViewerRef.getAvailableTables();
-          mapContext = {
-            ...mapContext,
-            connectionId: state.connectionId,
-            activeLayers: state.activeLayers,
-            availableTables: tables,
-            currentZoom: state.zoom,
-            currentCenter: state.center as [number, number]
-          };
-        }
-      }, 2000);
-    } else {
-      if (contextSyncInterval) {
-        clearInterval(contextSyncInterval);
-        contextSyncInterval = null;
-      }
-    }
-
-    return () => {
-      if (contextSyncInterval) {
-        clearInterval(contextSyncInterval);
-      }
-    };
-  });
+  }
 
   // Configuration des cartes disponibles
   const maps = [
@@ -145,6 +114,30 @@
   type MapId = typeof maps[number]['id'];
   let activeTab = $state<MapId>('geoportail');
 
+  // Handle tab change (moved after MapId declaration)
+  function handleTabChange(newTab: MapId) {
+    activeTab = newTab;
+    mapContext.activeTab = newTab;
+
+    // Start/stop context sync based on tab
+    if (newTab === 'postgis') {
+      if (!contextSyncInterval) {
+        contextSyncInterval = setInterval(syncMapContext, 2000);
+      }
+    } else {
+      if (contextSyncInterval) {
+        clearInterval(contextSyncInterval);
+        contextSyncInterval = null;
+      }
+    }
+  }
+
+  onDestroy(() => {
+    if (contextSyncInterval) {
+      clearInterval(contextSyncInterval);
+    }
+  });
+
   // Keys pour forcer le rechargement des iframes
   let iframeKeys = $state<Record<string, number>>(
     Object.fromEntries(maps.map(m => [m.id, 0]))
@@ -196,7 +189,7 @@
         <button
           class="tab-btn"
           class:active={activeTab === map.id}
-          onclick={() => activeTab = map.id}
+          onclick={() => handleTabChange(map.id)}
           title={map.name}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
