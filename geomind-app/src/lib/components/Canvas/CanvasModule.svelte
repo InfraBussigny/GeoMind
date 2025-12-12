@@ -1,8 +1,102 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import PostGISViewer from './PostGISViewer.svelte';
+  import MapAssistant from './MapAssistant.svelte';
+  import { setMapController, type MapContext, type MapController } from '$lib/services/mapAssistant';
+
+  // Assistant state
+  let showAssistant = $state(true);
+  let postGISViewerRef = $state<PostGISViewer | null>(null);
+
+  // Map context for assistant
+  let mapContext = $state<MapContext>({
+    activeTab: 'geoportail',
+    connectionId: null,
+    activeLayers: [],
+    availableTables: [],
+    currentZoom: 10,
+    currentCenter: [2538000, 1152000],
+    selectedFeature: null
+  });
+
+  // Update context when tab changes
+  $effect(() => {
+    mapContext = { ...mapContext, activeTab: activeTab };
+  });
+
+  // Setup map controller when PostGISViewer is ready
+  $effect(() => {
+    if (postGISViewerRef && activeTab === 'postgis') {
+      const controller: MapController = {
+        zoomTo: (x, y, zoom) => postGISViewerRef.zoomTo(x, y, zoom),
+        zoomToExtent: (minX, minY, maxX, maxY) => postGISViewerRef.zoomToExtent(minX, minY, maxX, maxY),
+        toggleLayer: (name, visible) => postGISViewerRef.toggleLayerByName(name, visible),
+        addLayer: (name) => postGISViewerRef.addLayerByName(name),
+        removeLayer: (name) => postGISViewerRef.removeLayerByName(name),
+        getActiveLayers: () => postGISViewerRef.getActiveLayers(),
+        executeSQL: (query) => postGISViewerRef.executeSQL(query),
+        highlightFeature: (geojson) => postGISViewerRef.highlightFeature(geojson)
+      };
+      setMapController(controller);
+
+      // Update context from viewer state
+      const state = postGISViewerRef.getMapState();
+      const tables = postGISViewerRef.getAvailableTables();
+      mapContext = {
+        ...mapContext,
+        connectionId: state.connectionId,
+        activeLayers: state.activeLayers,
+        availableTables: tables,
+        currentZoom: state.zoom,
+        currentCenter: state.center as [number, number]
+      };
+    }
+  });
+
+  // Periodic context sync when PostGIS is active
+  let contextSyncInterval: ReturnType<typeof setInterval> | null = null;
+
+  $effect(() => {
+    if (activeTab === 'postgis' && postGISViewerRef) {
+      // Sync context every 2 seconds
+      contextSyncInterval = setInterval(() => {
+        if (postGISViewerRef) {
+          const state = postGISViewerRef.getMapState();
+          const tables = postGISViewerRef.getAvailableTables();
+          mapContext = {
+            ...mapContext,
+            connectionId: state.connectionId,
+            activeLayers: state.activeLayers,
+            availableTables: tables,
+            currentZoom: state.zoom,
+            currentCenter: state.center as [number, number]
+          };
+        }
+      }, 2000);
+    } else {
+      if (contextSyncInterval) {
+        clearInterval(contextSyncInterval);
+        contextSyncInterval = null;
+      }
+    }
+
+    return () => {
+      if (contextSyncInterval) {
+        clearInterval(contextSyncInterval);
+      }
+    };
+  });
 
   // Configuration des cartes disponibles
   const maps = [
+    {
+      id: 'postgis',
+      name: 'PostGIS',
+      url: '',
+      icon: 'database',
+      hasLogin: false,
+      isComponent: true
+    },
     {
       id: 'geoportail',
       name: 'Geoportail Bussigny',
@@ -78,6 +172,20 @@
     loginWindow = window.open(map.url, '_blank');
     showLoginHint = true;
   }
+
+  function toggleAssistant() {
+    showAssistant = !showAssistant;
+  }
+
+  // Handle action from assistant
+  function handleAssistantAction(event: CustomEvent) {
+    const { action, result } = event.detail;
+    console.log('Map action executed:', action, result);
+    // Refresh context after action
+    if (activeTab === 'postgis' && postGISViewerRef) {
+      // Update context from PostGISViewer state
+    }
+  }
 </script>
 
 <div class="canvas-module">
@@ -115,6 +223,10 @@
               <polyline points="14 2 14 8 20 8"/>
               <line x1="16" y1="13" x2="8" y2="13"/>
               <line x1="16" y1="17" x2="8" y2="17"/>
+            {:else if map.icon === 'database'}
+              <ellipse cx="12" cy="5" rx="9" ry="3"/>
+              <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
             {/if}
           </svg>
           <span class="tab-label">{map.name}</span>
@@ -150,6 +262,20 @@
           <line x1="10" y1="14" x2="21" y2="3"/>
         </svg>
       </button>
+      <div class="action-separator"></div>
+      <button
+        class="action-btn assistant-btn"
+        class:active={showAssistant}
+        onclick={toggleAssistant}
+        title={showAssistant ? "Masquer l'assistant" : "Afficher l'assistant"}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 16v-4"/>
+          <path d="M12 8h.01"/>
+        </svg>
+        <span class="btn-label">IA</span>
+      </button>
     </div>
   </div>
 
@@ -166,40 +292,55 @@
     </div>
   {/if}
 
-  <!-- Iframe container -->
-  <div class="iframe-container">
-    {#each maps as map}
-      {#if activeTab === map.id}
-        {#if map.noIframe}
-          <div class="no-iframe-message">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <polygon points="12 2 2 7 12 12 22 7 12 2"/>
-              <polyline points="2 17 12 22 22 17"/>
-              <polyline points="2 12 12 17 22 12"/>
-            </svg>
-            <h3>{map.name}</h3>
-            <p>Ce site ne peut pas etre affiche dans l'application (restriction de securite du serveur).</p>
-            <button class="open-external-btn" onclick={() => window.open(map.url, '_blank')}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                <polyline points="15 3 21 3 21 9"/>
-                <line x1="10" y1="14" x2="21" y2="3"/>
+  <!-- Main content area with map and assistant -->
+  <div class="content-area">
+    <!-- Iframe/Map container -->
+    <div class="iframe-container">
+      {#each maps as map}
+        {#if activeTab === map.id}
+          {#if map.noIframe}
+            <div class="no-iframe-message">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                <polyline points="2 17 12 22 22 17"/>
+                <polyline points="2 12 12 17 22 12"/>
               </svg>
-              Ouvrir dans le navigateur
-            </button>
-          </div>
-        {:else}
-          {#key iframeKeys[map.id]}
-            <iframe
-              src={map.url}
-              title={map.name}
-              class="portal-iframe"
-              allow="geolocation; fullscreen"
-            ></iframe>
-          {/key}
+              <h3>{map.name}</h3>
+              <p>Ce site ne peut pas etre affiche dans l'application (restriction de securite du serveur).</p>
+              <button class="open-external-btn" onclick={() => window.open(map.url, '_blank')}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/>
+                  <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+                Ouvrir dans le navigateur
+              </button>
+            </div>
+          {:else if map.isComponent}
+            <div class="component-container">
+              <PostGISViewer bind:this={postGISViewerRef} />
+            </div>
+          {:else}
+            {#key iframeKeys[map.id]}
+              <iframe
+                src={map.url}
+                title={map.name}
+                class="portal-iframe"
+                allow="geolocation; fullscreen"
+              ></iframe>
+            {/key}
+          {/if}
         {/if}
-      {/if}
-    {/each}
+      {/each}
+    </div>
+
+    <!-- Map Assistant Sidebar -->
+    <MapAssistant
+      isOpen={showAssistant}
+      context={mapContext}
+      on:close={() => showAssistant = false}
+      on:action={handleAssistantAction}
+    />
   </div>
 </div>
 
@@ -333,6 +474,22 @@
     box-shadow: 0 0 15px var(--cyber-green-glow);
   }
 
+  .action-btn.assistant-btn {
+    width: auto;
+    padding: 0 12px;
+    gap: 6px;
+  }
+
+  .action-btn.assistant-btn.active {
+    background: rgba(0, 255, 136, 0.15);
+    border-color: var(--cyber-green);
+    color: var(--cyber-green);
+  }
+
+  .action-btn.assistant-btn:hover {
+    background: rgba(0, 255, 136, 0.2);
+  }
+
   .btn-label {
     font-size: 12px;
     font-weight: 500;
@@ -384,6 +541,12 @@
 
   .hint-close:hover {
     color: var(--text-bright);
+  }
+
+  .content-area {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
   }
 
   .iframe-container {
@@ -453,5 +616,14 @@
     background: var(--cyber-green-light);
     box-shadow: 0 0 25px var(--cyber-green-glow);
     transform: translateY(-2px);
+  }
+
+  .component-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
   }
 </style>

@@ -1,3 +1,115 @@
+## Session 19 - 12 décembre 2025
+**Thème** : Map Assistant IA + Module Time Pro
+
+### Travail effectué
+
+#### 1. Map Assistant IA (Cartes)
+- **MapAssistant.svelte** : Interface chat pour contrôler la carte
+  - Streaming des réponses IA
+  - Parsing des actions JSON dans les réponses
+  - Intégration avec PostGISViewer via MapController
+- **mapAssistant.ts** : Service de gestion des actions cartographiques
+  - executeMapAction() : dispatch des actions vers le contrôleur
+  - Contexte automatique (tables disponibles, état carte)
+- **PostGISViewer.svelte** : Fonctions exportées pour contrôle externe
+  - zoomTo(), zoomToExtent(), toggleLayerByName()
+  - executeSQL(), getActiveLayers(), getMapState(), highlightFeature()
+- **CanvasModule.svelte** : Setup MapController dans $effect
+
+#### 2. Module Time Pro (Communications)
+- **Intégration Time Pro** dans CommunicationsPanel.svelte
+  - Nouvel onglet TimePro (6ème onglet)
+  - Bouton pour ouvrir Time Pro web (popup ou Tauri WebviewWindow)
+- **Timer Re-pointage** :
+  - Configurable en minutes (défaut 45 min)
+  - Compte à rebours visible dans le badge de l'onglet
+  - Notification desktop à l'expiration
+- **Pointages programmés** :
+  - Système de planification (heure + jour + type in/out)
+  - Toggle activation globale
+  - Stockage localStorage avec persistence
+
+#### 3. Fix freeze app
+- **Problème** : localStorage dans $state = incompatible SSR
+- **Solution** : Initialisation par défaut + chargement dans onMount avec `if (browser)`
+
+### Fichiers modifiés
+- `src/lib/components/Canvas/PostGISViewer.svelte` - exports fonctions
+- `src/lib/components/Canvas/CanvasModule.svelte` - MapController setup
+- `src/lib/components/Canvas/MapAssistant.svelte` - fix API call
+- `src/lib/services/mapAssistant.ts` - executeMapAction
+- `src/lib/components/CommunicationsPanel.svelte` - Time Pro complet
+
+---
+
+## Session 18 - 12 decembre 2025 (suite)
+**Theme** : Correction script installation dependances georef
+
+### Travail effectue
+- **Correction install_dependencies.bat** : Le script ne trouvait pas QGIS
+  - Probleme : chemins testes ne correspondaient pas a l'installation reelle
+  - Solution : Ajout chemin specifique `C:\Program Files\QGIS 3.40.4` en priorite
+  - Fallback vers versions 3.34.12, 3.34.6, 3.34.4, OSGeo4W
+  - Detection automatique Python (312/311/39) selon version QGIS
+  - Utilisation de `%PYTHON_EXE%` pour les commandes pip
+  - Ajout `--user` pour installer sans droits admin complets
+- Script copie vers `C:\Temp` pour execution avec compte admin_user_zema
+
+### Fichiers modifies
+- `scripts/qgis/bdco_sketcher/install_dependencies.bat`
+
+### A faire
+- Tester l'installation : Shift+clic droit sur `C:\Temp\install_dependencies.bat` → Executer en tant qu'autre utilisateur
+- Redemarrer QGIS apres installation
+- Tester le georeferenceur PDF dans le plugin BDCO Sketcher
+
+---
+
+## Session 17 - 12 decembre 2025
+**Theme** : Georeferencement de plans (Helmert) - Extension plugin BDCO Sketcher
+
+### Travail effectue
+
+#### Module de transformation Helmert (`georef_helmert.py`)
+- Classe `HelmertTransform` pour transformation 2D a 4 parametres
+- Parametres : 2 translations (tx, ty), 1 rotation (theta), 1 echelle (s)
+- Resolution par moindres carres (pseudo-inverse numpy)
+- Calcul RMSE et residus pour evaluation qualite
+- Support GeoTransform GDAL pour export GeoTIFF
+
+#### Dialog de georeferencement (`georef_dialog.py`)
+- Interface graphique complete avec :
+  - Chargement PDF (conversion via PyMuPDF ou pdf2image)
+  - Viewer d'image avec zoom molette et drag
+  - Selection de points de calage (GCPs) sur image et carte QGIS
+  - Table des GCPs avec gestion (ajout, suppression)
+  - Calcul transformation et affichage parametres
+  - Export GeoTIFF georeference (GDAL + EPSG:2056)
+  - Ajout direct au projet QGIS
+
+#### Integration plugin BDCO Sketcher
+- Nouvelle action "Georeferencer un plan (Helmert)" dans toolbar
+- Import conditionnel du module georef (fallback si dependances manquantes)
+- Version mise a jour : 1.1.0
+- Documentation README.md completee
+
+### Fichiers crees/modifies
+- `scripts/qgis/bdco_sketcher/georef_helmert.py` (nouveau - 280 lignes)
+- `scripts/qgis/bdco_sketcher/georef_dialog.py` (nouveau - 480 lignes)
+- `scripts/qgis/bdco_sketcher/bdco_sketcher.py` (modifie - import + action)
+- `scripts/qgis/bdco_sketcher/metadata.txt` (version 1.1.0)
+- `scripts/qgis/bdco_sketcher/README.md` (documentation georef)
+
+### Installation
+Plugin copie dans : `C:\Users\zema\AppData\Roaming\QGIS\QGIS3\profiles\default\python\plugins\bdco_sketcher\`
+
+### Dependances optionnelles
+- PyMuPDF (`pip install pymupdf`) - conversion PDF
+- pdf2image (`pip install pdf2image`) - alternative conversion PDF
+- GDAL (deja inclus avec QGIS)
+
+---
+
 ## Session 16 - 12 decembre 2025
 **Theme** : Renommage GeoBrain → GeoMind
 

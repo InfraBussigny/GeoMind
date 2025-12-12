@@ -1,5 +1,16 @@
 # GeoBrain Checkpoints
 
+## CP-20251212-1530
+```
+S:19|P:MAP-ASSISTANT+TIMEPRO|T:IA-Carto+Pointage
+F:PostGISViewer,CanvasModule,MapAssistant,mapAssistant.ts,CommunicationsPanel
+W:Map Assistant IA (contrôle carte par chat)+Time Pro (timer 45min, pointages programmés)+Fix SSR localStorage
+N:Tests Time Pro, amélioration Map Assistant prompts
+X:App stable après fix freeze | TimePro dans Communications onglet 6
+```
+
+---
+
 ## CP-20251210-2230
 ```
 S:12|P:UI-INTEGRATION|T:sidebar-modules
