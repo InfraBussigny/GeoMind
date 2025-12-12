@@ -32,7 +32,7 @@ app.use(express.json({ limit: '10mb' }));
 // ============================================
 
 const CLAUDE_CREDENTIALS_PATH = join(homedir(), '.claude', '.credentials.json');
-const GEOBRAIN_CONFIG_PATH = join(homedir(), '.geobrain', 'config.json');
+const GEOMIND_CONFIG_PATH = join(homedir(), '.geomind', 'config.json');
 
 async function getClaudeCredentials() {
   try {
@@ -48,8 +48,8 @@ async function getClaudeCredentials() {
 
 async function getGeoMindConfig() {
   try {
-    if (existsSync(GEOBRAIN_CONFIG_PATH)) {
-      const data = await readFile(GEOBRAIN_CONFIG_PATH, 'utf-8');
+    if (existsSync(GEOMIND_CONFIG_PATH)) {
+      const data = await readFile(GEOMIND_CONFIG_PATH, 'utf-8');
       return JSON.parse(data);
     }
   } catch (error) {
@@ -59,11 +59,11 @@ async function getGeoMindConfig() {
 }
 
 async function saveGeoMindConfig(config) {
-  const dir = dirname(GEOBRAIN_CONFIG_PATH);
+  const dir = dirname(GEOMIND_CONFIG_PATH);
   if (!existsSync(dir)) {
     await import('fs').then(fs => fs.promises.mkdir(dir, { recursive: true }));
   }
-  await writeFile(GEOBRAIN_CONFIG_PATH, JSON.stringify(config, null, 2));
+  await writeFile(GEOMIND_CONFIG_PATH, JSON.stringify(config, null, 2));
 }
 
 // ============================================
@@ -871,7 +871,7 @@ async function getClaudeAuth() {
     };
   }
 
-  throw new Error('Claude not configured. Please add an API key in ~/.geobrain/config.json');
+  throw new Error('Claude not configured. Please add an API key in ~/.geomind/config.json');
 }
 
 async function callClaude(model, messages, tools, systemPrompt = null) {
@@ -2050,7 +2050,7 @@ app.get('/api/usage', async (req, res) => {
 
     // Récupérer les stats mensuelles depuis le fichier (si existant)
     let monthlyStats = { tokens: 0, cost: 0, requests: 0 };
-    const statsPath = join(homedir(), '.geobrain', 'usage-stats.json');
+    const statsPath = join(homedir(), '.geomind', 'usage-stats.json');
 
     try {
       if (existsSync(statsPath)) {
@@ -2084,7 +2084,7 @@ app.get('/api/usage', async (req, res) => {
 // Sauvegarder les stats mensuelles
 async function saveMonthlyStats() {
   try {
-    const statsPath = join(homedir(), '.geobrain', 'usage-stats.json');
+    const statsPath = join(homedir(), '.geomind', 'usage-stats.json');
     const currentMonth = new Date().toISOString().slice(0, 7);
 
     let monthlyStats = { month: currentMonth, tokens: 0, cost: 0, requests: 0 };
@@ -2418,8 +2418,8 @@ app.post('/api/server/restart', async (req, res) => {
     console.log('✅ Nouveau processus lancé, arrêt de l\'ancien...');
 
     // Fermer le serveur actuel proprement
-    if (global.geobrainServer) {
-      global.geobrainServer.close(() => {
+    if (global.geomindServer) {
+      global.geomindServer.close(() => {
         console.log('👋 Ancien serveur arrêté');
         process.exit(0);
       });
@@ -2542,7 +2542,7 @@ async function startServer() {
   });
 
   // Stocker la référence du serveur globalement pour le restart
-  global.geobrainServer = server;
+  global.geomindServer = server;
 }
 
 // ============================================

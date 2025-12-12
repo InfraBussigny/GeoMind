@@ -59,8 +59,8 @@ export interface TerminalSession {
 // ============================================
 
 const API_BASE = 'http://localhost:3001/api';
-const STORAGE_KEY = 'geobrain_ssh_connections';
-const TUNNELS_KEY = 'geobrain_ssh_tunnels';
+const STORAGE_KEY = 'geomind_ssh_connections';
+const TUNNELS_KEY = 'geomind_ssh_tunnels';
 
 // ============================================
 // Connections Store

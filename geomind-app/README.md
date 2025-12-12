@@ -46,7 +46,7 @@ npm run tauri:build
 ## Structure
 
 ```
-geobrain-app/
+geomind-app/
 ├── src/
 │   ├── lib/
 │   │   ├── components/     # Composants Svelte

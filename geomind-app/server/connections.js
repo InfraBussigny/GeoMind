@@ -16,7 +16,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Clé de chiffrement (en prod, utiliser une variable d'environnement)
-const ENCRYPTION_KEY = process.env.GEOBRAIN_SECRET || 'geobrain-bussigny-2024-secret-key';
+const ENCRYPTION_KEY = process.env.GEOMIND_SECRET || 'geomind-bussigny-2024-secret-key';
 
 // Fichier de stockage des connexions
 const CONNECTIONS_FILE = path.join(__dirname, 'data', 'connections.json');

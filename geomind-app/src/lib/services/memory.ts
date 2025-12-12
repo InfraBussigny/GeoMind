@@ -45,10 +45,10 @@ export interface MemoryStats {
 // ============================================
 
 const STORAGE_KEYS = {
-  SESSION: 'geobrain_session_memory',
-  PERSISTENT: 'geobrain_persistent_memory',
-  PREFERENCES: 'geobrain_preferences',
-  CONVERSATION_HISTORY: 'geobrain_conversation_history'
+  SESSION: 'geomind_session_memory',
+  PERSISTENT: 'geomind_persistent_memory',
+  PREFERENCES: 'geomind_preferences',
+  CONVERSATION_HISTORY: 'geomind_conversation_history'
 };
 
 const MAX_IMMEDIATE_MESSAGES = 50;

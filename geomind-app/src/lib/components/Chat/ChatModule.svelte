@@ -724,7 +724,7 @@ L'assistant t'accompagne dans tes tâches quotidiennes.`;
             <div class="backend-warning">
               <p><strong>Le serveur backend n'est pas demarre.</strong></p>
               <p>Ouvrez un nouveau terminal et lancez :</p>
-              <code>cd geobrain-app/server && npm install && npm start</code>
+              <code>cd geomind-app/server && npm install && npm start</code>
             </div>
           {:else}
             <div class="suggestions">

@@ -100,8 +100,8 @@ export interface ThreeCXConfig {
 // ============================================
 
 const API_BASE = 'http://localhost:3001/api';
-const STORAGE_KEY_OUTLOOK = 'geobrain_outlook_config';
-const STORAGE_KEY_3CX = 'geobrain_3cx_config';
+const STORAGE_KEY_OUTLOOK = 'geomind_outlook_config';
+const STORAGE_KEY_3CX = 'geomind_3cx_config';
 
 // Default Outlook scopes
 const DEFAULT_OUTLOOK_SCOPES = [

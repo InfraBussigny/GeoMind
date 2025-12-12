@@ -355,7 +355,7 @@ backup_data`,
         <source id="main" type="postgresql">
             <host>srv-fme</host>
             <port>5432</port>
-            <database>geobrain</database>
+            <database>geomind</database>
         </source>
     </datasources>
 </configuration>`,

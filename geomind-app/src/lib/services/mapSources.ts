@@ -179,7 +179,7 @@ export const DEFAULT_SOURCES: MapSource[] = [
 // Store
 // ============================================
 
-const STORAGE_KEY = 'geobrain_map_sources';
+const STORAGE_KEY = 'geomind_map_sources';
 
 function loadSources(): MapSource[] {
   if (!browser) return DEFAULT_SOURCES;
@@ -293,7 +293,7 @@ export const mapSourcesStore = createMapSourcesStore();
 // Layers Store
 // ============================================
 
-const LAYERS_KEY = 'geobrain_map_layers';
+const LAYERS_KEY = 'geomind_map_layers';
 
 function loadLayers(): MapLayer[] {
   if (!browser) return [];

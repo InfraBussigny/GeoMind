@@ -1,3 +1,34 @@
+## Session 16 - 12 decembre 2025
+**Theme** : Renommage GeoBrain → GeoMind
+
+### Travail effectue
+
+#### Renommage complet de l'application
+- Dossier `geobrain-app/` renomme en `geomind-app/`
+- Mise a jour de tous les fichiers de configuration:
+  - package.json, package-lock.json (frontend et server)
+  - tauri.conf.json (deja OK)
+  - README.md
+- Mise a jour de toutes les references dans le code:
+  - Storage keys localStorage: `geobrain_*` → `geomind_*`
+  - Chemins config: `~/.geobrain/` → `~/.geomind/`
+  - Variables: `GEOBRAIN_*` → `GEOMIND_*`
+  - Theme Monaco: `geobrain-cyber` → `geomind-cyber`
+  - Placeholders et exemples
+
+### Fichiers modifies (19 fichiers)
+- `package-lock.json`, `server/package.json`, `server/package-lock.json`
+- `README.md`
+- `server/index.js`, `server/geoportal-proxy.js`, `server/connections.js`
+- `src/lib/stores/app.ts`
+- `src/lib/services/aiRouter.ts`, `communications.ts`, `memory.ts`, `ghostwriter.ts`, `mapSources.ts`, `ssh.ts`
+- `src/lib/components/FunctionsLibrary.svelte`
+- `src/lib/components/Chat/ChatModule.svelte`
+- `src/lib/components/Settings/SettingsModule.svelte`
+- `src/lib/components/Editor/MonacoEditor.svelte`, `EditorModule.svelte`
+
+---
+
 ## Session 15 - 11 decembre 2025 (apres-midi)
 **Theme** : Integration Qwen2.5:14b pour tool calling + Polices GIMP
 

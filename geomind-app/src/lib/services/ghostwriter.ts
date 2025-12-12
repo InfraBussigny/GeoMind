@@ -55,7 +55,7 @@ export interface Snippet {
 // Constants
 // ============================================
 
-const STORAGE_KEY = 'geobrain_ghostwriter';
+const STORAGE_KEY = 'geomind_ghostwriter';
 const MAX_HISTORY = 100;
 const MAX_SUGGESTIONS = 8;
 

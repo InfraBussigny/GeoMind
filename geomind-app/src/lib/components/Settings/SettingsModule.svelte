@@ -757,7 +757,7 @@
                     id="conn-database"
                     type="text"
                     bind:value={connectionForm.database}
-                    placeholder="geobrain"
+                    placeholder="geomind"
                   />
                 </div>
               {/if}
@@ -974,7 +974,7 @@
       <div class="storage-info">
         <div class="storage-item">
           <span class="storage-label">Configuration GeoMind</span>
-          <code>~/.geobrain/config.json</code>
+          <code>~/.geomind/config.json</code>
         </div>
         <div class="storage-item">
           <span class="storage-label">Memoire et contexte</span>

@@ -24,7 +24,7 @@ const __dirname = path.dirname(__filename);
 // Configuration
 const GEOPORTAL_BASE = 'https://geo.bussigny.ch';
 const AUTH_URL = `${GEOPORTAL_BASE}/auth/login`;
-const CREDENTIALS_FILE = path.join(__dirname, '..', '..', '.geobrain', 'geoportal-credentials.json');
+const CREDENTIALS_FILE = path.join(__dirname, '..', '..', '.geomind', 'geoportal-credentials.json');
 
 // Session storage (en memoire)
 let sessionData = {

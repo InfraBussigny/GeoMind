@@ -34,7 +34,7 @@
   let isUpdating = false;
 
   // Theme definition
-  const GEOBRAIN_THEME = {
+  const GEOMIND_THEME = {
     base: 'vs-dark' as const,
     inherit: true,
     rules: [
@@ -186,7 +186,7 @@
     };
 
     // Register custom theme
-    monaco.editor.defineTheme('geobrain-cyber', GEOBRAIN_THEME);
+    monaco.editor.defineTheme('geomind-cyber', GEOMIND_THEME);
 
     // Auto-detect language if plaintext
     let initialLanguage = language;
@@ -199,7 +199,7 @@
     editor = monaco.editor.create(container, {
       value: value,
       language: initialLanguage,
-      theme: 'geobrain-cyber',
+      theme: 'geomind-cyber',
       readOnly: readonly,
       minimap: { enabled: minimap },
       lineNumbers: lineNumbers,

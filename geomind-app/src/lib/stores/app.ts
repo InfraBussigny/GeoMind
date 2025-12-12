@@ -176,7 +176,7 @@ function createThemeStore() {
         // Le thème god ne peut pas être toggle (il faut sortir du god mode)
         if (current === 'god') return current;
         const newValue = current === 'light' ? 'dark' : 'light';
-        savePreference('geobrain-theme', newValue);
+        savePreference('geomind-theme', newValue);
         return newValue;
       });
     }
@@ -463,45 +463,45 @@ const defaultGlitchSettings: GlitchSettings = {
 };
 
 function createGlitchStore() {
-  const stored = loadPreference<GlitchSettings>('geobrain-glitch', defaultGlitchSettings);
+  const stored = loadPreference<GlitchSettings>('geomind-glitch', defaultGlitchSettings);
   const { subscribe, set, update } = writable<GlitchSettings>(stored);
 
   return {
     subscribe,
     set: (value: GlitchSettings) => {
-      savePreference('geobrain-glitch', value);
+      savePreference('geomind-glitch', value);
       set(value);
     },
     toggle: () => {
       update(current => {
         const updated = { ...current, enabled: !current.enabled };
-        savePreference('geobrain-glitch', updated);
+        savePreference('geomind-glitch', updated);
         return updated;
       });
     },
     setFrequency: (freq: number) => {
       update(current => {
         const updated = { ...current, frequency: Math.max(1, Math.min(10, freq)) };
-        savePreference('geobrain-glitch', updated);
+        savePreference('geomind-glitch', updated);
         return updated;
       });
     },
     setIntensity: (intensity: number) => {
       update(current => {
         const updated = { ...current, intensity: Math.max(1, Math.min(10, intensity)) };
-        savePreference('geobrain-glitch', updated);
+        savePreference('geomind-glitch', updated);
         return updated;
       });
     },
     unlockEasterEgg: () => {
       update(current => {
         const updated = { ...current, unlockedByEasterEgg: true, enabled: true };
-        savePreference('geobrain-glitch', updated);
+        savePreference('geomind-glitch', updated);
         return updated;
       });
     },
     reset: () => {
-      savePreference('geobrain-glitch', defaultGlitchSettings);
+      savePreference('geomind-glitch', defaultGlitchSettings);
       set(defaultGlitchSettings);
     }
   };

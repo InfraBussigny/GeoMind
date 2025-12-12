@@ -10,7 +10,7 @@
 > - Code clair, commenté, maintenable
 
 ## Dernière mise à jour
-2025-12-10
+2025-12-12
 
 ## Responsable
 - **Nom** : Marc Zermatten
@@ -329,6 +329,6 @@ Affichage permanent en bas de l'interface :
 | `logo_bussigny_texte.png` | Avec texte "Commune de Bussigny" |
 | `*.ai` | Sources Adobe Illustrator |
 
-### Copies locales (GeoBrain App)
-- `geobrain-app/static/images/logo_bussigny_neg.png`
-- `geobrain-app/static/images/logo_bussigny_pos.png`
+### Copies locales (GeoMind App)
+- `geomind-app/static/images/logo_bussigny_neg.png`
+- `geomind-app/static/images/logo_bussigny_pos.png`

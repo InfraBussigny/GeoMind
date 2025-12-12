@@ -74,7 +74,7 @@ export interface StreamChunk {
 // ============================================
 
 const API_BASE = 'http://localhost:3001/api';
-const STORAGE_KEY = 'geobrain_ai_config';
+const STORAGE_KEY = 'geomind_ai_config';
 
 // Available models by provider
 export const AVAILABLE_MODELS: AIModel[] = [

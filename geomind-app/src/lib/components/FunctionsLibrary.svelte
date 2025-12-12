@@ -35,7 +35,7 @@
     createdAt: string;
   }
 
-  const STORAGE_KEY = 'geobrain_custom_functions';
+  const STORAGE_KEY = 'geomind_custom_functions';
 
   function loadCustomFunctions(): CustomFunction[] {
     if (!browser) return [];
