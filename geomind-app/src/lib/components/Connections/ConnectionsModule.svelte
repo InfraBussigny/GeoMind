@@ -210,13 +210,19 @@
 
   async function toggleConnection(conn: Connection) {
     try {
+      error = null;
       const endpoint = conn.status === 'connected' ? 'disconnect' : 'connect';
       const res = await fetch(`${API_BASE}/connections/${conn.id}/${endpoint}`, { method: 'POST' });
-      if (res.ok) {
-        await fetchConnections();
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        error = data.error || `Erreur ${endpoint}`;
+        return;
       }
+
+      await fetchConnections();
     } catch (e: any) {
-      error = e.message;
+      error = e.message || 'Erreur de connexion';
     }
   }
 
@@ -234,6 +240,31 @@
     if (!dateStr) return 'Jamais';
     const date = new Date(dateStr);
     return date.toLocaleDateString('fr-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
+  // Ordre logique des types de connexion
+  const typeOrder: Record<string, number> = {
+    postgresql: 1,
+    wms: 2,
+    wfs: 3,
+    ssh: 4
+  };
+
+  // Trier les connexions de manière logique
+  function sortedConnections(conns: Connection[]): Connection[] {
+    return [...conns].sort((a, b) => {
+      // 1. Par type
+      const typeA = typeOrder[a.type] || 99;
+      const typeB = typeOrder[b.type] || 99;
+      if (typeA !== typeB) return typeA - typeB;
+
+      // 2. Par statut (connecté d'abord)
+      if (a.status === 'connected' && b.status !== 'connected') return -1;
+      if (b.status === 'connected' && a.status !== 'connected') return 1;
+
+      // 3. Par nom alphabétique
+      return a.name.localeCompare(b.name, 'fr');
+    });
   }
 </script>
 
@@ -266,7 +297,7 @@
     </div>
   {:else}
     <div class="connections-list">
-      {#each connections as conn (conn.id)}
+      {#each sortedConnections(connections) as conn (conn.id)}
         <div class="connection-card" class:connected={conn.status === 'connected'}>
           <div class="conn-icon">{getTypeIcon(conn.type)}</div>
           <div class="conn-info">
@@ -287,25 +318,16 @@
           </div>
           <div class="conn-actions">
             <button
-              class="btn-icon"
-              class:btn-connect={conn.status !== 'connected'}
-              class:btn-disconnect={conn.status === 'connected'}
+              class="btn-icon btn-power"
+              class:connected={conn.status === 'connected'}
               onclick={() => toggleConnection(conn)}
               title={conn.status === 'connected' ? 'Déconnecter' : 'Connecter'}
             >
-              {#if conn.status === 'connected'}
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
-                  <line x1="12" y1="2" x2="12" y2="12"></line>
-                </svg>
-              {:else}
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
-                  <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
-                  <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
-                  <circle cx="12" cy="20" r="1"></circle>
-                </svg>
-              {/if}
+              <!-- Icône Power unique -->
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+                <line x1="12" y1="2" x2="12" y2="12"></line>
+              </svg>
             </button>
             <button class="btn-icon btn-edit" onclick={() => openEditModal(conn)} title="Modifier">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
@@ -531,18 +553,28 @@
     gap: 16px;
     padding: 16px;
     background: var(--noir-card);
-    border: 1px solid var(--border-color);
+    border: 2px solid var(--border-color);
     border-radius: var(--border-radius);
     transition: all 0.2s;
+    opacity: 0.7;
   }
 
   .connection-card:hover {
-    border-color: var(--cyber-green);
+    border-color: var(--text-secondary);
+    opacity: 0.85;
   }
 
   .connection-card.connected {
+    opacity: 1;
     border-color: var(--cyber-green);
-    box-shadow: 0 0 10px var(--cyber-green-glow);
+    border-width: 2px;
+    box-shadow: 0 0 15px var(--cyber-green-glow);
+    background: linear-gradient(135deg, var(--noir-card) 0%, rgba(0, 255, 136, 0.05) 100%);
+  }
+
+  .connection-card.connected:hover {
+    border-color: var(--cyber-green);
+    box-shadow: 0 0 20px var(--cyber-green-glow);
   }
 
   .conn-icon {
@@ -621,14 +653,38 @@
     color: var(--cyber-green);
   }
 
-  .btn-connect:hover {
+  /* Bouton Power - vert pour connecter, rouge pour déconnecter */
+  .btn-power {
+    width: 42px;
+    height: 42px;
+    color: #00ff88;
+    border: 2px solid #00ff88;
     background: rgba(0, 255, 136, 0.1);
   }
 
-  .btn-disconnect:hover {
-    background: rgba(255, 100, 100, 0.1);
-    border-color: #ff6464;
-    color: #ff6464;
+  .btn-power svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .btn-power:hover {
+    background: rgba(0, 255, 136, 0.25);
+    box-shadow: 0 0 12px rgba(0, 255, 136, 0.5);
+    transform: scale(1.05);
+  }
+
+  .btn-power.connected {
+    color: #ff4444;
+    border: 2px solid #ff4444;
+    background: rgba(255, 68, 68, 0.1);
+  }
+
+  .btn-power.connected:hover {
+    background: rgba(255, 68, 68, 0.25);
+    box-shadow: 0 0 12px rgba(255, 68, 68, 0.5);
+    border-color: #ff4444;
+    color: #ff4444;
+    transform: scale(1.05);
   }
 
   .btn-delete:hover {

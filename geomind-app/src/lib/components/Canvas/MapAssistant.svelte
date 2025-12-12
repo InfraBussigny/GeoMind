@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, createEventDispatcher } from 'svelte';
   import { browser } from '$app/environment';
+  import { get } from 'svelte/store';
   import {
     mapContextStore,
     assistantMessagesStore,
@@ -89,12 +90,18 @@
     let assistantResponse = '';
 
     try {
+      const provider = get(currentProvider);
+      const model = get(currentModel);
+
+      console.log('[MapAssistant] Sending message:', { provider, model, messagesCount: apiMessages.length });
+
       await streamMessage(
-        $currentProvider,
-        $currentModel,
+        provider,
+        model,
         apiMessages,
         undefined, // no tools
         (chunk: string) => {
+          console.log('[MapAssistant] Chunk received:', chunk.substring(0, 50));
           assistantResponse += chunk;
           // Update last message in real-time
           assistantMessagesStore.update(msgs => {
@@ -127,11 +134,13 @@
           assistantLoadingStore.set(false);
         },
         (error: string) => {
+          console.error('[MapAssistant] Error callback:', error);
           addAssistantMessage('assistant', `Erreur: ${error}`);
           assistantLoadingStore.set(false);
         }
       );
     } catch (error) {
+      console.error('[MapAssistant] Catch error:', error);
       addAssistantMessage('assistant', `Erreur de connexion: ${error}`);
       assistantLoadingStore.set(false);
     }

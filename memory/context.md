@@ -9,6 +9,22 @@
 > - Tester avant de livrer
 > - Code clair, commenté, maintenable
 
+## DIRECTIVE N°2 - INSTALLATION PROGRAMMES (DROITS ADMIN)
+> **Procédure obligatoire pour toute installation nécessitant des droits administrateur.**
+>
+> Marc n'a pas les droits admin directs sur son poste. Procédure à suivre :
+>
+> 1. **Copier l'installateur** dans `C:\Temp\`
+> 2. **Shift + clic droit** sur l'exécutable → "Exécuter en tant qu'autre utilisateur"
+> 3. **Compte** : `admin_user_zema`
+> 4. **Mot de passe** : Demander à Marc au moment de l'installation (NE JAMAIS STOCKER)
+>
+> **Comportement GeoBrain :**
+> - Copier automatiquement l'installateur dans C:\Temp
+> - Informer Marc de faire Shift+clic droit → Exécuter en tant qu'autre utilisateur
+> - Lui demander son mot de passe pour admin_user_zema (usage unique, non stocké)
+> - Guider l'installation étape par étape
+
 ## Dernière mise à jour
 2025-12-12
 

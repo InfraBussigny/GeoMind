@@ -95,6 +95,35 @@ export interface ThreeCXConfig {
   password?: string;
 }
 
+// WhatsApp types
+export interface WhatsAppConfig {
+  phoneNumberId: string;
+  businessAccountId: string;
+  accessToken: string;
+}
+
+export interface WhatsAppMessage {
+  id: string;
+  from: string;
+  fromName?: string;
+  to: string;
+  body: string;
+  timestamp: Date;
+  type: 'text' | 'image' | 'document' | 'audio' | 'video';
+  status: 'sent' | 'delivered' | 'read' | 'received';
+  mediaUrl?: string;
+}
+
+export interface WhatsAppContact {
+  id: string;
+  phone: string;
+  name: string;
+  profilePic?: string;
+  lastMessage?: string;
+  lastMessageTime?: Date;
+  unreadCount: number;
+}
+
 // ============================================
 // Constants
 // ============================================
@@ -102,6 +131,7 @@ export interface ThreeCXConfig {
 const API_BASE = 'http://localhost:3001/api';
 const STORAGE_KEY_OUTLOOK = 'geomind_outlook_config';
 const STORAGE_KEY_3CX = 'geomind_3cx_config';
+const STORAGE_KEY_WHATSAPP = 'geomind_whatsapp_config';
 
 // Default Outlook scopes
 const DEFAULT_OUTLOOK_SCOPES = [
@@ -250,6 +280,97 @@ function createThreeCXStore() {
 }
 
 export const threeCXStore = createThreeCXStore();
+
+// ============================================
+// WhatsApp Store
+// ============================================
+
+export interface WhatsAppState {
+  isConnected: boolean;
+  config: WhatsAppConfig | null;
+  contacts: WhatsAppContact[];
+  activeChat: string | null;
+  unreadCount: number;
+}
+
+function createWhatsAppStore() {
+  const initial: WhatsAppState = {
+    isConnected: false,
+    config: null,
+    contacts: [],
+    activeChat: null,
+    unreadCount: 0
+  };
+
+  if (browser) {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY_WHATSAPP);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        initial.config = parsed;
+        // Don't store access token in localStorage for security
+      }
+    } catch {}
+  }
+
+  const { subscribe, set, update } = writable<WhatsAppState>(initial);
+
+  return {
+    subscribe,
+
+    setConfig(config: WhatsAppConfig) {
+      update(state => {
+        if (browser) {
+          // Store config without access token
+          const toStore = { ...config, accessToken: '***' };
+          localStorage.setItem(STORAGE_KEY_WHATSAPP, JSON.stringify(toStore));
+        }
+        return { ...state, config };
+      });
+    },
+
+    setConnected(isConnected: boolean) {
+      update(state => ({ ...state, isConnected }));
+    },
+
+    setContacts(contacts: WhatsAppContact[]) {
+      update(state => ({ ...state, contacts }));
+    },
+
+    setActiveChat(chatId: string | null) {
+      update(state => ({ ...state, activeChat: chatId }));
+    },
+
+    updateContact(phone: string, updates: Partial<WhatsAppContact>) {
+      update(state => ({
+        ...state,
+        contacts: state.contacts.map(c =>
+          c.phone === phone ? { ...c, ...updates } : c
+        )
+      }));
+    },
+
+    addContact(contact: WhatsAppContact) {
+      update(state => ({
+        ...state,
+        contacts: [contact, ...state.contacts.filter(c => c.phone !== contact.phone)]
+      }));
+    },
+
+    setUnreadCount(count: number) {
+      update(state => ({ ...state, unreadCount: count }));
+    },
+
+    disconnect() {
+      if (browser) {
+        localStorage.removeItem(STORAGE_KEY_WHATSAPP);
+      }
+      set(initial);
+    }
+  };
+}
+
+export const whatsAppStore = createWhatsAppStore();
 
 // ============================================
 // Outlook API Functions
@@ -576,12 +697,132 @@ export async function getMissedCallsCount(): Promise<number> {
 }
 
 // ============================================
+// WhatsApp API Functions
+// ============================================
+
+/**
+ * Connect to WhatsApp Business API
+ */
+export async function connectWhatsApp(config: WhatsAppConfig): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await fetch(`${API_BASE}/whatsapp/connect`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config)
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      whatsAppStore.setConfig(config);
+      whatsAppStore.setConnected(true);
+    }
+
+    return result;
+  } catch (error) {
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
+ * Disconnect from WhatsApp
+ */
+export function disconnectWhatsApp(): void {
+  whatsAppStore.disconnect();
+}
+
+/**
+ * Send WhatsApp message
+ */
+export async function sendWhatsAppMessage(
+  to: string,
+  message: string
+): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  try {
+    const response = await fetch(`${API_BASE}/whatsapp/send`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to, message })
+    });
+
+    return await response.json();
+  } catch (error) {
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
+ * Get WhatsApp messages for a contact
+ */
+export async function getWhatsAppMessages(
+  phone: string,
+  limit = 50
+): Promise<{ success: boolean; messages?: WhatsAppMessage[]; error?: string }> {
+  try {
+    const response = await fetch(`${API_BASE}/whatsapp/messages/${encodeURIComponent(phone)}?limit=${limit}`);
+    const result = await response.json();
+
+    if (result.success && result.messages) {
+      result.messages = result.messages.map((m: WhatsAppMessage) => ({
+        ...m,
+        timestamp: new Date(m.timestamp)
+      }));
+    }
+
+    return result;
+  } catch (error) {
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
+ * Get WhatsApp contacts/conversations
+ */
+export async function getWhatsAppContacts(): Promise<{ success: boolean; contacts?: WhatsAppContact[]; error?: string }> {
+  try {
+    const response = await fetch(`${API_BASE}/whatsapp/contacts`);
+    const result = await response.json();
+
+    if (result.success && result.contacts) {
+      result.contacts = result.contacts.map((c: WhatsAppContact) => ({
+        ...c,
+        lastMessageTime: c.lastMessageTime ? new Date(c.lastMessageTime) : undefined
+      }));
+      whatsAppStore.setContacts(result.contacts);
+    }
+
+    return result;
+  } catch (error) {
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
+ * Format WhatsApp phone number (Swiss format)
+ */
+export function formatWhatsAppNumber(phone: string): string {
+  const cleaned = phone.replace(/\D/g, '');
+
+  // If starts with 0, convert to Swiss international
+  if (cleaned.startsWith('0') && cleaned.length === 10) {
+    return `+41${cleaned.slice(1)}`;
+  }
+
+  // If already has country code
+  if (cleaned.startsWith('41') && cleaned.length === 11) {
+    return `+${cleaned}`;
+  }
+
+  return phone;
+}
+
+// ============================================
 // Notifications Store
 // ============================================
 
 export interface Notification {
   id: string;
-  type: 'email' | 'call' | 'calendar' | 'system';
+  type: 'email' | 'call' | 'calendar' | 'whatsapp' | 'system';
   title: string;
   message: string;
   timestamp: Date;

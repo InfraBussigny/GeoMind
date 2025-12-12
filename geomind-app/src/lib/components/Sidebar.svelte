@@ -262,7 +262,7 @@
   .logo-link {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: 4px;
     text-decoration: none;
   }
@@ -273,7 +273,6 @@
     object-fit: contain;
     filter: drop-shadow(0 0 10px var(--cyber-green-glow));
     transition: all var(--transition-fast);
-    margin-left: -60px;
   }
 
   .logo-img.collapsed {

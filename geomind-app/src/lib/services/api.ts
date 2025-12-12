@@ -123,8 +123,11 @@ export async function streamMessage(
   onModelSelected?: (event: ModelSelectedEvent) => void,
   onAgentsActivated?: (event: AgentsActivatedEvent) => void
 ): Promise<StreamController> {
-  // Utiliser l'endpoint agent pour Claude (avec outils)
-  const endpoint = provider === 'claude' ? `${API_BASE}/chat/agent` : `${API_BASE}/chat/stream`;
+  // Utiliser l'endpoint agent pour Claude uniquement si des outils sont fournis
+  // Sinon utiliser le stream simple (plus rapide, moins de overhead)
+  const endpoint = (provider === 'claude' && tools && tools.length > 0)
+    ? `${API_BASE}/chat/agent`
+    : `${API_BASE}/chat/stream`;
 
   const abortController = new AbortController();
   let isAborted = false;

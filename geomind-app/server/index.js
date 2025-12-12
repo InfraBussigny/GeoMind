@@ -19,6 +19,7 @@ import { orchestrate, generateEnrichedSystemPrompt, identifyRelevantAgents, list
 import security from './security.js';
 import { runOllamaAgent, chatWithTools as ollamaChat } from './ollama-agent.js';
 import { processSQLAssistant, buildEnrichedPrompt } from './sql-assistant.js';
+import * as mvtTiles from './mvt-tiles.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -482,16 +483,23 @@ app.post('/api/chat', async (req, res) => {
 
 // Streaming chat endpoint
 app.post('/api/chat/stream', async (req, res) => {
-  const { provider, model, messages, tools } = req.body;
+  const { provider, model, messages, tools, skipMemoryContext } = req.body;
 
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
 
   try {
-    // Construire le contexte avec la mémoire
+    // Extraire le dernier message utilisateur pour le logging
     const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content || '';
-    const systemContext = await memory.buildContext(lastUserMessage);
+
+    // Si un message système est déjà présent ou skipMemoryContext=true, ne pas ajouter de contexte mémoire
+    const hasSystemMessage = messages.some(m => m.role === 'system');
+    let systemContext = null;
+
+    if (!hasSystemMessage && !skipMemoryContext) {
+      systemContext = await memory.buildContext(lastUserMessage);
+    }
 
     if (provider === 'claude') {
       await streamClaude(model, messages, tools, res, systemContext);
@@ -2358,6 +2366,576 @@ app.get('/api/connections/:id/capabilities', async (req, res) => {
 });
 
 // ============================================
+// DATABASES MODULE API
+// ============================================
+
+/**
+ * Extrait le schéma complet d'une base de données PostgreSQL
+ * GET /api/databases/:connectionId/schema
+ */
+app.get('/api/databases/:connectionId/schema', async (req, res) => {
+  try {
+    const { connectionId } = req.params;
+    const { schemas = 'public' } = req.query;
+
+    // Vérifier que la connexion est active
+    const conn = connections.getConnection(connectionId);
+    if (!conn || conn.type !== 'postgresql') {
+      return res.status(400).json({ error: 'Connexion PostgreSQL non trouvée' });
+    }
+
+    // S'assurer qu'on est connecté
+    try {
+      await connections.connect(connectionId);
+    } catch (e) {
+      // Déjà connecté, c'est ok
+    }
+
+    const schemaList = schemas.split(',').map(s => `'${s.trim()}'`).join(',');
+
+    // 1. Récupérer toutes les tables (avec gestion d'erreur pour regclass)
+    const tablesQuery = `
+      SELECT
+        t.table_schema as schema,
+        t.table_name as name,
+        d.description as comment,
+        COALESCE(pg_total_relation_size(c.oid), 0) as size_bytes,
+        (SELECT count(*) FROM information_schema.columns col
+         WHERE col.table_schema = t.table_schema AND col.table_name = t.table_name) as column_count
+      FROM information_schema.tables t
+      LEFT JOIN pg_class c ON c.relname = t.table_name
+        AND c.relnamespace = (SELECT oid FROM pg_namespace WHERE nspname = t.table_schema)
+      LEFT JOIN pg_description d ON d.objoid = c.oid AND d.objsubid = 0
+      WHERE t.table_schema IN (${schemaList})
+        AND t.table_type = 'BASE TABLE'
+      ORDER BY t.table_schema, t.table_name
+    `;
+    const tablesResult = await connections.executeSQL(connectionId, tablesQuery);
+
+    // 2. Récupérer toutes les colonnes avec leurs types et contraintes
+    const columnsQuery = `
+      SELECT
+        c.table_schema as schema,
+        c.table_name as table_name,
+        c.column_name as name,
+        c.data_type as type,
+        c.udt_name as udt_type,
+        c.character_maximum_length as max_length,
+        c.numeric_precision,
+        c.numeric_scale,
+        c.is_nullable = 'YES' as nullable,
+        c.column_default as default_value,
+        pd.description as comment,
+        c.ordinal_position as position
+      FROM information_schema.columns c
+      LEFT JOIN pg_class pc ON pc.relname = c.table_name
+        AND pc.relnamespace = (SELECT oid FROM pg_namespace WHERE nspname = c.table_schema)
+      LEFT JOIN pg_description pd ON pd.objoid = pc.oid AND pd.objsubid = c.ordinal_position
+      WHERE c.table_schema IN (${schemaList})
+      ORDER BY c.table_schema, c.table_name, c.ordinal_position
+    `;
+    const columnsResult = await connections.executeSQL(connectionId, columnsQuery);
+
+    // 3. Récupérer les clés primaires
+    const pkQuery = `
+      SELECT
+        tc.table_schema as schema,
+        tc.table_name,
+        kcu.column_name
+      FROM information_schema.table_constraints tc
+      JOIN information_schema.key_column_usage kcu
+        ON tc.constraint_name = kcu.constraint_name
+        AND tc.table_schema = kcu.table_schema
+      WHERE tc.constraint_type = 'PRIMARY KEY'
+        AND tc.table_schema IN (${schemaList})
+    `;
+    const pkResult = await connections.executeSQL(connectionId, pkQuery);
+
+    // 4. Récupérer les clés étrangères
+    const fkQuery = `
+      SELECT
+        tc.table_schema as schema,
+        tc.table_name,
+        kcu.column_name,
+        ccu.table_schema as foreign_schema,
+        ccu.table_name as foreign_table,
+        ccu.column_name as foreign_column,
+        tc.constraint_name
+      FROM information_schema.table_constraints tc
+      JOIN information_schema.key_column_usage kcu
+        ON tc.constraint_name = kcu.constraint_name
+        AND tc.table_schema = kcu.table_schema
+      JOIN information_schema.constraint_column_usage ccu
+        ON ccu.constraint_name = tc.constraint_name
+        AND ccu.table_schema = tc.table_schema
+      WHERE tc.constraint_type = 'FOREIGN KEY'
+        AND tc.table_schema IN (${schemaList})
+    `;
+    const fkResult = await connections.executeSQL(connectionId, fkQuery);
+
+    // 5. Récupérer les colonnes géométriques (PostGIS)
+    let geometryColumns = [];
+    try {
+      const geoQuery = `
+        SELECT
+          f_table_schema as schema,
+          f_table_name as table_name,
+          f_geometry_column as column_name,
+          type as geometry_type,
+          srid,
+          coord_dimension
+        FROM geometry_columns
+        WHERE f_table_schema IN (${schemaList})
+      `;
+      const geoResult = await connections.executeSQL(connectionId, geoQuery);
+      geometryColumns = geoResult.rows;
+    } catch (e) {
+      // PostGIS non installé, ignorer
+    }
+
+    // 6. Récupérer les index
+    const indexQuery = `
+      SELECT
+        schemaname as schema,
+        tablename as table_name,
+        indexname as index_name,
+        indexdef as definition
+      FROM pg_indexes
+      WHERE schemaname IN (${schemaList})
+    `;
+    const indexResult = await connections.executeSQL(connectionId, indexQuery);
+
+    // 7. Récupérer la liste des schémas disponibles
+    const schemasQuery = `
+      SELECT schema_name
+      FROM information_schema.schemata
+      WHERE schema_name NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
+      ORDER BY schema_name
+    `;
+    const schemasResult = await connections.executeSQL(connectionId, schemasQuery);
+
+    // Créer des maps pour un accès rapide
+    const pkMap = new Map();
+    pkResult.rows.forEach(pk => {
+      const key = `${pk.schema}.${pk.table_name}`;
+      if (!pkMap.has(key)) pkMap.set(key, new Set());
+      pkMap.get(key).add(pk.column_name);
+    });
+
+    const fkMap = new Map();
+    fkResult.rows.forEach(fk => {
+      const key = `${fk.schema}.${fk.table_name}.${fk.column_name}`;
+      fkMap.set(key, {
+        foreignSchema: fk.foreign_schema,
+        foreignTable: fk.foreign_table,
+        foreignColumn: fk.foreign_column,
+        constraintName: fk.constraint_name
+      });
+    });
+
+    const geoMap = new Map();
+    geometryColumns.forEach(gc => {
+      const key = `${gc.schema}.${gc.table_name}.${gc.column_name}`;
+      geoMap.set(key, {
+        geometryType: gc.geometry_type,
+        srid: gc.srid,
+        coordDimension: gc.coord_dimension
+      });
+    });
+
+    // Assembler le résultat
+    const tables = tablesResult.rows.map(table => {
+      const tableKey = `${table.schema}.${table.name}`;
+      const tablePks = pkMap.get(tableKey) || new Set();
+
+      const columns = columnsResult.rows
+        .filter(c => c.schema === table.schema && c.table_name === table.name)
+        .map(col => {
+          const colKey = `${col.schema}.${col.table_name}.${col.name}`;
+          const fk = fkMap.get(colKey);
+          const geo = geoMap.get(colKey);
+
+          return {
+            name: col.name,
+            type: col.udt_type || col.type,
+            dataType: col.type,
+            maxLength: col.max_length,
+            precision: col.numeric_precision,
+            scale: col.numeric_scale,
+            nullable: col.nullable,
+            defaultValue: col.default_value,
+            comment: col.comment,
+            isPrimaryKey: tablePks.has(col.name),
+            isForeignKey: !!fk,
+            foreignKey: fk,
+            isGeometry: !!geo,
+            geometry: geo,
+            position: col.position
+          };
+        });
+
+      const tableIndexes = indexResult.rows
+        .filter(i => i.schema === table.schema && i.table_name === table.name)
+        .map(i => ({
+          name: i.index_name,
+          definition: i.definition
+        }));
+
+      return {
+        schema: table.schema,
+        name: table.name,
+        fullName: `${table.schema}.${table.name}`,
+        comment: table.comment,
+        sizeBytes: parseInt(table.size_bytes),
+        columnCount: parseInt(table.column_count),
+        columns,
+        indexes: tableIndexes,
+        hasGeometry: columns.some(c => c.isGeometry)
+      };
+    });
+
+    // Calculer les relations entre tables (pour ERD)
+    const relations = fkResult.rows.map(fk => ({
+      sourceTable: `${fk.schema}.${fk.table_name}`,
+      sourceColumn: fk.column_name,
+      targetTable: `${fk.foreign_schema}.${fk.foreign_table}`,
+      targetColumn: fk.foreign_column,
+      constraintName: fk.constraint_name
+    }));
+
+    res.json({
+      success: true,
+      database: conn.database,
+      availableSchemas: schemasResult.rows.map(s => s.schema_name),
+      requestedSchemas: schemas.split(',').map(s => s.trim()),
+      tables,
+      relations,
+      stats: {
+        tableCount: tables.length,
+        totalColumns: columnsResult.rows.length,
+        foreignKeyCount: relations.length,
+        geometryColumns: geometryColumns.length
+      }
+    });
+
+  } catch (error) {
+    console.error('[Databases] Schema extraction error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Convertit une question en langage naturel en SQL
+ * POST /api/databases/text-to-sql
+ */
+app.post('/api/databases/text-to-sql', async (req, res) => {
+  try {
+    const { connectionId, query, includeExplanation = true } = req.body;
+
+    if (!query) {
+      return res.status(400).json({ error: 'Query required' });
+    }
+
+    // Récupérer le schéma de la base pour le contexte
+    let schemaContext = '';
+    if (connectionId) {
+      try {
+        // S'assurer qu'on est connecté
+        await connections.connect(connectionId);
+
+        // Récupérer un résumé du schéma
+        const schemaQuery = `
+          SELECT
+            t.table_schema || '.' || t.table_name as table_name,
+            string_agg(c.column_name || ' ' || c.udt_name, ', ' ORDER BY c.ordinal_position) as columns
+          FROM information_schema.tables t
+          JOIN information_schema.columns c
+            ON t.table_schema = c.table_schema AND t.table_name = c.table_name
+          WHERE t.table_schema NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
+            AND t.table_type = 'BASE TABLE'
+          GROUP BY t.table_schema, t.table_name
+          ORDER BY t.table_schema, t.table_name
+          LIMIT 50
+        `;
+        const schemaResult = await connections.executeSQL(connectionId, schemaQuery);
+
+        schemaContext = schemaResult.rows.map(r =>
+          `Table ${r.table_name}: ${r.columns}`
+        ).join('\n');
+      } catch (e) {
+        console.warn('[Text-to-SQL] Could not fetch schema:', e.message);
+      }
+    }
+
+    // Construire le prompt pour Claude
+    const systemPrompt = `Tu es un expert PostgreSQL/PostGIS. Tu convertis les questions en langage naturel en requêtes SQL optimisées.
+
+RÈGLES:
+- Génère UNIQUEMENT des requêtes SELECT (jamais INSERT, UPDATE, DELETE, DROP, etc.)
+- Utilise les alias de tables pour la lisibilité
+- Pour les requêtes spatiales PostGIS, utilise le SRID 2056 (CH1903+/LV95) par défaut
+- Limite les résultats à 1000 lignes maximum avec LIMIT
+- Utilise des noms de colonnes explicites (pas de SELECT *)
+
+${schemaContext ? `SCHÉMA DE LA BASE:\n${schemaContext}` : ''}
+
+Réponds en JSON avec le format:
+{
+  "sql": "la requête SQL",
+  "explanation": "explication en français de ce que fait la requête",
+  "tables": ["liste", "des", "tables", "utilisées"],
+  "confidence": 0.0 à 1.0
+}`;
+
+    // Appeler Claude pour la génération
+    const auth = await getClaudeAuth();
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01',
+        'x-api-key': auth.key || auth.token
+      },
+      body: JSON.stringify({
+        model: 'claude-3-5-haiku-20241022',
+        max_tokens: 2048,
+        system: systemPrompt,
+        messages: [
+          { role: 'user', content: query }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Claude API error: ${response.status} - ${error}`);
+    }
+
+    const data = await response.json();
+    const content = data.content[0]?.text || '';
+
+    // Parser la réponse JSON
+    let result;
+    try {
+      // Extraire le JSON de la réponse (peut être entouré de markdown)
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        result = JSON.parse(jsonMatch[0]);
+      } else {
+        throw new Error('No JSON found in response');
+      }
+    } catch (e) {
+      // Fallback: utiliser le contenu comme SQL direct
+      result = {
+        sql: content.replace(/```sql\n?/g, '').replace(/```\n?/g, '').trim(),
+        explanation: 'Requête générée',
+        tables: [],
+        confidence: 0.5
+      };
+    }
+
+    res.json({
+      success: true,
+      sql: result.sql,
+      explanation: includeExplanation ? result.explanation : null,
+      tables: result.tables || [],
+      confidence: result.confidence || 0.8,
+      model: 'claude-3-5-haiku-20241022'
+    });
+
+  } catch (error) {
+    console.error('[Text-to-SQL] Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Récupère les statistiques d'une table
+ * GET /api/databases/:connectionId/tables/:tableName/stats
+ */
+app.get('/api/databases/:connectionId/tables/:tableName/stats', async (req, res) => {
+  try {
+    const { connectionId, tableName } = req.params;
+
+    // Vérifier la connexion
+    const conn = connections.getConnection(connectionId);
+    if (!conn || conn.type !== 'postgresql') {
+      return res.status(400).json({ error: 'Connexion PostgreSQL non trouvée' });
+    }
+
+    await connections.connect(connectionId);
+
+    // Séparer schema.table si fourni
+    let schema = 'public';
+    let table = tableName;
+    if (tableName.includes('.')) {
+      [schema, table] = tableName.split('.');
+    }
+
+    // Récupérer les stats
+    const statsQuery = `
+      SELECT
+        relname as table_name,
+        n_live_tup as row_count,
+        n_dead_tup as dead_rows,
+        last_vacuum,
+        last_autovacuum,
+        last_analyze,
+        pg_total_relation_size('${schema}.${table}'::regclass) as total_size,
+        pg_table_size('${schema}.${table}'::regclass) as table_size,
+        pg_indexes_size('${schema}.${table}'::regclass) as indexes_size
+      FROM pg_stat_user_tables
+      WHERE schemaname = '${schema}' AND relname = '${table}'
+    `;
+
+    const result = await connections.executeSQL(connectionId, statsQuery);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Table non trouvée' });
+    }
+
+    const stats = result.rows[0];
+
+    res.json({
+      success: true,
+      table: `${schema}.${table}`,
+      stats: {
+        rowCount: parseInt(stats.row_count),
+        deadRows: parseInt(stats.dead_rows),
+        totalSize: parseInt(stats.total_size),
+        tableSize: parseInt(stats.table_size),
+        indexesSize: parseInt(stats.indexes_size),
+        lastVacuum: stats.last_vacuum,
+        lastAutoVacuum: stats.last_autovacuum,
+        lastAnalyze: stats.last_analyze
+      }
+    });
+
+  } catch (error) {
+    console.error('[Databases] Table stats error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Récupère un échantillon de données d'une table
+ * GET /api/databases/:connectionId/tables/:tableName/sample
+ */
+app.get('/api/databases/:connectionId/tables/:tableName/sample', async (req, res) => {
+  try {
+    const { connectionId, tableName } = req.params;
+    const { limit = 10 } = req.query;
+
+    const conn = connections.getConnection(connectionId);
+    if (!conn || conn.type !== 'postgresql') {
+      return res.status(400).json({ error: 'Connexion PostgreSQL non trouvée' });
+    }
+
+    await connections.connect(connectionId);
+
+    // Séparer schema.table
+    let schema = 'public';
+    let table = tableName;
+    if (tableName.includes('.')) {
+      [schema, table] = tableName.split('.');
+    }
+
+    // Requête avec limite de sécurité
+    const sampleLimit = Math.min(parseInt(limit), 100);
+    const sampleQuery = `SELECT * FROM "${schema}"."${table}" LIMIT ${sampleLimit}`;
+
+    const result = await connections.executeSQL(connectionId, sampleQuery);
+
+    res.json({
+      success: true,
+      table: `${schema}.${table}`,
+      rowCount: result.rowCount,
+      rows: result.rows,
+      fields: result.fields
+    });
+
+  } catch (error) {
+    console.error('[Databases] Sample data error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ============================================
+// MVT TILES ENDPOINTS (Vector Tiles)
+// ============================================
+
+// Liste des tables géométriques
+app.get('/api/databases/:connectionId/geotables', async (req, res) => {
+  const { connectionId } = req.params;
+
+  try {
+    // S'assurer que la connexion est active
+    await connections.connect(connectionId);
+    const tables = await mvtTiles.getGeometryTables(connectionId);
+    res.json({
+      success: true,
+      tables,
+      count: tables.length
+    });
+  } catch (error) {
+    console.error('[MVT] Erreur geotables:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Extent (bbox) d'une table
+app.get('/api/databases/:connectionId/extent/:schema/:table', async (req, res) => {
+  const { connectionId, schema, table } = req.params;
+
+  try {
+    // S'assurer que la connexion est active
+    await connections.connect(connectionId);
+    const extent = await mvtTiles.getTableExtent(connectionId, schema, table);
+    res.json({
+      success: true,
+      extent
+    });
+  } catch (error) {
+    console.error('[MVT] Erreur extent:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Tuile MVT
+app.get('/api/databases/:connectionId/tiles/:schema/:table/:z/:x/:y.mvt', async (req, res) => {
+  const { connectionId, schema, table, z, x, y } = req.params;
+
+  try {
+    // S'assurer que la connexion est active
+    await connections.connect(connectionId);
+    const tile = await mvtTiles.getTile(
+      connectionId,
+      schema,
+      table,
+      parseInt(z),
+      parseInt(x),
+      parseInt(y)
+    );
+
+    // Headers MVT
+    res.setHeader('Content-Type', 'application/x-protobuf');
+    res.setHeader('Content-Encoding', 'identity');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    if (tile.length === 0) {
+      res.status(204).end();
+    } else {
+      res.send(tile);
+    }
+  } catch (error) {
+    console.error(`[MVT] Erreur tile ${schema}.${table}/${z}/${x}/${y}:`, error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ============================================
 // SERVER MANAGEMENT ENDPOINTS
 // ============================================
 
@@ -2493,11 +3071,48 @@ async function killProcessOnPort(port) {
 }
 
 // ============================================
+// DEFAULT CONNECTIONS INITIALIZATION
+// ============================================
+
+/**
+ * Initialise les connexions par défaut si elles n'existent pas
+ */
+function initDefaultConnections() {
+  const existingConnections = connections.listConnections();
+
+  // Connexion SDOL par défaut
+  const sdolExists = existingConnections.some(c =>
+    c.host === 'postgres.hkd-geomatique.com' && c.database === 'sdol'
+  );
+
+  if (!sdolExists) {
+    console.log('[Init] Ajout de la connexion SDOL par défaut...');
+    try {
+      connections.addConnection({
+        name: 'SDOL PostgreSQL',
+        type: 'postgresql',
+        host: 'postgres.hkd-geomatique.com',
+        port: 5432,
+        database: 'sdol',
+        username: 'by_lgr',
+        password: 'H5$HrjTg&f',
+        ssl: false
+      });
+      console.log('[Init] ✅ Connexion SDOL ajoutée');
+    } catch (error) {
+      console.error('[Init] ❌ Erreur ajout connexion SDOL:', error.message);
+    }
+  }
+}
+
+// ============================================
 // START SERVER
 // ============================================
 
 // Fonction de démarrage avec nettoyage du port
 async function startServer() {
+  // Initialiser les connexions par défaut
+  initDefaultConnections();
   // D'abord, libérer le port si occupé
   await killProcessOnPort(PORT);
 

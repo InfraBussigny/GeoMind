@@ -1,3 +1,41 @@
+## Session 20 - 13 décembre 2025
+**Thème** : Compilation Tauri + Fixes divers
+
+### Travail effectué
+
+#### 1. Fixes MapAssistant
+- Fix accès stores Svelte 5 runes : `get(currentProvider)` au lieu de `$currentProvider`
+- Fix backend `lastUserMessage` undefined (variable déplacée hors du bloc conditionnel)
+- Changement endpoint `/chat/agent` → `/chat/stream` pour requêtes sans outils
+
+#### 2. Fixes SchemaViewer (module Databases)
+- Schema par défaut changé de 'public' à 'bdco'
+- Sidebar visible dans les 2 vues (liste et ERD)
+- Suppression des chips de sélection en haut
+
+#### 3. Fix UI Sidebar
+- Logo centré (`align-items: center`, suppression `margin-left: -60px`)
+
+#### 4. Compilation Tauri
+- Build frontend OK (vite build + adapter-static)
+- Build Rust échoue : `link.exe` non trouvé
+- VS Build Tools 2022 installé mais PATH pas configuré dans PowerShell normal
+- **Solution** : Utiliser "Developer PowerShell for VS 2022" qui a les chemins MSVC
+
+### Fichiers modifiés
+- `src/lib/components/Canvas/MapAssistant.svelte`
+- `src/lib/components/Databases/SchemaViewer.svelte`
+- `src/lib/components/Sidebar.svelte`
+- `src/lib/services/api.ts`
+- `server/index.js`
+
+### Pour compiler
+1. Ouvrir "Developer PowerShell for VS 2022" (Menu démarrer)
+2. `cd C:\Users\zema\GeoBrain\geomind-app`
+3. `npm run tauri build`
+
+---
+
 ## Session 19 - 12 décembre 2025
 **Thème** : Map Assistant IA + Module Time Pro
 
