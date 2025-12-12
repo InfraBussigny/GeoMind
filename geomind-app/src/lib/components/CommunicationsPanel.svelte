@@ -44,7 +44,7 @@
   } from '$lib/services/communications';
 
   // State
-  let activeTab = $state<'emails' | 'calendar' | 'phone' | 'whatsapp' | 'timepro' | 'notifications'>('emails');
+  let activeTab = $state<'emails' | 'calendar' | 'phone' | 'whatsapp' | 'notifications'>('emails');
 
   // Outlook state
   let outlookState = $state<OutlookState>({ isAuthenticated: false, config: null, user: null, unreadCount: 0 });
@@ -1167,16 +1167,6 @@
         <span class="badge whatsapp">{totalWhatsAppUnread}</span>
       {/if}
     </button>
-    <button class="tab timepro-tab" class:active={activeTab === 'timepro'} onclick={() => activeTab = 'timepro'}>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10"/>
-        <polyline points="12 6 12 12 16 14"/>
-      </svg>
-      <span>TimePro</span>
-      {#if rePointageTimer}
-        <span class="badge timer">{rePointageTimeLeft}</span>
-      {/if}
-    </button>
     <button class="tab" class:active={activeTab === 'notifications'} onclick={() => activeTab = 'notifications'}>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
@@ -1696,159 +1686,6 @@
             </div>
           </div>
         {/if}
-      </div>
-
-    {:else if activeTab === 'timepro'}
-      <div class="timepro-view">
-        <!-- Header with Time Pro Web button -->
-        <div class="timepro-header">
-          <h3>Time Pro - Pointage</h3>
-          <button class="timepro-web-btn" onclick={openTimeProWeb}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <polyline points="12 6 12 12 16 14"/>
-            </svg>
-            {timeProWebOpen ? 'Time Pro ouvert' : 'Ouvrir Time Pro'}
-          </button>
-        </div>
-
-        <!-- Re-pointage Timer Section -->
-        <div class="timepro-section">
-          <h4>Timer Re-pointage</h4>
-          <p class="section-desc">Démarrez un timer pour être rappelé de re-pointer après une pause.</p>
-
-          {#if rePointageTimer}
-            <div class="timer-active">
-              <div class="timer-display">
-                <span class="timer-countdown">{rePointageTimeLeft}</span>
-                <span class="timer-label">avant rappel</span>
-              </div>
-              <button class="timer-stop-btn" onclick={stopRePointageTimer}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="6" y="6" width="12" height="12"/>
-                </svg>
-                Annuler
-              </button>
-            </div>
-          {:else}
-            <div class="timer-setup">
-              <div class="timer-input-group">
-                <label>Minutes:</label>
-                <input type="number" min="1" max="180" bind:value={rePointageMinutes} />
-              </div>
-              <div class="timer-presets">
-                <button class="preset-btn" onclick={() => startRePointageTimer(30)}>30min</button>
-                <button class="preset-btn" onclick={() => startRePointageTimer(45)}>45min</button>
-                <button class="preset-btn" onclick={() => startRePointageTimer(60)}>1h</button>
-                <button class="preset-btn" onclick={() => startRePointageTimer(90)}>1h30</button>
-              </div>
-              <button class="timer-start-btn" onclick={() => startRePointageTimer()}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polygon points="5 3 19 12 5 21 5 3"/>
-                </svg>
-                Démarrer ({rePointageMinutes}min)
-              </button>
-            </div>
-          {/if}
-        </div>
-
-        <!-- Scheduled Pointages Section -->
-        <div class="timepro-section">
-          <div class="section-header">
-            <h4>Pointages Programmés</h4>
-            <button
-              class="toggle-auto-btn"
-              class:active={autoPointageConfig.enabled}
-              onclick={toggleAutoPointage}
-            >
-              {autoPointageConfig.enabled ? 'Actif' : 'Inactif'}
-            </button>
-          </div>
-          <p class="section-desc">Configurez des rappels automatiques pour vos pointages quotidiens.</p>
-
-          {#if nextPointage && autoPointageConfig.enabled}
-            <div class="next-pointage">
-              <span class="next-label">Prochain pointage:</span>
-              <span class="next-info">{nextPointage.label} - {nextPointage.time}</span>
-            </div>
-          {/if}
-
-          <!-- Existing schedules -->
-          {#if autoPointageConfig.schedules.length > 0}
-            <div class="schedules-list">
-              {#each autoPointageConfig.schedules as schedule}
-                <div class="schedule-item" class:in={schedule.type === 'in'} class:out={schedule.type === 'out'}>
-                  <div class="schedule-info">
-                    <span class="schedule-time">{schedule.time}</span>
-                    <span class="schedule-label">{schedule.label}</span>
-                    <span class="schedule-days">
-                      {schedule.days.map(d => getDayName(d)).join(', ')}
-                    </span>
-                  </div>
-                  <button class="schedule-delete" onclick={() => removeScheduledPointage(schedule.id)}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <line x1="18" y1="6" x2="6" y2="18"/>
-                      <line x1="6" y1="6" x2="18" y2="18"/>
-                    </svg>
-                  </button>
-                </div>
-              {/each}
-            </div>
-          {/if}
-
-          <!-- Add new schedule -->
-          <div class="add-schedule-form">
-            <div class="schedule-form-row">
-              <input type="time" bind:value={newScheduleTime} class="time-input" />
-              <select bind:value={newScheduleType} class="type-select">
-                <option value="in">Entrée</option>
-                <option value="out">Sortie</option>
-              </select>
-              <input type="text" placeholder="Label (optionnel)" bind:value={newScheduleLabel} class="label-input" />
-            </div>
-            <div class="days-selector">
-              {#each [1, 2, 3, 4, 5, 6, 0] as day}
-                <button
-                  class="day-btn"
-                  class:selected={newScheduleDays.includes(day)}
-                  onclick={() => toggleScheduleDay(day)}
-                >
-                  {getDayName(day)}
-                </button>
-              {/each}
-            </div>
-            <button class="add-schedule-btn" onclick={addScheduledPointage} disabled={newScheduleDays.length === 0}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="12" y1="5" x2="12" y2="19"/>
-                <line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
-              Ajouter un pointage programmé
-            </button>
-          </div>
-        </div>
-
-        <!-- Quick Examples -->
-        <div class="timepro-section examples">
-          <h4>Exemples typiques</h4>
-          <div class="example-btns">
-            <button class="example-btn" onclick={() => {
-              newScheduleTime = '08:00'; newScheduleType = 'in'; newScheduleLabel = 'Matin'; newScheduleDays = [1,2,3,4,5];
-              addScheduledPointage();
-            }}>+ 08:00 Entrée (Lun-Ven)</button>
-            <button class="example-btn" onclick={() => {
-              newScheduleTime = '12:00'; newScheduleType = 'out'; newScheduleLabel = 'Pause midi'; newScheduleDays = [1,2,3,4,5];
-              addScheduledPointage();
-            }}>+ 12:00 Sortie</button>
-            <button class="example-btn" onclick={() => {
-              newScheduleTime = '13:00'; newScheduleType = 'in'; newScheduleLabel = 'Retour midi'; newScheduleDays = [1,2,3,4,5];
-              addScheduledPointage();
-            }}>+ 13:00 Entrée</button>
-            <button class="example-btn" onclick={() => {
-              newScheduleTime = '17:00'; newScheduleType = 'out'; newScheduleLabel = 'Fin journée'; newScheduleDays = [1,2,3,4,5];
-              addScheduledPointage();
-            }}>+ 17:00 Sortie</button>
-          </div>
-        </div>
       </div>
 
     {:else if activeTab === 'notifications'}

@@ -1,7 +1,7 @@
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 
-export type ModuleType = 'chat' | 'canvas' | 'editor' | 'docgen' | 'connections' | 'settings' | 'data' | 'carto' | 'ssh' | 'comm' | 'ai';
+export type ModuleType = 'chat' | 'canvas' | 'editor' | 'docgen' | 'connections' | 'settings' | 'comm' | 'ai' | 'databases' | 'timepro';
 
 export const currentModule = writable<ModuleType>('chat');
 export const sidebarCollapsed = writable(false);
@@ -224,14 +224,107 @@ function createAppModeStore() {
 export const theme = createThemeStore();
 export const appMode = createAppModeStore();
 
-// Derived: liste des modules visibles selon le mode
-export const visibleModules = derived(appMode, ($mode) => {
-  if ($mode === 'expert' || $mode === 'god' || $mode === 'bfsa') {
-    // Expert, God et BFSA: tous les modules
-    return ['chat', 'canvas', 'editor', 'data', 'carto', 'ssh', 'comm', 'ai', 'docgen', 'connections', 'settings'] as ModuleType[];
+// ============================================
+// MODULE VISIBILITY CONFIGURATION
+// ============================================
+
+// Tous les modules disponibles avec leurs métadonnées
+export const ALL_MODULES: { id: ModuleType; label: string; description: string; alwaysVisible?: boolean }[] = [
+  { id: 'chat', label: 'Assistant', description: 'Chat IA', alwaysVisible: true },
+  { id: 'canvas', label: 'Cartes', description: 'Visualisation carto' },
+  { id: 'editor', label: 'Editeur', description: 'SQL & Python' },
+  { id: 'databases', label: 'Databases', description: 'Schema & ERD' },
+  { id: 'timepro', label: 'TimePro', description: 'Pointage & Timer' },
+  { id: 'comm', label: 'Comms', description: 'Outlook & 3CX' },
+  { id: 'ai', label: 'IA Settings', description: 'Config modeles' },
+  { id: 'docgen', label: 'DocGen', description: 'Generation docs' },
+  { id: 'connections', label: 'Connexions', description: 'Serveurs DB' },
+  { id: 'settings', label: 'Parametres', description: 'Configuration', alwaysVisible: true }
+];
+
+// Modules par défaut pour chaque mode (excluant standard qui est fixe)
+const DEFAULT_MODULE_CONFIG: Record<string, ModuleType[]> = {
+  expert: ['chat', 'canvas', 'editor', 'databases', 'timepro', 'comm', 'ai', 'docgen', 'connections', 'settings'],
+  god: ['chat', 'canvas', 'editor', 'databases', 'timepro', 'comm', 'ai', 'docgen', 'connections', 'settings'],
+  bfsa: ['chat', 'canvas', 'editor', 'databases', 'timepro', 'comm', 'ai', 'docgen', 'connections', 'settings']
+};
+
+// Modules fixes pour le mode standard (non modifiable)
+const STANDARD_MODULES: ModuleType[] = ['chat', 'canvas', 'databases', 'connections', 'settings'];
+
+// Store pour la configuration personnalisée des modules par mode
+function createModuleConfigStore() {
+  const stored = browser ? localStorage.getItem('geomind-module-config') : null;
+  const initial: Record<string, ModuleType[]> = stored ? JSON.parse(stored) : { ...DEFAULT_MODULE_CONFIG };
+
+  const { subscribe, set, update } = writable(initial);
+
+  return {
+    subscribe,
+    setModulesForMode: (mode: string, modules: ModuleType[]) => {
+      if (mode === 'standard') return; // Standard n'est pas modifiable
+      update(config => {
+        // S'assurer que chat et settings sont toujours inclus
+        const safeModules = [...new Set([...modules, 'chat', 'settings'])] as ModuleType[];
+        config[mode] = safeModules;
+        if (browser) {
+          localStorage.setItem('geomind-module-config', JSON.stringify(config));
+        }
+        return config;
+      });
+    },
+    toggleModule: (mode: string, moduleId: ModuleType) => {
+      if (mode === 'standard') return;
+      // Chat et settings ne peuvent pas être désactivés
+      if (moduleId === 'chat' || moduleId === 'settings') return;
+
+      update(config => {
+        const modules = config[mode] || DEFAULT_MODULE_CONFIG[mode] || [];
+        if (modules.includes(moduleId)) {
+          config[mode] = modules.filter(m => m !== moduleId);
+        } else {
+          config[mode] = [...modules, moduleId];
+        }
+        if (browser) {
+          localStorage.setItem('geomind-module-config', JSON.stringify(config));
+        }
+        return config;
+      });
+    },
+    reset: (mode?: string) => {
+      update(config => {
+        if (mode && mode !== 'standard') {
+          config[mode] = [...DEFAULT_MODULE_CONFIG[mode]];
+        } else {
+          // Reset all
+          Object.keys(DEFAULT_MODULE_CONFIG).forEach(m => {
+            config[m] = [...DEFAULT_MODULE_CONFIG[m]];
+          });
+        }
+        if (browser) {
+          localStorage.setItem('geomind-module-config', JSON.stringify(config));
+        }
+        return config;
+      });
+    }
+  };
+}
+
+export const moduleConfig = createModuleConfigStore();
+
+// Derived: liste des modules visibles selon le mode et la configuration
+export const visibleModules = derived([appMode, moduleConfig], ([$mode, $config]) => {
+  if ($mode === 'standard') {
+    // Mode standard: modules fixes, non personnalisables
+    return STANDARD_MODULES;
   }
-  // Mode standard: Assistant, Cartes et Paramètres
-  return ['chat', 'canvas', 'settings'] as ModuleType[];
+  // Modes expert/god/bfsa: utiliser la configuration personnalisée
+  return $config[$mode] || DEFAULT_MODULE_CONFIG[$mode] || DEFAULT_MODULE_CONFIG.expert;
+});
+
+// Derived: mode lecture seule pour le module Databases (true en mode standard)
+export const databasesReadOnly = derived(appMode, ($mode) => {
+  return $mode === 'standard';
 });
 
 // Phrases secrètes pour activer/désactiver les modes

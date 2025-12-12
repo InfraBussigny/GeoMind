@@ -7,10 +7,9 @@
     { id: 'chat', label: 'Assistant', description: 'Chat IA' },
     { id: 'canvas', label: 'Cartes', description: 'Visualisation' },
     { id: 'editor', label: 'Editeur', description: 'SQL & Python' },
-    { id: 'data', label: 'Donnees', description: 'PostgreSQL' },
-    { id: 'carto', label: 'Cartographie', description: 'WMS/WFS' },
-    { id: 'ssh', label: 'Terminal', description: 'SSH & SFTP' },
-    { id: 'comm', label: 'Comms', description: 'Outlook & 3CX' },
+    { id: 'databases', label: 'Databases', description: 'Schema & ERD' },
+    { id: 'timepro', label: 'TimePro', description: 'Pointage' },
+    { id: 'comm', label: 'Communications', description: 'Canal social' },
     { id: 'ai', label: 'Multi-IA', description: 'Providers' },
     { id: 'docgen', label: 'Documents', description: 'Generation PDF' },
     { id: 'connections', label: 'Connexions', description: 'Serveurs' },
@@ -119,26 +118,21 @@
               <line x1="8" y1="13" x2="16" y2="13"/>
               <line x1="8" y1="17" x2="14" y2="17"/>
             </svg>
-          <!-- Data / PostgreSQL -->
-          {:else if module.id === 'data'}
+          <!-- Databases / Schema & ERD -->
+          {:else if module.id === 'databases'}
             <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <ellipse cx="12" cy="5" rx="9" ry="3"/>
               <path d="M21 5v6c0 1.66-4 3-9 3s-9-1.34-9-3V5"/>
               <path d="M21 11v6c0 1.66-4 3-9 3s-9-1.34-9-3v-6"/>
             </svg>
-          <!-- Carto / WMS -->
-          {:else if module.id === 'carto'}
+          <!-- TimePro -->
+          {:else if module.id === 'timepro'}
             <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <rect x="3" y="3" width="18" height="18" rx="2"/>
-              <path d="M3 9h18M9 21V9"/>
-              <circle cx="15" cy="15" r="2" fill="currentColor"/>
-            </svg>
-          <!-- SSH / Terminal -->
-          {:else if module.id === 'ssh'}
-            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <rect x="2" y="4" width="20" height="16" rx="2"/>
-              <path d="M6 8l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/>
-              <line x1="12" y1="16" x2="18" y2="16" stroke-linecap="round"/>
+              <!-- Horloge avec badge play -->
+              <circle cx="12" cy="12" r="9"/>
+              <polyline points="12 6 12 12 16 14"/>
+              <circle cx="18" cy="18" r="4" fill="currentColor" stroke="none"/>
+              <path d="M17 17l2 1-2 1z" fill="var(--noir-profond)" stroke="none"/>
             </svg>
           <!-- Communications -->
           {:else if module.id === 'comm'}

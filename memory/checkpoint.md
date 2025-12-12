@@ -1,5 +1,16 @@
 # GeoBrain Checkpoints
 
+## CP-20251212-1600
+```
+S:19|P:TIMEPRO-MODULE|T:Module-Independant
+F:TimeProModule.svelte,app.ts,Sidebar.svelte,+page.svelte,CommunicationsPanel
+W:TimePro extrait en module indépendant (sidebar)+Icône horloge+Rendu page+Retrait onglet Comms
+N:Test module TimePro, polish UI
+X:Serveurs UP (3001+5173) | TimePro accessible via sidebar (5ème position)
+```
+
+---
+
 ## CP-20251212-1530
 ```
 S:19|P:MAP-ASSISTANT+TIMEPRO|T:IA-Carto+Pointage
