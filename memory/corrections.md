@@ -82,6 +82,134 @@
 
 ---
 
+### 2025-12-13 | Build Tauri échoue - mauvais linker link.exe
+
+**Problème** : `error: linker 'link.exe' not found` ou utilise `C:\Users\zema\git\usr\bin\link.exe` (Git) au lieu du MSVC
+
+**Cause** :
+- Git pour Windows installe son propre `link.exe` (commande Unix) dans `C:\Users\zema\git\usr\bin\`
+- Ce chemin est prioritaire dans le PATH, même dans Developer PowerShell
+- Rust/Cargo trouve le mauvais `link.exe`
+
+**Solution** : Créer un fichier `C:\Users\zema\.cargo\config.toml` avec le chemin explicite du linker MSVC :
+```toml
+[target.x86_64-pc-windows-msvc]
+linker = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\link.exe"
+```
+
+**Important** :
+- Les backslashes DOIVENT être doublés (`\\`) dans TOML
+- La version MSVC (14.44.35207) peut changer - vérifier avec : `ls "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\"`
+- VS Build Tools avec le workload "Desktop development with C++" doit être installé
+
+**Comment trouver le bon chemin** :
+```powershell
+Get-ChildItem 'C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC' -Recurse -Filter 'link.exe' | Select-Object -ExpandProperty FullName
+```
+
+---
+
+### 2025-12-13 | Build Tauri - Erreurs Vite/SvelteKit (RÉSOLUES)
+
+#### 1. highlight.js SSR import error
+**Problème** : `Rollup failed to resolve import "highlight.js/lib/core"`
+**Cause** : highlight.js n'est pas compatible SSR par défaut, Rollup essaie de l'externaliser
+**Solution** : Ajouter dans `vite.config.ts` :
+```typescript
+ssr: {
+  noExternal: ['highlight.js']
+},
+optimizeDeps: {
+  include: ['highlight.js']
+}
+```
+
+#### 2. Monaco Editor workers error
+**Problème** : `Could not resolve "../base/common/worker/webWorkerBootstrap.js"`
+**Cause** : Monaco Editor utilise des web workers qui nécessitent une config spéciale
+**Solution** : Modifier `vite.config.ts` :
+```typescript
+optimizeDeps: {
+  include: ['highlight.js'],
+  exclude: ['monaco-editor']  // Exclure monaco de l'optimisation
+},
+worker: {
+  format: 'es'  // Format ES pour les workers
+}
+```
+
+**Config vite.config.ts finale fonctionnelle** :
+```typescript
+import { sveltekit } from '@sveltejs/kit/vite';
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  plugins: [sveltekit()],
+  optimizeDeps: {
+    include: ['highlight.js'],
+    exclude: ['monaco-editor']
+  },
+  ssr: {
+    noExternal: ['highlight.js']
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        inlineDynamicImports: false
+      }
+    }
+  },
+  worker: {
+    format: 'es'
+  }
+});
+```
+
+---
+
+### 2025-12-13 | Build Tauri - Windows Defender bloque Rust (NON RÉSOLU)
+
+**Problème** : `Accès refusé. (os error 5)` lors de l'exécution des build scripts Rust
+**Manifestation** : Erreurs sur `getrandom`, `serde`, `proc-macro2`, `quote`, etc.
+**Cause** : Windows Defender bloque l'exécution des build scripts Rust compilés (.exe)
+**Impact** : Build frontend OK, mais compilation Rust impossible
+
+**Ce qui NE marche PAS** (compte admin limité) :
+- Ajouter exclusion via Windows Security UI (demande élévation)
+- `Add-MpPreference` PowerShell (droits insuffisants)
+- Compiler dans `C:\Temp` (Defender bloque aussi)
+- Compiler dans le dossier d'origine
+
+**Solutions possibles** :
+1. **Compiler sur autre poste** avec droits admin complets
+2. **GitHub Actions** - build automatique dans le cloud
+3. **Demander à l'IT** d'ajouter exclusion pour `C:\Users\zema\GeoBrain`
+4. **Désactiver temporairement** Defender (si droits suffisants)
+
+---
+
+### Recommandations pour prochaine compilation Tauri
+
+**AVANT de compiler** :
+1. Vérifier que l'exclusion Windows Defender est en place pour le dossier de build
+2. Utiliser "Developer PowerShell for VS 2022" (ou vérifier que `~/.cargo/config.toml` existe)
+3. S'assurer que le frontend compile seul d'abord : `npm run build`
+
+**Ordre des opérations** :
+1. `npm run build` - Teste le frontend seul
+2. `npm run tauri build` - Build complet avec Rust
+
+**Si erreur linker** :
+```powershell
+# Trouver le bon link.exe
+Get-ChildItem 'C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC' -Recurse -Filter 'link.exe' | Select-Object -ExpandProperty FullName
+```
+
+**Si erreur Accès refusé (Defender)** :
+→ Pas de workaround, nécessite exclusion ou autre machine
+
+---
+
 ### 2025-12-08 | Bug cosmétique Claude Code Windows
 **Problème** : Messages `/etc/profile: line 112: /usr/bin/hostname: Permission denied` affichés à chaque commande bash
 **Cause** : Environnement bash interne de Claude Code sur Windows
