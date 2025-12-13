@@ -242,7 +242,139 @@ GeoBrain memorise automatiquement :
 
 ---
 
+## GeoMind App (Interface graphique)
+
+GeoMind App est l'interface graphique de GeoBrain, construite avec SvelteKit + Tauri.
+
+### Architecture
+
+```
+geomind-app/
+├── src/                 # Frontend SvelteKit
+├── src-tauri/           # Application Tauri (Rust)
+└── server/              # Backend Node.js (Express)
+```
+
+**Important** : L'application est composee de deux parties independantes :
+- **Frontend** : Interface utilisateur (Tauri ou navigateur)
+- **Backend** : Serveur API sur le port 3001
+
+### Installation
+
+```bash
+cd C:\Users\zema\GeoBrain\geomind-app
+
+# Installer les dependances du frontend
+npm install
+
+# Installer les dependances du backend
+cd server
+npm install
+cd ..
+```
+
+### Mode developpement
+
+```bash
+# Terminal 1 : Lancer le backend
+cd geomind-app/server
+npm start
+
+# Terminal 2 : Lancer le frontend
+cd geomind-app
+npm run dev
+```
+
+L'application sera accessible sur http://localhost:5173
+
+### Mode Tauri (application desktop)
+
+```bash
+# Terminal 1 : Lancer le backend (OBLIGATOIRE)
+cd geomind-app/server
+npm start
+
+# Terminal 2 : Lancer l'app Tauri
+cd geomind-app
+npm run tauri:dev
+```
+
+### Compilation
+
+```bash
+# Compiler l'application Tauri
+cd geomind-app
+npm run tauri:build
+```
+
+L'executable sera dans `src-tauri/target/release/`
+
+**ATTENTION** : L'application compilee necessite toujours le backend lance separement !
+
+```bash
+# Avant de lancer l'exe compile :
+cd geomind-app/server
+npm start
+
+# Puis lancer GeoMind.exe
+```
+
+### Script de lancement rapide (Windows)
+
+Creer un fichier `start-geomind.bat` :
+
+```batch
+@echo off
+echo Demarrage de GeoMind...
+
+:: Lancer le backend en arriere-plan
+start /B cmd /c "cd /d C:\Users\zema\GeoBrain\geomind-app\server && node index.js"
+
+:: Attendre 2 secondes que le backend demarre
+timeout /t 2 /nobreak > nul
+
+:: Lancer l'application
+start "" "C:\Users\zema\GeoBrain\geomind-app\src-tauri\target\release\GeoMind.exe"
+
+echo GeoMind demarre !
+```
+
+### Modules disponibles
+
+| Module | Description |
+|--------|-------------|
+| Chat | Assistant IA conversationnel |
+| Canvas | Visualisation cartographique |
+| CAD | Viewer DXF/DWG |
+| Databases | Connexions PostgreSQL/PostGIS |
+| Converter | Conversion de formats geospatiaux |
+| kDrive | Partage de fichiers Infomaniak |
+| VPN | Gestion FortiClient VPN |
+| WakeLock | Anti-veille ecran |
+
+### Indicateurs de la barre de statut
+
+- **Backend** : Connexion au serveur API (port 3001)
+- **VPN** : Statut FortiClient VPN
+- **Serveurs** : Connexions aux bases PostGIS
+- **Veille** : Anti-veille ecran actif
+
+---
+
 ## Depannage
+
+### GeoMind : "Backend non connecte"
+
+Le backend doit etre lance separement :
+```bash
+cd geomind-app/server
+npm start
+```
+
+Verifier que le port 3001 est libre :
+```bash
+netstat -ano | findstr 3001
+```
 
 ### "claude" n'est pas reconnu
 
