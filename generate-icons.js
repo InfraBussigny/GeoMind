@@ -1,4 +1,5 @@
 const sharp = require('sharp');
+const pngToIco = require('png-to-ico').default;
 const path = require('path');
 const fs = require('fs');
 
@@ -10,25 +11,21 @@ async function generateIcons() {
   const metadata = await sharp(inputPath).metadata();
   console.log(`Original image: ${metadata.width}x${metadata.height}`);
 
-  // Crop to get only the symbol (top ~55% of image, centered)
+  // Crop to get only the symbol (top ~55% of image)
   const cropHeight = Math.floor(metadata.height * 0.55);
-  const cropWidth = metadata.width;
-  const left = 0;
-  const top = Math.floor(metadata.height * 0.05); // Start slightly from top
+  const top = Math.floor(metadata.height * 0.05);
 
   // Extract the symbol area
   const symbolBuffer = await sharp(inputPath)
-    .extract({ left: left, top: top, width: cropWidth, height: cropHeight })
+    .extract({ left: 0, top: top, width: metadata.width, height: cropHeight })
     .toBuffer();
 
   // Get the cropped dimensions
   const croppedMeta = await sharp(symbolBuffer).metadata();
   console.log(`Cropped to: ${croppedMeta.width}x${croppedMeta.height}`);
 
-  // Make it square by adding padding or cropping
+  // Make it square
   const size = Math.max(croppedMeta.width, croppedMeta.height);
-
-  // Create square version with transparent background
   const squareBuffer = await sharp(symbolBuffer)
     .resize(size, size, {
       fit: 'contain',
@@ -41,7 +38,7 @@ async function generateIcons() {
     { name: '32x32.png', size: 32 },
     { name: '128x128.png', size: 128 },
     { name: '128x128@2x.png', size: 256 },
-    { name: 'icon.png', size: 512 } // For ICO generation
+    { name: 'icon.png', size: 512 }
   ];
 
   for (const { name, size } of pngSizes) {
@@ -52,31 +49,28 @@ async function generateIcons() {
     console.log(`Generated: ${name}`);
   }
 
-  // Generate ICO file (Windows) - contains multiple sizes
-  // Sharp can create ICO with multiple resolutions
-  const icoSizes = [16, 32, 48, 64, 128, 256];
-  const icoBuffers = await Promise.all(
-    icoSizes.map(s =>
-      sharp(squareBuffer)
-        .resize(s, s, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 0 } })
-        .png()
-        .toBuffer()
-    )
-  );
-
-  // For ICO, we'll use the 256x256 as icon.ico (Tauri will handle it)
+  // Generate a high-quality 256x256 PNG for ICO conversion
+  const ico256Path = path.join(outputDir, 'icon_256.png');
   await sharp(squareBuffer)
     .resize(256, 256, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 0 } })
     .png()
-    .toFile(path.join(outputDir, 'icon.ico'));
-  console.log('Generated: icon.ico (256x256 PNG)');
+    .toFile(ico256Path);
 
-  // For macOS, create ICNS placeholder (as PNG, Tauri converts)
+  // Convert PNG to real ICO format
+  console.log('Converting to ICO format...');
+  const icoBuffer = await pngToIco(ico256Path);
+  fs.writeFileSync(path.join(outputDir, 'icon.ico'), icoBuffer);
+  console.log('Generated: icon.ico (real ICO format)');
+
+  // Clean up temp file
+  fs.unlinkSync(ico256Path);
+
+  // For macOS ICNS - just use PNG (Tauri can handle it)
   await sharp(squareBuffer)
     .resize(512, 512, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 0 } })
     .png()
     .toFile(path.join(outputDir, 'icon.icns'));
-  console.log('Generated: icon.icns (512x512 PNG)');
+  console.log('Generated: icon.icns (512x512 PNG for macOS)');
 
   console.log('\nAll icons generated in:', outputDir);
 }

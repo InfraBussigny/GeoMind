@@ -1,0 +1,2093 @@
+'vswhere.exe' n'est pas reconnu en tant que commande interne
+ou externe, un programme ex�cutable ou un fichier de commandes.
+        Info Looking up installed tauri packages to check mismatched versions...
+     Running beforeBuildCommand `npm run build`
+00:52:59 [vite-plugin-svelte] src/lib/components/Chat/ChatModule.svelte:1045:2 Unused CSS selector ".status"
+https://svelte.dev/e/css_unused_selector
+1043:   }
+1044: 
+1045:   .status {
+               ^
+1046:     font-size: var(--font-size-xs);
+1047:     font-family: var(--font-mono);
+00:52:59 [vite-plugin-svelte] src/lib/components/Chat/ChatModule.svelte:1055:2 Unused CSS selector ".status.connected"
+https://svelte.dev/e/css_unused_selector
+1053:   }
+1054: 
+1055:   .status.connected {
+                         ^
+1056:     background: var(--success-glow);
+1057:     color: var(--success);
+00:52:59 [vite-plugin-svelte] src/lib/components/Chat/ChatModule.svelte:1061:2 Unused CSS selector ".status.disconnected"
+https://svelte.dev/e/css_unused_selector
+1059:   }
+1060: 
+1061:   .status.disconnected {
+                            ^
+1062:     background: var(--error-glow);
+1063:     color: var(--error);
+00:52:59 [vite-plugin-svelte] src/lib/components/Canvas/CanvasModule.svelte:9:6 `postGISViewerRef` is updated, but is not declared with `$state(...)`. Changing its value will not correctly trigger updates
+https://svelte.dev/e/non_reactive_update
+ 7:   // Assistant state
+ 8:   let showAssistant = $state(true);
+ 9:   let postGISViewerRef: PostGISViewer | null = null;
+                                                ^
+10: 
+11:   // Map context for assistant (not reactive to avoid loops)
+00:52:59 [vite-plugin-svelte] src/lib/components/Canvas/CanvasModule.svelte:12:6 `mapContext` is updated, but is not declared with `$state(...)`. Changing its value will not correctly trigger updates
+https://svelte.dev/e/non_reactive_update
+10: 
+11:   // Map context for assistant (not reactive to avoid loops)
+12:   let mapContext: MapContext = {
+                                ^
+13:     activeTab: 'geoportail',
+14:     connectionId: null,
+00:52:59 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:2544:16 `<div>` with a contextmenu handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+2542:                 class:locked={layer.locked}
+2543:               >
+2544:                 <div class="layer-item-row" oncontextmenu={(e) => openLayerContextMenu(e, layer.name)}>
+                            ^
+2545:                   <button class="layer-visibility" onclick={() => toggleLayerVisibility(layer.name)}>
+2546:                     {#if layer.visible}
+00:52:59 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:2612:14 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+2610:           <div class="sources-panel">
+2611:             <div class="connection-selector">
+2612:               <label>Connexion</label>
+                                            ^
+2613:               <select bind:value={selectedConnectionId} onchange={() => loadGeoTables()}>
+2614:                 {#each connections as conn}
+00:52:59 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:2913:4 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+2911:   <!-- Layer context menu -->
+2912:   {#if contextMenuLayer}
+2913:     <div class="context-menu-overlay" onclick={() => contextMenuLayer = null}></div>
+                                                                                          ^
+2914:     <div class="layer-context-menu" style="left: {contextMenuPos.x}px; top: {contextMenuPos.y}px;">
+2915:       <div class="context-menu-header">{contextMenuLayer}</div>
+00:52:59 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:2913:4 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+2911:   <!-- Layer context menu -->
+2912:   {#if contextMenuLayer}
+2913:     <div class="context-menu-overlay" onclick={() => contextMenuLayer = null}></div>
+                                                                                          ^
+2914:     <div class="layer-context-menu" style="left: {contextMenuPos.x}px; top: {contextMenuPos.y}px;">
+2915:       <div class="context-menu-header">{contextMenuLayer}</div>
+00:52:59 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:2949:10 Buttons and links should either contain text or have an `aria-label`, `aria-labelledby` or `title` attribute
+https://svelte.dev/e/a11y_consider_explicit_label
+2947:         <span>Couleur:</span>
+2948:         {#each ['#FF0000', '#FFFF00', '#00FF00', '#00FFFF', '#0000FF', '#FF00FF', '#FFFFFF'] as color}
+2949:           <button
+                        ^
+2950:             class="color-swatch"
+2951:             style="background-color: {color}"
+00:52:59 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:79:6 `canvasElement` is updated, but is not declared with `$state(...)`. Changing its value will not correctly trigger updates
+https://svelte.dev/e/non_reactive_update
+77: 
+78:   // State
+79:   let canvasElement: HTMLCanvasElement;
+                                          ^
+80:   let fabricCanvas: any = null;
+81:   let fabric: any = null;
+00:52:59 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:145:6 `georefCanvasElement` is updated, but is not declared with `$state(...)`. Changing its value will not correctly trigger updates
+https://svelte.dev/e/non_reactive_update
+143: 
+144:   // Split-screen georef canvas
+145:   let georefCanvasElement: HTMLCanvasElement;
+                                                 ^
+146:   let georefCanvas: any = null;
+147:   let georefImageZoom = $state(1);
+00:52:59 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:3179:2 Unused CSS selector ".layer-item"
+https://svelte.dev/e/css_unused_selector
+3177:   }
+3178: 
+3179:   .layer-item {
+                   ^
+3180:     display: flex;
+3181:     align-items: center;
+00:52:59 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:3189:2 Unused CSS selector ".layer-item:hover"
+https://svelte.dev/e/css_unused_selector
+3187:   }
+3188: 
+3189:   .layer-item:hover { background: var(--cad-bg-tertiary); }
+                         ^
+3190:   .layer-item.hidden { opacity: 0.5; }
+3191:   .layer-item.locked { background: rgba(255, 255, 255, 0.03); }
+00:52:59 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:3190:2 Unused CSS selector ".layer-item.hidden"
+https://svelte.dev/e/css_unused_selector
+3188: 
+3189:   .layer-item:hover { background: var(--cad-bg-tertiary); }
+3190:   .layer-item.hidden { opacity: 0.5; }
+                          ^
+3191:   .layer-item.locked { background: rgba(255, 255, 255, 0.03); }
+3192: 
+00:52:59 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:3191:2 Unused CSS selector ".layer-item.locked"
+https://svelte.dev/e/css_unused_selector
+3189:   .layer-item:hover { background: var(--cad-bg-tertiary); }
+3190:   .layer-item.hidden { opacity: 0.5; }
+3191:   .layer-item.locked { background: rgba(255, 255, 255, 0.03); }
+                          ^
+3192: 
+3193:   .layer-visibility {
+00:52:59 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:3205:2 Unused CSS selector ".layer-lock-icon"
+https://svelte.dev/e/css_unused_selector
+3203:   .layer-visibility:hover { color: var(--cad-accent); }
+3204: 
+3205:   .layer-lock-icon {
+                        ^
+3206:     color: var(--cad-warning);
+3207:     flex-shrink: 0;
+00:52:59 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:3210:2 Unused CSS selector ".layer-color"
+https://svelte.dev/e/css_unused_selector
+3208:   }
+3209: 
+3210:   .layer-color {
+                    ^
+3211:     width: 10px;
+3212:     height: 10px;
+00:52:59 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:3246:2 Unused CSS selector ".layer-item:hover .layer-remove"
+https://svelte.dev/e/css_unused_selector
+3244:   }
+3245: 
+3246:   .layer-item:hover .layer-remove { opacity: 1; }
+                                       ^
+3247:   .layer-remove:hover { color: var(--cad-danger); }
+3248: 
+00:52:59 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:3326:2 Unused CSS selector ".image-item"
+https://svelte.dev/e/css_unused_selector
+3324:   }
+3325: 
+3326:   .image-item {
+                   ^
+3327:     display: flex;
+3328:     align-items: center;
+00:52:59 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:3336:2 Unused CSS selector ".image-item.georeferenced"
+https://svelte.dev/e/css_unused_selector
+3334:   }
+3335: 
+3336:   .image-item.georeferenced { border-left: 3px solid var(--cad-success); }
+                                 ^
+3337: 
+3338:   .image-name { flex: 1; font-size: 11px; }
+00:52:59 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:3339:2 Unused CSS selector ".georef-status"
+https://svelte.dev/e/css_unused_selector
+3337: 
+3338:   .image-name { flex: 1; font-size: 11px; }
+3339:   .georef-status { font-size: 10px; color: var(--cad-text-muted); }
+                      ^
+3340: 
+3341:   .georef-btn {
+00:52:59 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:3419:2 Unused CSS selector ".georef-overlay"
+https://svelte.dev/e/css_unused_selector
+3417:   .canvas-placeholder h3 { margin: 0 0 8px; font-size: 18px; color: var(--cad-text); }
+3418: 
+3419:   .georef-overlay {
+                       ^
+3420:     position: absolute;
+3421:     top: 10px;
+00:52:59 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:4197:2 Unused CSS selector ".georef-marker-image"
+https://svelte.dev/e/css_unused_selector
+4195: 
+4196:   /* Georef markers on split canvases */
+4197:   .georef-marker-image {
+                            ^
+4198:     fill: rgba(255, 204, 0, 0.5);
+4199:     stroke: #ffcc00;
+00:52:59 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:4203:2 Unused CSS selector ".georef-marker-world"
+https://svelte.dev/e/css_unused_selector
+4201:   }
+4202: 
+4203:   .georef-marker-world {
+                            ^
+4204:     fill: rgba(0, 255, 136, 0.5);
+4205:     stroke: #00ff88;
+00:52:59 [vite-plugin-svelte] src/lib/components/Databases/DatabasesModule.svelte:336:2 Unused CSS selector ".loading-state svg"
+https://svelte.dev/e/css_unused_selector
+334:   }
+335: 
+336:   .loading-state svg,
+                         ^
+337:   .error-state svg,
+338:   .empty-state svg {
+00:52:59 [vite-plugin-svelte] src/lib/components/TimeProModule.svelte:440:12 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+438:         <div class="timer-setup">
+439:           <div class="timer-input-group">
+440:             <label>Minutes:</label>
+                                        ^
+441:             <input type="number" min="1" max="180" bind:value={rePointageMinutes} />
+442:           </div>
+00:52:59 [vite-plugin-svelte] src/lib/components/TimeProModule.svelte:492:14 Buttons and links should either contain text or have an `aria-label`, `aria-labelledby` or `title` attribute
+https://svelte.dev/e/a11y_consider_explicit_label
+490:                 </span>
+491:               </div>
+492:               <button class="schedule-delete" onclick={() => removeScheduledPointage(schedule.id)}>
+                            ^
+493:                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+494:                   <line x1="18" y1="6" x2="6" y2="18"/>
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1192:16 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1190:               <p class="setup-help">Configurez l'accès à votre compte Microsoft 365 via Azure AD.</p>
+1191:               <div class="form-group">
+1192:                 <label>Client ID (Application ID)</label>
+                                                               ^
+1193:                 <input type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" bind:value={outlookConfig.clientId} />
+1194:               </div>
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1196:16 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1194:               </div>
+1195:               <div class="form-group">
+1196:                 <label>Tenant ID</label>
+                                              ^
+1197:                 <input type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx ou 'common'" bind:value={outlookConfig.tenantId} />
+1198:               </div>
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1200:16 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1198:               </div>
+1199:               <div class="form-group">
+1200:                 <label>Redirect URI</label>
+                                                 ^
+1201:                 <input type="text" bind:value={outlookConfig.redirectUri} readonly />
+1202:               </div>
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1350:16 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1348:               <h3>Configuration 3CX</h3>
+1349:               <div class="form-group">
+1350:                 <label>URL du serveur 3CX</label>
+                                                       ^
+1351:                 <input type="text" placeholder="https://votre-serveur.3cx.ch" bind:value={config3CX.serverUrl} />
+1352:               </div>
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1354:16 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1352:               </div>
+1353:               <div class="form-group">
+1354:                 <label>Extension</label>
+                                              ^
+1355:                 <input type="text" placeholder="100" bind:value={config3CX.extension} />
+1356:               </div>
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1358:16 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1356:               </div>
+1357:               <div class="form-group">
+1358:                 <label>Nom d'utilisateur</label>
+                                                      ^
+1359:                 <input type="text" placeholder="utilisateur" bind:value={config3CX.username} />
+1360:               </div>
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1362:16 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1360:               </div>
+1361:               <div class="form-group">
+1362:                 <label>Mot de passe</label>
+                                                 ^
+1363:                 <input type="password" placeholder="••••••••" bind:value={config3CX.password} />
+1364:               </div>
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1551:18 Buttons and links should either contain text or have an `aria-label`, `aria-labelledby` or `title` attribute
+https://svelte.dev/e/a11y_consider_explicit_label
+1549:                     bind:value={newWhatsAppNumber}
+1550:                   />
+1551:                   <button
+                                ^
+1552:                     class="send-quick-btn"
+1553:                     onclick={() => sendViaWhatsAppWeb(newWhatsAppNumber)}
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1672:18 Buttons and links should either contain text or have an `aria-label`, `aria-labelledby` or `title` attribute
+https://svelte.dev/e/a11y_consider_explicit_label
+1670:                     onkeydown={(e) => e.key === 'Enter' && handleSendWhatsApp()}
+1671:                   />
+1672:                   <button class="send-whatsapp-btn" onclick={handleSendWhatsApp}>
+                                 ^
+1673:                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+1674:                       <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1735:6 Elements with the 'dialog' interactive role must have a tabindex value
+https://svelte.dev/e/a11y_interactive_supports_focus
+1733:       tabindex="-1"
+1734:     >
+1735:       <div class="modal compose-modal" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+                  ^
+1736:         <h3>Nouveau message</h3>
+1737:         <input type="text" placeholder="À" bind:value={composeTo} />
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1735:6 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+1733:       tabindex="-1"
+1734:     >
+1735:       <div class="modal compose-modal" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+                  ^
+1736:         <h3>Nouveau message</h3>
+1737:         <input type="text" placeholder="À" bind:value={composeTo} />
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1793:2 Unused CSS selector ".tab.timepro-tab.active"
+https://svelte.dev/e/css_unused_selector
+1791:   }
+1792: 
+1793:   .tab.timepro-tab.active {
+                               ^
+1794:     color: #00d4ff;
+1795:     border-bottom-color: #00d4ff;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1798:2 Unused CSS selector ".badge.timer"
+https://svelte.dev/e/css_unused_selector
+1796:   }
+1797: 
+1798:   .badge.timer {
+                    ^
+1799:     background: #00d4ff;
+1800:     font-family: var(--font-mono);
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:2971:2 Unused CSS selector ".timepro-view"
+https://svelte.dev/e/css_unused_selector
+2969:      ============================================ */
+2970: 
+2971:   .timepro-view {
+                     ^
+2972:     padding: 20px;
+2973:     overflow-y: auto;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:2977:2 Unused CSS selector ".timepro-header"
+https://svelte.dev/e/css_unused_selector
+2975:   }
+2976: 
+2977:   .timepro-header {
+                       ^
+2978:     display: flex;
+2979:     justify-content: space-between;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:2986:2 Unused CSS selector ".timepro-header h3"
+https://svelte.dev/e/css_unused_selector
+2984:   }
+2985: 
+2986:   .timepro-header h3 {
+                          ^
+2987:     margin: 0;
+2988:     font-size: 18px;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:2992:2 Unused CSS selector ".timepro-web-btn"
+https://svelte.dev/e/css_unused_selector
+2990:   }
+2991: 
+2992:   .timepro-web-btn {
+                        ^
+2993:     display: flex;
+2994:     align-items: center;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3007:2 Unused CSS selector ".timepro-web-btn:hover"
+https://svelte.dev/e/css_unused_selector
+3005:   }
+3006: 
+3007:   .timepro-web-btn:hover {
+                              ^
+3008:     transform: translateY(-2px);
+3009:     box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4);
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3012:2 Unused CSS selector ".timepro-section"
+https://svelte.dev/e/css_unused_selector
+3010:   }
+3011: 
+3012:   .timepro-section {
+                        ^
+3013:     background: var(--bg-secondary);
+3014:     border: 1px solid var(--border-color);
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3020:2 Unused CSS selector ".timepro-section h4"
+https://svelte.dev/e/css_unused_selector
+3018:   }
+3019: 
+3020:   .timepro-section h4 {
+                           ^
+3021:     margin: 0 0 8px 0;
+3022:     font-size: 14px;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3027:2 Unused CSS selector ".section-header"
+https://svelte.dev/e/css_unused_selector
+3025:   }
+3026: 
+3027:   .section-header {
+                       ^
+3028:     display: flex;
+3029:     justify-content: space-between;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3034:2 Unused CSS selector ".section-desc"
+https://svelte.dev/e/css_unused_selector
+3032:   }
+3033: 
+3034:   .section-desc {
+                     ^
+3035:     font-size: 12px;
+3036:     color: var(--text-muted);
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3040:2 Unused CSS selector ".toggle-auto-btn"
+https://svelte.dev/e/css_unused_selector
+3038:   }
+3039: 
+3040:   .toggle-auto-btn {
+                        ^
+3041:     padding: 6px 12px;
+3042:     border: 1px solid var(--border-color);
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3051:2 Unused CSS selector ".toggle-auto-btn.active"
+https://svelte.dev/e/css_unused_selector
+3049:   }
+3050: 
+3051:   .toggle-auto-btn.active {
+                               ^
+3052:     background: rgba(0, 212, 255, 0.2);
+3053:     border-color: #00d4ff;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3058:2 Unused CSS selector ".timer-active"
+https://svelte.dev/e/css_unused_selector
+3056: 
+3057:   /* Timer styles */
+3058:   .timer-active {
+                     ^
+3059:     display: flex;
+3060:     align-items: center;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3068:2 Unused CSS selector ".timer-display"
+https://svelte.dev/e/css_unused_selector
+3066:   }
+3067: 
+3068:   .timer-display {
+                      ^
+3069:     display: flex;
+3070:     flex-direction: column;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3074:2 Unused CSS selector ".timer-countdown"
+https://svelte.dev/e/css_unused_selector
+3072:   }
+3073: 
+3074:   .timer-countdown {
+                        ^
+3075:     font-size: 32px;
+3076:     font-weight: 700;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3081:2 Unused CSS selector ".timer-label"
+https://svelte.dev/e/css_unused_selector
+3079:   }
+3080: 
+3081:   .timer-label {
+                    ^
+3082:     font-size: 12px;
+3083:     color: var(--text-muted);
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3086:2 Unused CSS selector ".timer-stop-btn"
+https://svelte.dev/e/css_unused_selector
+3084:   }
+3085: 
+3086:   .timer-stop-btn {
+                       ^
+3087:     display: flex;
+3088:     align-items: center;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3099:2 Unused CSS selector ".timer-stop-btn:hover"
+https://svelte.dev/e/css_unused_selector
+3097:   }
+3098: 
+3099:   .timer-stop-btn:hover {
+                             ^
+3100:     background: #ff6464;
+3101:     color: white;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3104:2 Unused CSS selector ".timer-setup"
+https://svelte.dev/e/css_unused_selector
+3102:   }
+3103: 
+3104:   .timer-setup {
+                    ^
+3105:     display: flex;
+3106:     flex-direction: column;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3110:2 Unused CSS selector ".timer-input-group"
+https://svelte.dev/e/css_unused_selector
+3108:   }
+3109: 
+3110:   .timer-input-group {
+                          ^
+3111:     display: flex;
+3112:     align-items: center;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3116:2 Unused CSS selector ".timer-input-group label"
+https://svelte.dev/e/css_unused_selector
+3114:   }
+3115: 
+3116:   .timer-input-group label {
+                                ^
+3117:     font-size: 13px;
+3118:     color: var(--text-secondary);
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3121:2 Unused CSS selector ".timer-input-group input"
+https://svelte.dev/e/css_unused_selector
+3119:   }
+3120: 
+3121:   .timer-input-group input {
+                                ^
+3122:     width: 80px;
+3123:     padding: 8px 12px;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3132:2 Unused CSS selector ".timer-presets"
+https://svelte.dev/e/css_unused_selector
+3130:   }
+3131: 
+3132:   .timer-presets {
+                      ^
+3133:     display: flex;
+3134:     gap: 8px;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3138:2 Unused CSS selector ".preset-btn"
+https://svelte.dev/e/css_unused_selector
+3136:   }
+3137: 
+3138:   .preset-btn {
+                   ^
+3139:     padding: 8px 16px;
+3140:     background: var(--bg-tertiary);
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3149:2 Unused CSS selector ".preset-btn:hover"
+https://svelte.dev/e/css_unused_selector
+3147:   }
+3148: 
+3149:   .preset-btn:hover {
+                         ^
+3150:     border-color: #00d4ff;
+3151:     color: #00d4ff;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3155:2 Unused CSS selector ".timer-start-btn"
+https://svelte.dev/e/css_unused_selector
+3153:   }
+3154: 
+3155:   .timer-start-btn {
+                        ^
+3156:     display: flex;
+3157:     align-items: center;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3170:2 Unused CSS selector ".timer-start-btn:hover"
+https://svelte.dev/e/css_unused_selector
+3168:   }
+3169: 
+3170:   .timer-start-btn:hover {
+                              ^
+3171:     transform: translateY(-2px);
+3172:     box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4);
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3176:2 Unused CSS selector ".next-pointage"
+https://svelte.dev/e/css_unused_selector
+3174: 
+3175:   /* Next pointage */
+3176:   .next-pointage {
+                      ^
+3177:     display: flex;
+3178:     align-items: center;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3187:2 Unused CSS selector ".next-label"
+https://svelte.dev/e/css_unused_selector
+3185:   }
+3186: 
+3187:   .next-label {
+                   ^
+3188:     font-size: 12px;
+3189:     color: var(--text-muted);
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3192:2 Unused CSS selector ".next-info"
+https://svelte.dev/e/css_unused_selector
+3190:   }
+3191: 
+3192:   .next-info {
+                  ^
+3193:     font-weight: 600;
+3194:     color: #00d4ff;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3198:2 Unused CSS selector ".schedules-list"
+https://svelte.dev/e/css_unused_selector
+3196: 
+3197:   /* Schedules list */
+3198:   .schedules-list {
+                       ^
+3199:     display: flex;
+3200:     flex-direction: column;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3205:2 Unused CSS selector ".schedule-item"
+https://svelte.dev/e/css_unused_selector
+3203:   }
+3204: 
+3205:   .schedule-item {
+                      ^
+3206:     display: flex;
+3207:     align-items: center;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3216:2 Unused CSS selector ".schedule-item.in"
+https://svelte.dev/e/css_unused_selector
+3214:   }
+3215: 
+3216:   .schedule-item.in {
+                         ^
+3217:     border-left-color: #22c55e;
+3218:   }
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3220:2 Unused CSS selector ".schedule-item.out"
+https://svelte.dev/e/css_unused_selector
+3218:   }
+3219: 
+3220:   .schedule-item.out {
+                          ^
+3221:     border-left-color: #f59e0b;
+3222:   }
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3224:2 Unused CSS selector ".schedule-info"
+https://svelte.dev/e/css_unused_selector
+3222:   }
+3223: 
+3224:   .schedule-info {
+                      ^
+3225:     display: flex;
+3226:     align-items: center;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3230:2 Unused CSS selector ".schedule-time"
+https://svelte.dev/e/css_unused_selector
+3228:   }
+3229: 
+3230:   .schedule-time {
+                      ^
+3231:     font-family: var(--font-mono);
+3232:     font-weight: 700;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3237:2 Unused CSS selector ".schedule-label"
+https://svelte.dev/e/css_unused_selector
+3235:   }
+3236: 
+3237:   .schedule-label {
+                       ^
+3238:     font-size: 13px;
+3239:     color: var(--text-secondary);
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3242:2 Unused CSS selector ".schedule-days"
+https://svelte.dev/e/css_unused_selector
+3240:   }
+3241: 
+3242:   .schedule-days {
+                      ^
+3243:     font-size: 11px;
+3244:     color: var(--text-muted);
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3250:2 Unused CSS selector ".schedule-delete"
+https://svelte.dev/e/css_unused_selector
+3248:   }
+3249: 
+3250:   .schedule-delete {
+                        ^
+3251:     width: 28px;
+3252:     height: 28px;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3264:2 Unused CSS selector ".schedule-delete:hover"
+https://svelte.dev/e/css_unused_selector
+3262:   }
+3263: 
+3264:   .schedule-delete:hover {
+                              ^
+3265:     background: rgba(255, 100, 100, 0.2);
+3266:     border-color: #ff6464;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3271:2 Unused CSS selector ".add-schedule-form"
+https://svelte.dev/e/css_unused_selector
+3269: 
+3270:   /* Add schedule form */
+3271:   .add-schedule-form {
+                          ^
+3272:     display: flex;
+3273:     flex-direction: column;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3279:2 Unused CSS selector ".schedule-form-row"
+https://svelte.dev/e/css_unused_selector
+3277:   }
+3278: 
+3279:   .schedule-form-row {
+                          ^
+3280:     display: flex;
+3281:     gap: 10px;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3284:2 Unused CSS selector ".time-input"
+https://svelte.dev/e/css_unused_selector
+3282:   }
+3283: 
+3284:   .time-input {
+                   ^
+3285:     width: 100px;
+3286:     padding: 10px 12px;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3294:2 Unused CSS selector ".type-select"
+https://svelte.dev/e/css_unused_selector
+3292:   }
+3293: 
+3294:   .type-select {
+                    ^
+3295:     padding: 10px 12px;
+3296:     border: 1px solid var(--border-color);
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3302:2 Unused CSS selector ".label-input"
+https://svelte.dev/e/css_unused_selector
+3300:   }
+3301: 
+3302:   .label-input {
+                    ^
+3303:     flex: 1;
+3304:     padding: 10px 12px;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3311:2 Unused CSS selector ".days-selector"
+https://svelte.dev/e/css_unused_selector
+3309:   }
+3310: 
+3311:   .days-selector {
+                      ^
+3312:     display: flex;
+3313:     gap: 6px;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3316:2 Unused CSS selector ".day-btn"
+https://svelte.dev/e/css_unused_selector
+3314:   }
+3315: 
+3316:   .day-btn {
+                ^
+3317:     flex: 1;
+3318:     padding: 8px 4px;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3328:2 Unused CSS selector ".day-btn:hover"
+https://svelte.dev/e/css_unused_selector
+3326:   }
+3327: 
+3328:   .day-btn:hover {
+                      ^
+3329:     border-color: #00d4ff;
+3330:     color: var(--text-primary);
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3333:2 Unused CSS selector ".day-btn.selected"
+https://svelte.dev/e/css_unused_selector
+3331:   }
+3332: 
+3333:   .day-btn.selected {
+                         ^
+3334:     background: rgba(0, 212, 255, 0.2);
+3335:     border-color: #00d4ff;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3340:2 Unused CSS selector ".add-schedule-btn"
+https://svelte.dev/e/css_unused_selector
+3338:   }
+3339: 
+3340:   .add-schedule-btn {
+                         ^
+3341:     display: flex;
+3342:     align-items: center;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3354:2 Unused CSS selector ".add-schedule-btn:hover:not(:disabled)"
+https://svelte.dev/e/css_unused_selector
+3352:   }
+3353: 
+3354:   .add-schedule-btn:hover:not(:disabled) {
+                                              ^
+3355:     border-style: solid;
+3356:     border-color: #00d4ff;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3361:2 Unused CSS selector ".add-schedule-btn:disabled"
+https://svelte.dev/e/css_unused_selector
+3359:   }
+3360: 
+3361:   .add-schedule-btn:disabled {
+                                  ^
+3362:     opacity: 0.5;
+3363:     cursor: not-allowed;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3367:2 Unused CSS selector ".timepro-section.examples"
+https://svelte.dev/e/css_unused_selector
+3365: 
+3366:   /* Examples section */
+3367:   .timepro-section.examples {
+                                 ^
+3368:     background: transparent;
+3369:     border: none;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3373:2 Unused CSS selector ".example-btns"
+https://svelte.dev/e/css_unused_selector
+3371:   }
+3372: 
+3373:   .example-btns {
+                     ^
+3374:     display: flex;
+3375:     flex-wrap: wrap;
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3379:2 Unused CSS selector ".example-btn"
+https://svelte.dev/e/css_unused_selector
+3377:   }
+3378: 
+3379:   .example-btn {
+                    ^
+3380:     padding: 8px 12px;
+3381:     background: var(--bg-secondary);
+00:52:59 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3390:2 Unused CSS selector ".example-btn:hover"
+https://svelte.dev/e/css_unused_selector
+3388:   }
+3389: 
+3390:   .example-btn:hover {
+                          ^
+3391:     border-color: var(--accent-primary);
+3392:     color: var(--accent-primary);
+00:53:00 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:632:2 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+630: 
+631: {:else if activeScreen === 'windows-update'}
+632:   <div class="fullscreen wu-screen" onclick={exitScreen}>
+             ^
+633:     {#if wuRestarting}
+634:       <div class="wu-restart">
+00:53:00 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:632:2 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+630: 
+631: {:else if activeScreen === 'windows-update'}
+632:   <div class="fullscreen wu-screen" onclick={exitScreen}>
+             ^
+633:     {#if wuRestarting}
+634:       <div class="wu-restart">
+00:53:00 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:653:2 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+651: 
+652: {:else if activeScreen === 'bsod'}
+653:   <div class="fullscreen bsod-screen" onclick={exitScreen}>
+             ^
+654:     <div class="bsod-content">
+655:       <div class="bsod-sad">:(</div>
+00:53:00 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:653:2 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+651: 
+652: {:else if activeScreen === 'bsod'}
+653:   <div class="fullscreen bsod-screen" onclick={exitScreen}>
+             ^
+654:     <div class="bsod-content">
+655:       <div class="bsod-sad">:(</div>
+00:53:00 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:681:2 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+679: 
+680: {:else if activeScreen === 'terminal'}
+681:   <div class="fullscreen terminal-screen" onclick={exitScreen}>
+             ^
+682:     <div class="terminal-window">
+683:       <div class="terminal-header">
+00:53:00 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:681:2 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+679: 
+680: {:else if activeScreen === 'terminal'}
+681:   <div class="fullscreen terminal-screen" onclick={exitScreen}>
+             ^
+682:     <div class="terminal-window">
+683:       <div class="terminal-header">
+00:53:00 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:703:2 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+701: 
+702: {:else if activeScreen === 'chkdsk'}
+703:   <div class="fullscreen chkdsk-screen" onclick={exitScreen}>
+             ^
+704:     <div class="chkdsk-content">
+705:       {#each chkdskLines as line}
+00:53:00 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:703:2 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+701: 
+702: {:else if activeScreen === 'chkdsk'}
+703:   <div class="fullscreen chkdsk-screen" onclick={exitScreen}>
+             ^
+704:     <div class="chkdsk-content">
+705:       {#each chkdskLines as line}
+00:53:00 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:719:2 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+717: 
+718: {:else if activeScreen === 'bios'}
+719:   <div class="fullscreen bios-screen" onclick={exitScreen}>
+             ^
+720:     <div class="bios-content">
+721:       {#each biosLines as line}
+00:53:00 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:719:2 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+717: 
+718: {:else if activeScreen === 'bios'}
+719:   <div class="fullscreen bios-screen" onclick={exitScreen}>
+             ^
+720:     <div class="bios-content">
+721:       {#each biosLines as line}
+00:53:00 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:731:2 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+729: 
+730: {:else if activeScreen === 'antivirus'}
+731:   <div class="fullscreen av-screen" onclick={exitScreen}>
+             ^
+732:     <div class="av-window">
+733:       <div class="av-header">
+00:53:00 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:731:2 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+729: 
+730: {:else if activeScreen === 'antivirus'}
+731:   <div class="fullscreen av-screen" onclick={exitScreen}>
+             ^
+732:     <div class="av-window">
+733:       <div class="av-header">
+00:53:00 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:766:2 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+764: 
+765: {:else if activeScreen === 'sfc'}
+766:   <div class="fullscreen sfc-screen" onclick={exitScreen}>
+             ^
+767:     <div class="cmd-window">
+768:       <div class="cmd-header">
+00:53:00 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:766:2 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+764: 
+765: {:else if activeScreen === 'sfc'}
+766:   <div class="fullscreen sfc-screen" onclick={exitScreen}>
+             ^
+767:     <div class="cmd-window">
+768:       <div class="cmd-header">
+00:53:00 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:786:2 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+784: 
+785: {:else if activeScreen === 'dism'}
+786:   <div class="fullscreen dism-screen" onclick={exitScreen}>
+             ^
+787:     <div class="cmd-window">
+788:       <div class="cmd-header">
+00:53:00 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:786:2 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+784: 
+785: {:else if activeScreen === 'dism'}
+786:   <div class="fullscreen dism-screen" onclick={exitScreen}>
+             ^
+787:     <div class="cmd-window">
+788:       <div class="cmd-header">
+00:53:00 [vite-plugin-svelte] src/lib/components/WakeLock/WakeLockModule.svelte:224:2 Unused CSS selector ".error-msg"
+https://svelte.dev/e/css_unused_selector
+222: 
+223:   /* Error */
+224:   .error-msg {
+                 ^
+225:     padding: 0.5rem 1rem;
+226:     background: rgba(255, 68, 68, 0.1);
+00:53:00 [vite-plugin-svelte] src/lib/components/Settings/SettingsModule.svelte:843:12 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+841:         <div class="glitch-controls" class:disabled={!$glitchSettings.enabled}>
+842:           <div class="glitch-control">
+843:             <label>
+                         ^
+844:               <span class="control-label">Frequence</span>
+845:               <span class="control-value">{$glitchSettings.frequency}/10</span>
+00:53:00 [vite-plugin-svelte] src/lib/components/Settings/SettingsModule.svelte:862:12 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+860: 
+861:           <div class="glitch-control">
+862:             <label>
+                         ^
+863:               <span class="control-label">Intensite</span>
+864:               <span class="control-value">{$glitchSettings.intensity}/10</span>
+00:53:00 [vite-plugin-svelte] src/lib/components/KDrive/KDriveModule.svelte:552:14 `<div>` with a dblclick handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+550:           {:else}
+551:             {#each files as file}
+552:               <div
+                        ^
+553:                 class="file-item"
+554:                 class:folder={file.type === 'dir'}
+00:53:00 [vite-plugin-svelte] src/lib/components/Canvas/PostGISViewer.svelte:107:36 This reference only captures the initial value of `initialConnectionId`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally
+105:   let mapLoaded = $state(false);
+106:   let connections = $state<DBConnection[]>([]);
+107:   let selectedConnectionId = $state(initialConnectionId);
+                                                            ^
+108:   let geoTables = $state<GeoTable[]>([]);
+109:   let activeLayers = $state<Set<string>>(new Set());
+00:53:00 [vite-plugin-svelte] src/lib/components/Canvas/MapAssistant.svelte:424:4 Buttons and links should either contain text or have an `aria-label`, `aria-labelledby` or `title` attribute
+https://svelte.dev/e/a11y_consider_explicit_label
+422:       disabled={$isLoading}
+423:     />
+424:     <button
+                 ^
+425:       class="send-btn"
+426:       onclick={() => sendMessage()}
+00:53:00 [vite-plugin-svelte] src/lib/components/Editor/CollapsiblePanel.svelte:120:4 noninteractive element cannot have nonnegative tabIndex value
+https://svelte.dev/e/a11y_no_noninteractive_tabindex
+118:   {#if !collapsed}
+119:     <!-- Resize handle -->
+120:     <div
+              ^
+121:       class="resize-handle"
+122:       onmousedown={startResize}
+00:53:00 [vite-plugin-svelte] src/lib/components/Editor/CollapsiblePanel.svelte:120:4 Non-interactive element `<div>` should not be assigned mouse or keyboard event listeners
+https://svelte.dev/e/a11y_no_noninteractive_element_interactions
+118:   {#if !collapsed}
+119:     <!-- Resize handle -->
+120:     <div
+              ^
+121:       class="resize-handle"
+122:       onmousedown={startResize}
+00:53:00 [vite-plugin-svelte] src/lib/components/Editor/FileExplorer.svelte:24:27 This reference only captures the initial value of `rootPath`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally
+22:   let files = $state<FileNode[]>([]);
+23:   let drives = $state<FileNode[]>([]);
+24:   let currentRoot = $state(rootPath);
+                                       ^
+25:   let selectedPath = $state<string | null>(null);
+26:   let searchQuery = $state('');
+00:53:00 [vite-plugin-svelte] src/lib/components/Databases/DocGenerator.svelte:498:4 Buttons and links should either contain text or have an `aria-label`, `aria-labelledby` or `title` attribute
+https://svelte.dev/e/a11y_consider_explicit_label
+496:       <p>Generez une documentation complete de votre schema de base de donnees</p>
+497:     </div>
+498:     <button class="refresh-btn" onclick={loadSchema} disabled={loading}>
+                  ^
+499:       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class:spinning={loading}>
+500:         <path d="M23 4v6h-6M1 20v-6h6"/>
+00:53:00 [vite-plugin-svelte] src/lib/components/Databases/DocGenerator.svelte:524:10 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+522:         <!-- Schema selection -->
+523:         <div class="config-section">
+524:           <label>Schemas</label>
+                                     ^
+525:           <div class="schema-list">
+526:             {#if schema?.availableSchemas}
+00:53:00 [vite-plugin-svelte] src/lib/components/Databases/DocGenerator.svelte:549:10 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+547:         <!-- Options -->
+548:         <div class="config-section">
+549:           <label>Options</label>
+                                     ^
+550:           <div class="options-list">
+551:             <label class="checkbox-option">
+00:53:00 [vite-plugin-svelte] src/lib/components/Databases/SqlAssistant.svelte:216:10 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+214:       <div class="history-list">
+215:         {#each history as item}
+216:           <div class="history-item" onclick={() => { naturalQuery = item.query; generatedSql = item.sql; }}>
+                     ^
+217:             <span class="history-query">{item.query.slice(0, 60)}...</span>
+218:             <span class="history-time">{item.timestamp.toLocaleTimeString()}</span>
+00:53:00 [vite-plugin-svelte] src/lib/components/Databases/SqlAssistant.svelte:216:10 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+214:       <div class="history-list">
+215:         {#each history as item}
+216:           <div class="history-item" onclick={() => { naturalQuery = item.query; generatedSql = item.sql; }}>
+                     ^
+217:             <span class="history-query">{item.query.slice(0, 60)}...</span>
+218:             <span class="history-time">{item.timestamp.toLocaleTimeString()}</span>
+00:53:00 [vite-plugin-svelte] src/lib/components/Databases/SchemaViewer.svelte:405:16 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+403:             <div class="tables-grid">
+404:               {#each filteredTables() as table}
+405:                 <div
+                          ^
+406:                   class="table-card"
+407:                   class:selected={selectedTable === table.fullName}
+00:53:00 [vite-plugin-svelte] src/lib/components/Databases/SchemaViewer.svelte:405:16 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+403:             <div class="tables-grid">
+404:               {#each filteredTables() as table}
+405:                 <div
+                          ^
+406:                   class="table-card"
+407:                   class:selected={selectedTable === table.fullName}
+00:53:00 [vite-plugin-svelte] src/lib/components/Databases/MockDataGenerator.svelte:323:4 Buttons and links should either contain text or have an `aria-label`, `aria-labelledby` or `title` attribute
+https://svelte.dev/e/a11y_consider_explicit_label
+321:       <p>Donnees suisses realistes, support PostGIS, detection intelligente des types</p>
+322:     </div>
+323:     <button class="refresh-btn" onclick={loadTables} disabled={loading}>
+                  ^
+324:       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class:spinning={loading}>
+325:         <path d="M23 4v6h-6M1 20v-6h6"/>
+[33m"getWidth" is imported from external module "ol/extent.js" but never used in "src/lib/components/Canvas/PostGISViewer.svelte".[39m
+[33m"Zoom" is imported from external module "ol/control.js" but never used in "src/lib/components/Canvas/PostGISViewer.svelte".[39m
+[33m"handleConnectionChange" is imported from external module "@xyflow/system" but never used in "node_modules/@xyflow/svelte/dist/lib/components/Handle/Handle.svelte" and "node_modules/@xyflow/svelte/dist/lib/hooks/useNodeConnections.svelte.js".[39m
+00:53:01 [vite-plugin-svelte] src/lib/components/Chat/ChatModule.svelte:1045:2 Unused CSS selector ".status"
+https://svelte.dev/e/css_unused_selector
+1043:   }
+1044: 
+1045:   .status {
+               ^
+1046:     font-size: var(--font-size-xs);
+1047:     font-family: var(--font-mono);
+00:53:01 [vite-plugin-svelte] src/lib/components/Chat/ChatModule.svelte:1055:2 Unused CSS selector ".status.connected"
+https://svelte.dev/e/css_unused_selector
+1053:   }
+1054: 
+1055:   .status.connected {
+                         ^
+1056:     background: var(--success-glow);
+1057:     color: var(--success);
+00:53:01 [vite-plugin-svelte] src/lib/components/Chat/ChatModule.svelte:1061:2 Unused CSS selector ".status.disconnected"
+https://svelte.dev/e/css_unused_selector
+1059:   }
+1060: 
+1061:   .status.disconnected {
+                            ^
+1062:     background: var(--error-glow);
+1063:     color: var(--error);
+00:53:01 [vite-plugin-svelte] src/lib/components/Canvas/CanvasModule.svelte:9:6 `postGISViewerRef` is updated, but is not declared with `$state(...)`. Changing its value will not correctly trigger updates
+https://svelte.dev/e/non_reactive_update
+ 7:   // Assistant state
+ 8:   let showAssistant = $state(true);
+ 9:   let postGISViewerRef: PostGISViewer | null = null;
+                                                ^
+10: 
+11:   // Map context for assistant (not reactive to avoid loops)
+00:53:01 [vite-plugin-svelte] src/lib/components/Canvas/CanvasModule.svelte:12:6 `mapContext` is updated, but is not declared with `$state(...)`. Changing its value will not correctly trigger updates
+https://svelte.dev/e/non_reactive_update
+10: 
+11:   // Map context for assistant (not reactive to avoid loops)
+12:   let mapContext: MapContext = {
+                                ^
+13:     activeTab: 'geoportail',
+14:     connectionId: null,
+00:53:01 [vite-plugin-svelte] src/lib/components/TimeProModule.svelte:440:12 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+438:         <div class="timer-setup">
+439:           <div class="timer-input-group">
+440:             <label>Minutes:</label>
+                                        ^
+441:             <input type="number" min="1" max="180" bind:value={rePointageMinutes} />
+442:           </div>
+00:53:01 [vite-plugin-svelte] src/lib/components/TimeProModule.svelte:492:14 Buttons and links should either contain text or have an `aria-label`, `aria-labelledby` or `title` attribute
+https://svelte.dev/e/a11y_consider_explicit_label
+490:                 </span>
+491:               </div>
+492:               <button class="schedule-delete" onclick={() => removeScheduledPointage(schedule.id)}>
+                            ^
+493:                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+494:                   <line x1="18" y1="6" x2="6" y2="18"/>
+00:53:01 [vite-plugin-svelte] src/lib/components/Databases/DatabasesModule.svelte:336:2 Unused CSS selector ".loading-state svg"
+https://svelte.dev/e/css_unused_selector
+334:   }
+335: 
+336:   .loading-state svg,
+                         ^
+337:   .error-state svg,
+338:   .empty-state svg {
+00:53:02 [vite-plugin-svelte] src/lib/components/Settings/SettingsModule.svelte:843:12 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+841:         <div class="glitch-controls" class:disabled={!$glitchSettings.enabled}>
+842:           <div class="glitch-control">
+843:             <label>
+                         ^
+844:               <span class="control-label">Frequence</span>
+845:               <span class="control-value">{$glitchSettings.frequency}/10</span>
+00:53:02 [vite-plugin-svelte] src/lib/components/Settings/SettingsModule.svelte:862:12 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+860: 
+861:           <div class="glitch-control">
+862:             <label>
+                         ^
+863:               <span class="control-label">Intensite</span>
+864:               <span class="control-value">{$glitchSettings.intensity}/10</span>
+00:53:02 [vite-plugin-svelte] src/lib/components/WakeLock/WakeLockModule.svelte:224:2 Unused CSS selector ".error-msg"
+https://svelte.dev/e/css_unused_selector
+222: 
+223:   /* Error */
+224:   .error-msg {
+                 ^
+225:     padding: 0.5rem 1rem;
+226:     background: rgba(255, 68, 68, 0.1);
+00:53:02 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:2544:16 `<div>` with a contextmenu handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+2542:                 class:locked={layer.locked}
+2543:               >
+2544:                 <div class="layer-item-row" oncontextmenu={(e) => openLayerContextMenu(e, layer.name)}>
+                            ^
+2545:                   <button class="layer-visibility" onclick={() => toggleLayerVisibility(layer.name)}>
+2546:                     {#if layer.visible}
+00:53:02 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:2612:14 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+2610:           <div class="sources-panel">
+2611:             <div class="connection-selector">
+2612:               <label>Connexion</label>
+                                            ^
+2613:               <select bind:value={selectedConnectionId} onchange={() => loadGeoTables()}>
+2614:                 {#each connections as conn}
+00:53:02 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:2913:4 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+2911:   <!-- Layer context menu -->
+2912:   {#if contextMenuLayer}
+2913:     <div class="context-menu-overlay" onclick={() => contextMenuLayer = null}></div>
+                                                                                          ^
+2914:     <div class="layer-context-menu" style="left: {contextMenuPos.x}px; top: {contextMenuPos.y}px;">
+2915:       <div class="context-menu-header">{contextMenuLayer}</div>
+00:53:02 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:2913:4 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+2911:   <!-- Layer context menu -->
+2912:   {#if contextMenuLayer}
+2913:     <div class="context-menu-overlay" onclick={() => contextMenuLayer = null}></div>
+                                                                                          ^
+2914:     <div class="layer-context-menu" style="left: {contextMenuPos.x}px; top: {contextMenuPos.y}px;">
+2915:       <div class="context-menu-header">{contextMenuLayer}</div>
+00:53:02 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:2949:10 Buttons and links should either contain text or have an `aria-label`, `aria-labelledby` or `title` attribute
+https://svelte.dev/e/a11y_consider_explicit_label
+2947:         <span>Couleur:</span>
+2948:         {#each ['#FF0000', '#FFFF00', '#00FF00', '#00FFFF', '#0000FF', '#FF00FF', '#FFFFFF'] as color}
+2949:           <button
+                        ^
+2950:             class="color-swatch"
+2951:             style="background-color: {color}"
+00:53:02 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:79:6 `canvasElement` is updated, but is not declared with `$state(...)`. Changing its value will not correctly trigger updates
+https://svelte.dev/e/non_reactive_update
+77: 
+78:   // State
+79:   let canvasElement: HTMLCanvasElement;
+                                          ^
+80:   let fabricCanvas: any = null;
+81:   let fabric: any = null;
+00:53:02 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:145:6 `georefCanvasElement` is updated, but is not declared with `$state(...)`. Changing its value will not correctly trigger updates
+https://svelte.dev/e/non_reactive_update
+143: 
+144:   // Split-screen georef canvas
+145:   let georefCanvasElement: HTMLCanvasElement;
+                                                 ^
+146:   let georefCanvas: any = null;
+147:   let georefImageZoom = $state(1);
+00:53:02 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:3179:2 Unused CSS selector ".layer-item"
+https://svelte.dev/e/css_unused_selector
+3177:   }
+3178: 
+3179:   .layer-item {
+                   ^
+3180:     display: flex;
+3181:     align-items: center;
+00:53:02 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:3189:2 Unused CSS selector ".layer-item:hover"
+https://svelte.dev/e/css_unused_selector
+3187:   }
+3188: 
+3189:   .layer-item:hover { background: var(--cad-bg-tertiary); }
+                         ^
+3190:   .layer-item.hidden { opacity: 0.5; }
+3191:   .layer-item.locked { background: rgba(255, 255, 255, 0.03); }
+00:53:02 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:3190:2 Unused CSS selector ".layer-item.hidden"
+https://svelte.dev/e/css_unused_selector
+3188: 
+3189:   .layer-item:hover { background: var(--cad-bg-tertiary); }
+3190:   .layer-item.hidden { opacity: 0.5; }
+                          ^
+3191:   .layer-item.locked { background: rgba(255, 255, 255, 0.03); }
+3192: 
+00:53:02 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:3191:2 Unused CSS selector ".layer-item.locked"
+https://svelte.dev/e/css_unused_selector
+3189:   .layer-item:hover { background: var(--cad-bg-tertiary); }
+3190:   .layer-item.hidden { opacity: 0.5; }
+3191:   .layer-item.locked { background: rgba(255, 255, 255, 0.03); }
+                          ^
+3192: 
+3193:   .layer-visibility {
+00:53:02 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:3205:2 Unused CSS selector ".layer-lock-icon"
+https://svelte.dev/e/css_unused_selector
+3203:   .layer-visibility:hover { color: var(--cad-accent); }
+3204: 
+3205:   .layer-lock-icon {
+                        ^
+3206:     color: var(--cad-warning);
+3207:     flex-shrink: 0;
+00:53:02 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:3210:2 Unused CSS selector ".layer-color"
+https://svelte.dev/e/css_unused_selector
+3208:   }
+3209: 
+3210:   .layer-color {
+                    ^
+3211:     width: 10px;
+3212:     height: 10px;
+00:53:02 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:3246:2 Unused CSS selector ".layer-item:hover .layer-remove"
+https://svelte.dev/e/css_unused_selector
+3244:   }
+3245: 
+3246:   .layer-item:hover .layer-remove { opacity: 1; }
+                                       ^
+3247:   .layer-remove:hover { color: var(--cad-danger); }
+3248: 
+00:53:02 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:3326:2 Unused CSS selector ".image-item"
+https://svelte.dev/e/css_unused_selector
+3324:   }
+3325: 
+3326:   .image-item {
+                   ^
+3327:     display: flex;
+3328:     align-items: center;
+00:53:02 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:3336:2 Unused CSS selector ".image-item.georeferenced"
+https://svelte.dev/e/css_unused_selector
+3334:   }
+3335: 
+3336:   .image-item.georeferenced { border-left: 3px solid var(--cad-success); }
+                                 ^
+3337: 
+3338:   .image-name { flex: 1; font-size: 11px; }
+00:53:02 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:3339:2 Unused CSS selector ".georef-status"
+https://svelte.dev/e/css_unused_selector
+3337: 
+3338:   .image-name { flex: 1; font-size: 11px; }
+3339:   .georef-status { font-size: 10px; color: var(--cad-text-muted); }
+                      ^
+3340: 
+3341:   .georef-btn {
+00:53:02 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:3419:2 Unused CSS selector ".georef-overlay"
+https://svelte.dev/e/css_unused_selector
+3417:   .canvas-placeholder h3 { margin: 0 0 8px; font-size: 18px; color: var(--cad-text); }
+3418: 
+3419:   .georef-overlay {
+                       ^
+3420:     position: absolute;
+3421:     top: 10px;
+00:53:02 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:4197:2 Unused CSS selector ".georef-marker-image"
+https://svelte.dev/e/css_unused_selector
+4195: 
+4196:   /* Georef markers on split canvases */
+4197:   .georef-marker-image {
+                            ^
+4198:     fill: rgba(255, 204, 0, 0.5);
+4199:     stroke: #ffcc00;
+00:53:02 [vite-plugin-svelte] src/lib/components/CAD/CADModule.svelte:4203:2 Unused CSS selector ".georef-marker-world"
+https://svelte.dev/e/css_unused_selector
+4201:   }
+4202: 
+4203:   .georef-marker-world {
+                            ^
+4204:     fill: rgba(0, 255, 136, 0.5);
+4205:     stroke: #00ff88;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1192:16 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1190:               <p class="setup-help">Configurez l'accès à votre compte Microsoft 365 via Azure AD.</p>
+1191:               <div class="form-group">
+1192:                 <label>Client ID (Application ID)</label>
+                                                               ^
+1193:                 <input type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" bind:value={outlookConfig.clientId} />
+1194:               </div>
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1196:16 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1194:               </div>
+1195:               <div class="form-group">
+1196:                 <label>Tenant ID</label>
+                                              ^
+1197:                 <input type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx ou 'common'" bind:value={outlookConfig.tenantId} />
+1198:               </div>
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1200:16 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1198:               </div>
+1199:               <div class="form-group">
+1200:                 <label>Redirect URI</label>
+                                                 ^
+1201:                 <input type="text" bind:value={outlookConfig.redirectUri} readonly />
+1202:               </div>
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1350:16 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1348:               <h3>Configuration 3CX</h3>
+1349:               <div class="form-group">
+1350:                 <label>URL du serveur 3CX</label>
+                                                       ^
+1351:                 <input type="text" placeholder="https://votre-serveur.3cx.ch" bind:value={config3CX.serverUrl} />
+1352:               </div>
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1354:16 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1352:               </div>
+1353:               <div class="form-group">
+1354:                 <label>Extension</label>
+                                              ^
+1355:                 <input type="text" placeholder="100" bind:value={config3CX.extension} />
+1356:               </div>
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1358:16 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1356:               </div>
+1357:               <div class="form-group">
+1358:                 <label>Nom d'utilisateur</label>
+                                                      ^
+1359:                 <input type="text" placeholder="utilisateur" bind:value={config3CX.username} />
+1360:               </div>
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1362:16 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1360:               </div>
+1361:               <div class="form-group">
+1362:                 <label>Mot de passe</label>
+                                                 ^
+1363:                 <input type="password" placeholder="••••••••" bind:value={config3CX.password} />
+1364:               </div>
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1551:18 Buttons and links should either contain text or have an `aria-label`, `aria-labelledby` or `title` attribute
+https://svelte.dev/e/a11y_consider_explicit_label
+1549:                     bind:value={newWhatsAppNumber}
+1550:                   />
+1551:                   <button
+                                ^
+1552:                     class="send-quick-btn"
+1553:                     onclick={() => sendViaWhatsAppWeb(newWhatsAppNumber)}
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1672:18 Buttons and links should either contain text or have an `aria-label`, `aria-labelledby` or `title` attribute
+https://svelte.dev/e/a11y_consider_explicit_label
+1670:                     onkeydown={(e) => e.key === 'Enter' && handleSendWhatsApp()}
+1671:                   />
+1672:                   <button class="send-whatsapp-btn" onclick={handleSendWhatsApp}>
+                                 ^
+1673:                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+1674:                       <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1735:6 Elements with the 'dialog' interactive role must have a tabindex value
+https://svelte.dev/e/a11y_interactive_supports_focus
+1733:       tabindex="-1"
+1734:     >
+1735:       <div class="modal compose-modal" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+                  ^
+1736:         <h3>Nouveau message</h3>
+1737:         <input type="text" placeholder="À" bind:value={composeTo} />
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1735:6 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+1733:       tabindex="-1"
+1734:     >
+1735:       <div class="modal compose-modal" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+                  ^
+1736:         <h3>Nouveau message</h3>
+1737:         <input type="text" placeholder="À" bind:value={composeTo} />
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1793:2 Unused CSS selector ".tab.timepro-tab.active"
+https://svelte.dev/e/css_unused_selector
+1791:   }
+1792: 
+1793:   .tab.timepro-tab.active {
+                               ^
+1794:     color: #00d4ff;
+1795:     border-bottom-color: #00d4ff;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:1798:2 Unused CSS selector ".badge.timer"
+https://svelte.dev/e/css_unused_selector
+1796:   }
+1797: 
+1798:   .badge.timer {
+                    ^
+1799:     background: #00d4ff;
+1800:     font-family: var(--font-mono);
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:2971:2 Unused CSS selector ".timepro-view"
+https://svelte.dev/e/css_unused_selector
+2969:      ============================================ */
+2970: 
+2971:   .timepro-view {
+                     ^
+2972:     padding: 20px;
+2973:     overflow-y: auto;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:2977:2 Unused CSS selector ".timepro-header"
+https://svelte.dev/e/css_unused_selector
+2975:   }
+2976: 
+2977:   .timepro-header {
+                       ^
+2978:     display: flex;
+2979:     justify-content: space-between;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:2986:2 Unused CSS selector ".timepro-header h3"
+https://svelte.dev/e/css_unused_selector
+2984:   }
+2985: 
+2986:   .timepro-header h3 {
+                          ^
+2987:     margin: 0;
+2988:     font-size: 18px;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:2992:2 Unused CSS selector ".timepro-web-btn"
+https://svelte.dev/e/css_unused_selector
+2990:   }
+2991: 
+2992:   .timepro-web-btn {
+                        ^
+2993:     display: flex;
+2994:     align-items: center;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3007:2 Unused CSS selector ".timepro-web-btn:hover"
+https://svelte.dev/e/css_unused_selector
+3005:   }
+3006: 
+3007:   .timepro-web-btn:hover {
+                              ^
+3008:     transform: translateY(-2px);
+3009:     box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4);
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3012:2 Unused CSS selector ".timepro-section"
+https://svelte.dev/e/css_unused_selector
+3010:   }
+3011: 
+3012:   .timepro-section {
+                        ^
+3013:     background: var(--bg-secondary);
+3014:     border: 1px solid var(--border-color);
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3020:2 Unused CSS selector ".timepro-section h4"
+https://svelte.dev/e/css_unused_selector
+3018:   }
+3019: 
+3020:   .timepro-section h4 {
+                           ^
+3021:     margin: 0 0 8px 0;
+3022:     font-size: 14px;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3027:2 Unused CSS selector ".section-header"
+https://svelte.dev/e/css_unused_selector
+3025:   }
+3026: 
+3027:   .section-header {
+                       ^
+3028:     display: flex;
+3029:     justify-content: space-between;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3034:2 Unused CSS selector ".section-desc"
+https://svelte.dev/e/css_unused_selector
+3032:   }
+3033: 
+3034:   .section-desc {
+                     ^
+3035:     font-size: 12px;
+3036:     color: var(--text-muted);
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3040:2 Unused CSS selector ".toggle-auto-btn"
+https://svelte.dev/e/css_unused_selector
+3038:   }
+3039: 
+3040:   .toggle-auto-btn {
+                        ^
+3041:     padding: 6px 12px;
+3042:     border: 1px solid var(--border-color);
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3051:2 Unused CSS selector ".toggle-auto-btn.active"
+https://svelte.dev/e/css_unused_selector
+3049:   }
+3050: 
+3051:   .toggle-auto-btn.active {
+                               ^
+3052:     background: rgba(0, 212, 255, 0.2);
+3053:     border-color: #00d4ff;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3058:2 Unused CSS selector ".timer-active"
+https://svelte.dev/e/css_unused_selector
+3056: 
+3057:   /* Timer styles */
+3058:   .timer-active {
+                     ^
+3059:     display: flex;
+3060:     align-items: center;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3068:2 Unused CSS selector ".timer-display"
+https://svelte.dev/e/css_unused_selector
+3066:   }
+3067: 
+3068:   .timer-display {
+                      ^
+3069:     display: flex;
+3070:     flex-direction: column;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3074:2 Unused CSS selector ".timer-countdown"
+https://svelte.dev/e/css_unused_selector
+3072:   }
+3073: 
+3074:   .timer-countdown {
+                        ^
+3075:     font-size: 32px;
+3076:     font-weight: 700;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3081:2 Unused CSS selector ".timer-label"
+https://svelte.dev/e/css_unused_selector
+3079:   }
+3080: 
+3081:   .timer-label {
+                    ^
+3082:     font-size: 12px;
+3083:     color: var(--text-muted);
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3086:2 Unused CSS selector ".timer-stop-btn"
+https://svelte.dev/e/css_unused_selector
+3084:   }
+3085: 
+3086:   .timer-stop-btn {
+                       ^
+3087:     display: flex;
+3088:     align-items: center;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3099:2 Unused CSS selector ".timer-stop-btn:hover"
+https://svelte.dev/e/css_unused_selector
+3097:   }
+3098: 
+3099:   .timer-stop-btn:hover {
+                             ^
+3100:     background: #ff6464;
+3101:     color: white;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3104:2 Unused CSS selector ".timer-setup"
+https://svelte.dev/e/css_unused_selector
+3102:   }
+3103: 
+3104:   .timer-setup {
+                    ^
+3105:     display: flex;
+3106:     flex-direction: column;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3110:2 Unused CSS selector ".timer-input-group"
+https://svelte.dev/e/css_unused_selector
+3108:   }
+3109: 
+3110:   .timer-input-group {
+                          ^
+3111:     display: flex;
+3112:     align-items: center;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3116:2 Unused CSS selector ".timer-input-group label"
+https://svelte.dev/e/css_unused_selector
+3114:   }
+3115: 
+3116:   .timer-input-group label {
+                                ^
+3117:     font-size: 13px;
+3118:     color: var(--text-secondary);
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3121:2 Unused CSS selector ".timer-input-group input"
+https://svelte.dev/e/css_unused_selector
+3119:   }
+3120: 
+3121:   .timer-input-group input {
+                                ^
+3122:     width: 80px;
+3123:     padding: 8px 12px;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3132:2 Unused CSS selector ".timer-presets"
+https://svelte.dev/e/css_unused_selector
+3130:   }
+3131: 
+3132:   .timer-presets {
+                      ^
+3133:     display: flex;
+3134:     gap: 8px;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3138:2 Unused CSS selector ".preset-btn"
+https://svelte.dev/e/css_unused_selector
+3136:   }
+3137: 
+3138:   .preset-btn {
+                   ^
+3139:     padding: 8px 16px;
+3140:     background: var(--bg-tertiary);
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3149:2 Unused CSS selector ".preset-btn:hover"
+https://svelte.dev/e/css_unused_selector
+3147:   }
+3148: 
+3149:   .preset-btn:hover {
+                         ^
+3150:     border-color: #00d4ff;
+3151:     color: #00d4ff;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3155:2 Unused CSS selector ".timer-start-btn"
+https://svelte.dev/e/css_unused_selector
+3153:   }
+3154: 
+3155:   .timer-start-btn {
+                        ^
+3156:     display: flex;
+3157:     align-items: center;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3170:2 Unused CSS selector ".timer-start-btn:hover"
+https://svelte.dev/e/css_unused_selector
+3168:   }
+3169: 
+3170:   .timer-start-btn:hover {
+                              ^
+3171:     transform: translateY(-2px);
+3172:     box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4);
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3176:2 Unused CSS selector ".next-pointage"
+https://svelte.dev/e/css_unused_selector
+3174: 
+3175:   /* Next pointage */
+3176:   .next-pointage {
+                      ^
+3177:     display: flex;
+3178:     align-items: center;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3187:2 Unused CSS selector ".next-label"
+https://svelte.dev/e/css_unused_selector
+3185:   }
+3186: 
+3187:   .next-label {
+                   ^
+3188:     font-size: 12px;
+3189:     color: var(--text-muted);
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3192:2 Unused CSS selector ".next-info"
+https://svelte.dev/e/css_unused_selector
+3190:   }
+3191: 
+3192:   .next-info {
+                  ^
+3193:     font-weight: 600;
+3194:     color: #00d4ff;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3198:2 Unused CSS selector ".schedules-list"
+https://svelte.dev/e/css_unused_selector
+3196: 
+3197:   /* Schedules list */
+3198:   .schedules-list {
+                       ^
+3199:     display: flex;
+3200:     flex-direction: column;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3205:2 Unused CSS selector ".schedule-item"
+https://svelte.dev/e/css_unused_selector
+3203:   }
+3204: 
+3205:   .schedule-item {
+                      ^
+3206:     display: flex;
+3207:     align-items: center;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3216:2 Unused CSS selector ".schedule-item.in"
+https://svelte.dev/e/css_unused_selector
+3214:   }
+3215: 
+3216:   .schedule-item.in {
+                         ^
+3217:     border-left-color: #22c55e;
+3218:   }
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3220:2 Unused CSS selector ".schedule-item.out"
+https://svelte.dev/e/css_unused_selector
+3218:   }
+3219: 
+3220:   .schedule-item.out {
+                          ^
+3221:     border-left-color: #f59e0b;
+3222:   }
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3224:2 Unused CSS selector ".schedule-info"
+https://svelte.dev/e/css_unused_selector
+3222:   }
+3223: 
+3224:   .schedule-info {
+                      ^
+3225:     display: flex;
+3226:     align-items: center;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3230:2 Unused CSS selector ".schedule-time"
+https://svelte.dev/e/css_unused_selector
+3228:   }
+3229: 
+3230:   .schedule-time {
+                      ^
+3231:     font-family: var(--font-mono);
+3232:     font-weight: 700;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3237:2 Unused CSS selector ".schedule-label"
+https://svelte.dev/e/css_unused_selector
+3235:   }
+3236: 
+3237:   .schedule-label {
+                       ^
+3238:     font-size: 13px;
+3239:     color: var(--text-secondary);
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3242:2 Unused CSS selector ".schedule-days"
+https://svelte.dev/e/css_unused_selector
+3240:   }
+3241: 
+3242:   .schedule-days {
+                      ^
+3243:     font-size: 11px;
+3244:     color: var(--text-muted);
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3250:2 Unused CSS selector ".schedule-delete"
+https://svelte.dev/e/css_unused_selector
+3248:   }
+3249: 
+3250:   .schedule-delete {
+                        ^
+3251:     width: 28px;
+3252:     height: 28px;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3264:2 Unused CSS selector ".schedule-delete:hover"
+https://svelte.dev/e/css_unused_selector
+3262:   }
+3263: 
+3264:   .schedule-delete:hover {
+                              ^
+3265:     background: rgba(255, 100, 100, 0.2);
+3266:     border-color: #ff6464;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3271:2 Unused CSS selector ".add-schedule-form"
+https://svelte.dev/e/css_unused_selector
+3269: 
+3270:   /* Add schedule form */
+3271:   .add-schedule-form {
+                          ^
+3272:     display: flex;
+3273:     flex-direction: column;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3279:2 Unused CSS selector ".schedule-form-row"
+https://svelte.dev/e/css_unused_selector
+3277:   }
+3278: 
+3279:   .schedule-form-row {
+                          ^
+3280:     display: flex;
+3281:     gap: 10px;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3284:2 Unused CSS selector ".time-input"
+https://svelte.dev/e/css_unused_selector
+3282:   }
+3283: 
+3284:   .time-input {
+                   ^
+3285:     width: 100px;
+3286:     padding: 10px 12px;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3294:2 Unused CSS selector ".type-select"
+https://svelte.dev/e/css_unused_selector
+3292:   }
+3293: 
+3294:   .type-select {
+                    ^
+3295:     padding: 10px 12px;
+3296:     border: 1px solid var(--border-color);
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3302:2 Unused CSS selector ".label-input"
+https://svelte.dev/e/css_unused_selector
+3300:   }
+3301: 
+3302:   .label-input {
+                    ^
+3303:     flex: 1;
+3304:     padding: 10px 12px;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3311:2 Unused CSS selector ".days-selector"
+https://svelte.dev/e/css_unused_selector
+3309:   }
+3310: 
+3311:   .days-selector {
+                      ^
+3312:     display: flex;
+3313:     gap: 6px;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3316:2 Unused CSS selector ".day-btn"
+https://svelte.dev/e/css_unused_selector
+3314:   }
+3315: 
+3316:   .day-btn {
+                ^
+3317:     flex: 1;
+3318:     padding: 8px 4px;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3328:2 Unused CSS selector ".day-btn:hover"
+https://svelte.dev/e/css_unused_selector
+3326:   }
+3327: 
+3328:   .day-btn:hover {
+                      ^
+3329:     border-color: #00d4ff;
+3330:     color: var(--text-primary);
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3333:2 Unused CSS selector ".day-btn.selected"
+https://svelte.dev/e/css_unused_selector
+3331:   }
+3332: 
+3333:   .day-btn.selected {
+                         ^
+3334:     background: rgba(0, 212, 255, 0.2);
+3335:     border-color: #00d4ff;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3340:2 Unused CSS selector ".add-schedule-btn"
+https://svelte.dev/e/css_unused_selector
+3338:   }
+3339: 
+3340:   .add-schedule-btn {
+                         ^
+3341:     display: flex;
+3342:     align-items: center;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3354:2 Unused CSS selector ".add-schedule-btn:hover:not(:disabled)"
+https://svelte.dev/e/css_unused_selector
+3352:   }
+3353: 
+3354:   .add-schedule-btn:hover:not(:disabled) {
+                                              ^
+3355:     border-style: solid;
+3356:     border-color: #00d4ff;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3361:2 Unused CSS selector ".add-schedule-btn:disabled"
+https://svelte.dev/e/css_unused_selector
+3359:   }
+3360: 
+3361:   .add-schedule-btn:disabled {
+                                  ^
+3362:     opacity: 0.5;
+3363:     cursor: not-allowed;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3367:2 Unused CSS selector ".timepro-section.examples"
+https://svelte.dev/e/css_unused_selector
+3365: 
+3366:   /* Examples section */
+3367:   .timepro-section.examples {
+                                 ^
+3368:     background: transparent;
+3369:     border: none;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3373:2 Unused CSS selector ".example-btns"
+https://svelte.dev/e/css_unused_selector
+3371:   }
+3372: 
+3373:   .example-btns {
+                     ^
+3374:     display: flex;
+3375:     flex-wrap: wrap;
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3379:2 Unused CSS selector ".example-btn"
+https://svelte.dev/e/css_unused_selector
+3377:   }
+3378: 
+3379:   .example-btn {
+                    ^
+3380:     padding: 8px 12px;
+3381:     background: var(--bg-secondary);
+00:53:02 [vite-plugin-svelte] src/lib/components/CommunicationsPanel.svelte:3390:2 Unused CSS selector ".example-btn:hover"
+https://svelte.dev/e/css_unused_selector
+3388:   }
+3389: 
+3390:   .example-btn:hover {
+                          ^
+3391:     border-color: var(--accent-primary);
+3392:     color: var(--accent-primary);
+00:53:02 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:632:2 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+630: 
+631: {:else if activeScreen === 'windows-update'}
+632:   <div class="fullscreen wu-screen" onclick={exitScreen}>
+             ^
+633:     {#if wuRestarting}
+634:       <div class="wu-restart">
+00:53:02 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:632:2 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+630: 
+631: {:else if activeScreen === 'windows-update'}
+632:   <div class="fullscreen wu-screen" onclick={exitScreen}>
+             ^
+633:     {#if wuRestarting}
+634:       <div class="wu-restart">
+00:53:02 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:653:2 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+651: 
+652: {:else if activeScreen === 'bsod'}
+653:   <div class="fullscreen bsod-screen" onclick={exitScreen}>
+             ^
+654:     <div class="bsod-content">
+655:       <div class="bsod-sad">:(</div>
+00:53:02 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:653:2 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+651: 
+652: {:else if activeScreen === 'bsod'}
+653:   <div class="fullscreen bsod-screen" onclick={exitScreen}>
+             ^
+654:     <div class="bsod-content">
+655:       <div class="bsod-sad">:(</div>
+00:53:02 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:681:2 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+679: 
+680: {:else if activeScreen === 'terminal'}
+681:   <div class="fullscreen terminal-screen" onclick={exitScreen}>
+             ^
+682:     <div class="terminal-window">
+683:       <div class="terminal-header">
+00:53:02 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:681:2 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+679: 
+680: {:else if activeScreen === 'terminal'}
+681:   <div class="fullscreen terminal-screen" onclick={exitScreen}>
+             ^
+682:     <div class="terminal-window">
+683:       <div class="terminal-header">
+00:53:02 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:703:2 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+701: 
+702: {:else if activeScreen === 'chkdsk'}
+703:   <div class="fullscreen chkdsk-screen" onclick={exitScreen}>
+             ^
+704:     <div class="chkdsk-content">
+705:       {#each chkdskLines as line}
+00:53:02 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:703:2 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+701: 
+702: {:else if activeScreen === 'chkdsk'}
+703:   <div class="fullscreen chkdsk-screen" onclick={exitScreen}>
+             ^
+704:     <div class="chkdsk-content">
+705:       {#each chkdskLines as line}
+00:53:02 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:719:2 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+717: 
+718: {:else if activeScreen === 'bios'}
+719:   <div class="fullscreen bios-screen" onclick={exitScreen}>
+             ^
+720:     <div class="bios-content">
+721:       {#each biosLines as line}
+00:53:02 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:719:2 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+717: 
+718: {:else if activeScreen === 'bios'}
+719:   <div class="fullscreen bios-screen" onclick={exitScreen}>
+             ^
+720:     <div class="bios-content">
+721:       {#each biosLines as line}
+00:53:02 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:731:2 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+729: 
+730: {:else if activeScreen === 'antivirus'}
+731:   <div class="fullscreen av-screen" onclick={exitScreen}>
+             ^
+732:     <div class="av-window">
+733:       <div class="av-header">
+00:53:02 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:731:2 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+729: 
+730: {:else if activeScreen === 'antivirus'}
+731:   <div class="fullscreen av-screen" onclick={exitScreen}>
+             ^
+732:     <div class="av-window">
+733:       <div class="av-header">
+00:53:02 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:766:2 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+764: 
+765: {:else if activeScreen === 'sfc'}
+766:   <div class="fullscreen sfc-screen" onclick={exitScreen}>
+             ^
+767:     <div class="cmd-window">
+768:       <div class="cmd-header">
+00:53:02 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:766:2 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+764: 
+765: {:else if activeScreen === 'sfc'}
+766:   <div class="fullscreen sfc-screen" onclick={exitScreen}>
+             ^
+767:     <div class="cmd-window">
+768:       <div class="cmd-header">
+00:53:02 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:786:2 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+784: 
+785: {:else if activeScreen === 'dism'}
+786:   <div class="fullscreen dism-screen" onclick={exitScreen}>
+             ^
+787:     <div class="cmd-window">
+788:       <div class="cmd-header">
+00:53:02 [vite-plugin-svelte] src/lib/components/WIPModule.svelte:786:2 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+784: 
+785: {:else if activeScreen === 'dism'}
+786:   <div class="fullscreen dism-screen" onclick={exitScreen}>
+             ^
+787:     <div class="cmd-window">
+788:       <div class="cmd-header">
+00:53:02 [vite-plugin-svelte] src/lib/components/KDrive/KDriveModule.svelte:552:14 `<div>` with a dblclick handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+550:           {:else}
+551:             {#each files as file}
+552:               <div
+                        ^
+553:                 class="file-item"
+554:                 class:folder={file.type === 'dir'}
+00:53:02 [vite-plugin-svelte] src/lib/components/Canvas/PostGISViewer.svelte:107:36 This reference only captures the initial value of `initialConnectionId`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally
+105:   let mapLoaded = $state(false);
+106:   let connections = $state<DBConnection[]>([]);
+107:   let selectedConnectionId = $state(initialConnectionId);
+                                                            ^
+108:   let geoTables = $state<GeoTable[]>([]);
+109:   let activeLayers = $state<Set<string>>(new Set());
+00:53:02 [vite-plugin-svelte] src/lib/components/Canvas/MapAssistant.svelte:424:4 Buttons and links should either contain text or have an `aria-label`, `aria-labelledby` or `title` attribute
+https://svelte.dev/e/a11y_consider_explicit_label
+422:       disabled={$isLoading}
+423:     />
+424:     <button
+                 ^
+425:       class="send-btn"
+426:       onclick={() => sendMessage()}
+00:53:02 [vite-plugin-svelte] src/lib/components/Editor/CollapsiblePanel.svelte:120:4 noninteractive element cannot have nonnegative tabIndex value
+https://svelte.dev/e/a11y_no_noninteractive_tabindex
+118:   {#if !collapsed}
+119:     <!-- Resize handle -->
+120:     <div
+              ^
+121:       class="resize-handle"
+122:       onmousedown={startResize}
+00:53:02 [vite-plugin-svelte] src/lib/components/Editor/CollapsiblePanel.svelte:120:4 Non-interactive element `<div>` should not be assigned mouse or keyboard event listeners
+https://svelte.dev/e/a11y_no_noninteractive_element_interactions
+118:   {#if !collapsed}
+119:     <!-- Resize handle -->
+120:     <div
+              ^
+121:       class="resize-handle"
+122:       onmousedown={startResize}
+00:53:02 [vite-plugin-svelte] src/lib/components/Editor/FileExplorer.svelte:24:27 This reference only captures the initial value of `rootPath`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally
+22:   let files = $state<FileNode[]>([]);
+23:   let drives = $state<FileNode[]>([]);
+24:   let currentRoot = $state(rootPath);
+                                       ^
+25:   let selectedPath = $state<string | null>(null);
+26:   let searchQuery = $state('');
+00:53:02 [vite-plugin-svelte] src/lib/components/Databases/SchemaViewer.svelte:405:16 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+403:             <div class="tables-grid">
+404:               {#each filteredTables() as table}
+405:                 <div
+                          ^
+406:                   class="table-card"
+407:                   class:selected={selectedTable === table.fullName}
+00:53:02 [vite-plugin-svelte] src/lib/components/Databases/SchemaViewer.svelte:405:16 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+403:             <div class="tables-grid">
+404:               {#each filteredTables() as table}
+405:                 <div
+                          ^
+406:                   class="table-card"
+407:                   class:selected={selectedTable === table.fullName}
+00:53:02 [vite-plugin-svelte] src/lib/components/Databases/SqlAssistant.svelte:216:10 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+214:       <div class="history-list">
+215:         {#each history as item}
+216:           <div class="history-item" onclick={() => { naturalQuery = item.query; generatedSql = item.sql; }}>
+                     ^
+217:             <span class="history-query">{item.query.slice(0, 60)}...</span>
+218:             <span class="history-time">{item.timestamp.toLocaleTimeString()}</span>
+00:53:02 [vite-plugin-svelte] src/lib/components/Databases/SqlAssistant.svelte:216:10 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+214:       <div class="history-list">
+215:         {#each history as item}
+216:           <div class="history-item" onclick={() => { naturalQuery = item.query; generatedSql = item.sql; }}>
+                     ^
+217:             <span class="history-query">{item.query.slice(0, 60)}...</span>
+218:             <span class="history-time">{item.timestamp.toLocaleTimeString()}</span>
+00:53:02 [vite-plugin-svelte] src/lib/components/Databases/DocGenerator.svelte:498:4 Buttons and links should either contain text or have an `aria-label`, `aria-labelledby` or `title` attribute
+https://svelte.dev/e/a11y_consider_explicit_label
+496:       <p>Generez une documentation complete de votre schema de base de donnees</p>
+497:     </div>
+498:     <button class="refresh-btn" onclick={loadSchema} disabled={loading}>
+                  ^
+499:       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class:spinning={loading}>
+500:         <path d="M23 4v6h-6M1 20v-6h6"/>
+00:53:02 [vite-plugin-svelte] src/lib/components/Databases/DocGenerator.svelte:524:10 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+522:         <!-- Schema selection -->
+523:         <div class="config-section">
+524:           <label>Schemas</label>
+                                     ^
+525:           <div class="schema-list">
+526:             {#if schema?.availableSchemas}
+00:53:02 [vite-plugin-svelte] src/lib/components/Databases/DocGenerator.svelte:549:10 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+547:         <!-- Options -->
+548:         <div class="config-section">
+549:           <label>Options</label>
+                                     ^
+550:           <div class="options-list">
+551:             <label class="checkbox-option">
+00:53:02 [vite-plugin-svelte] src/lib/components/Databases/MockDataGenerator.svelte:323:4 Buttons and links should either contain text or have an `aria-label`, `aria-labelledby` or `title` attribute
+https://svelte.dev/e/a11y_consider_explicit_label
+321:       <p>Donnees suisses realistes, support PostGIS, detection intelligente des types</p>
+322:     </div>
+323:     <button class="refresh-btn" onclick={loadTables} disabled={loading}>
+                  ^
+324:       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class:spinning={loading}>
+325:         <path d="M23 4v6h-6M1 20v-6h6"/>
+[33m[plugin vite:reporter] 
+(!) C:/Users/Marc/GeoMind-Infra/geomind-app/src/lib/services/api.ts is dynamically imported by C:/Users/Marc/GeoMind-Infra/geomind-app/src/lib/components/Editor/EditorModule.svelte, C:/Users/Marc/GeoMind-Infra/geomind-app/src/lib/components/Editor/EditorModule.svelte, C:/Users/Marc/GeoMind-Infra/geomind-app/src/lib/components/Editor/EditorModule.svelte but also statically imported by C:/Users/Marc/GeoMind-Infra/geomind-app/src/lib/components/Canvas/MapAssistant.svelte, C:/Users/Marc/GeoMind-Infra/geomind-app/src/lib/components/Chat/ChatModule.svelte, C:/Users/Marc/GeoMind-Infra/geomind-app/src/lib/components/Editor/EditorChat.svelte, C:/Users/Marc/GeoMind-Infra/geomind-app/src/lib/components/Editor/FileExplorer.svelte, C:/Users/Marc/GeoMind-Infra/geomind-app/src/lib/components/Settings/SettingsModule.svelte, dynamic import will not move module into another chunk.
+[39m
+[33m
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.[39m
+   Compiling app v0.1.0 (C:\Users\Marc\GeoMind-Infra\geomind-app\src-tauri)
+    Finished `release` profile [optimized] target(s) in 23.41s
+       Built application at: C:\Users\Marc\GeoMind-Infra\geomind-app\src-tauri\target\release\app.exe
+        Info Patching binary "C:\\Users\\Marc\\GeoMind-Infra\\geomind-app\\src-tauri\\target\\release\\app.exe" for type msi
+        Info Target: x64
+     Running candle for "main.wxs"
+     Running light to produce C:\Users\Marc\GeoMind-Infra\geomind-app\src-tauri\target\release\bundle\msi\GeoMind_1.0.0_x64_en-US.msi
+        Info Patching binary "C:\\Users\\Marc\\GeoMind-Infra\\geomind-app\\src-tauri\\target\\release\\app.exe" for type nsis
+        Info Target: x64
+     Running makensis to produce C:\Users\Marc\GeoMind-Infra\geomind-app\src-tauri\target\release\bundle\nsis\GeoMind_1.0.0_x64-setup.exe
+    Finished 2 bundles at:
+        C:\Users\Marc\GeoMind-Infra\geomind-app\src-tauri\target\release\bundle\msi\GeoMind_1.0.0_x64_en-US.msi
+        C:\Users\Marc\GeoMind-Infra\geomind-app\src-tauri\target\release\bundle\nsis\GeoMind_1.0.0_x64-setup.exe
+
