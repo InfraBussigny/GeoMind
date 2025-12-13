@@ -124,6 +124,22 @@ npm install
 node index.js
 ```
 
+### Probleme : "Le serveur backend n'est pas demarre" (meme si le backend tourne)
+**Cause :** Le CSP (Content Security Policy) dans `tauri.conf.json` bloque les requetes vers localhost:3001
+**Solution :** Verifier que `connect-src` dans `tauri.conf.json` contient :
+```
+http://localhost:3001 ws://localhost:3001
+```
+
+Exemple de CSP correct :
+```json
+"security": {
+  "csp": "... connect-src 'self' http://localhost:3001 ws://localhost:3001 ..."
+}
+```
+
+Si le CSP ne contient pas localhost:3001, l'application compilee ne pourra pas communiquer avec le backend meme s'il est en cours d'execution.
+
 ## Problemes connus et solutions
 
 ### Erreur : Import "ol/Map" ou "proj4" non resolu
