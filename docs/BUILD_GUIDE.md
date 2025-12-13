@@ -84,6 +84,46 @@ src-tauri/target/release/bundle/
 └── nsis/GeoMind_X.X.X_x64-setup.exe   # Installateur NSIS
 ```
 
+## Backend Server (IMPORTANT)
+
+GeoMind necessite un backend Node.js pour les fonctionnalites IA, connexions DB, etc.
+
+### Installation des dependances backend
+```bash
+cd geomind-app/server
+npm install
+```
+
+### Demarrage du backend
+```bash
+cd geomind-app/server
+node index.js
+```
+
+Le serveur demarre sur **http://localhost:3001**
+
+### Script de demarrage complet
+Utiliser `start-geomind.bat` a la racine du projet :
+```batch
+@echo off
+echo Demarrage du backend GeoMind...
+cd /d %~dp0geomind-app\server
+start /B node index.js
+echo Backend demarre sur http://localhost:3001
+echo.
+echo Vous pouvez maintenant lancer l'application GeoMind
+pause
+```
+
+### Probleme : "Backend ne marche pas"
+**Cause :** Les dependances npm du serveur ne sont pas installees
+**Solution :**
+```bash
+cd geomind-app/server
+npm install
+node index.js
+```
+
 ## Problemes connus et solutions
 
 ### Erreur : Import "ol/Map" ou "proj4" non resolu
@@ -132,12 +172,18 @@ Le package.json doit inclure :
 
 ## Checklist rapide
 
+### Compilation
 - [ ] Node.js installe
 - [ ] Rust/Cargo installe
 - [ ] VS Build Tools avec C++ installe
 - [ ] vcvarsall.bat existe
-- [ ] Toutes les dependances npm installees
+- [ ] Dependances npm frontend installees (`geomind-app/`)
 - [ ] Utiliser le script batch ou GitHub Actions
 
+### Execution
+- [ ] Dependances npm backend installees (`geomind-app/server/`)
+- [ ] Backend demarre (`node index.js` sur port 3001)
+- [ ] Application GeoMind lancee
+
 ---
-*Derniere mise a jour : 13 decembre 2025*
+*Derniere mise a jour : 14 decembre 2025*
