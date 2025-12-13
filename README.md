@@ -376,6 +376,54 @@ Verifier que le port 3001 est libre :
 netstat -ano | findstr 3001
 ```
 
+### GeoMind : Couches geoportail non affichees (app compilee)
+
+Les couches WMS/WMTS necessitent une configuration CSP (Content Security Policy) dans Tauri.
+
+**Fichier** : `geomind-app/src-tauri/tauri.conf.json`
+
+La directive `connect-src` doit inclure tous les services geo :
+- `https://*.geo.admin.ch` - Services federaux
+- `https://*.asit-asso.ch` - ASIT-VD
+- `https://*.geodienste.ch` - Geodienste
+- `https://*.vd.ch` - Canton de Vaud
+- `https://*.ne.ch` - Canton de Neuchatel
+
+La directive `img-src` doit aussi inclure ces domaines pour les tuiles.
+
+### GeoMind : Module Communications n'ouvre que des popups
+
+Le module Communications utilise des fenêtres Tauri WebView pour afficher WhatsApp, Outlook et 3CX.
+
+**Fichier** : `geomind-app/src-tauri/capabilities/default.json`
+
+Permissions requises :
+```json
+{
+  "permissions": [
+    "core:default",
+    "core:window:allow-create",
+    "core:webview:allow-create-webview-window",
+    "shell:allow-open"
+  ]
+}
+```
+
+**Fichier** : `geomind-app/src-tauri/Cargo.toml`
+
+Plugin requis :
+```toml
+tauri-plugin-shell = "2"
+```
+
+**Fichier** : `geomind-app/src-tauri/src/lib.rs`
+
+Initialisation du plugin :
+```rust
+tauri::Builder::default()
+    .plugin(tauri_plugin_shell::init())
+```
+
 ### "claude" n'est pas reconnu
 
 Verifier que npm est dans le PATH :
