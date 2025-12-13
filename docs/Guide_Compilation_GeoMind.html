@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guide de Compilation GeoMind Desktop</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      line-height: 1.6;
+      color: #333;
+      background: #fff;
+    }
+    h1 {
+      color: #1a5f2a;
+      border-bottom: 3px solid #1a5f2a;
+      padding-bottom: 10px;
+      margin-bottom: 30px;
+    }
+    h2 {
+      color: #2d7a3e;
+      margin-top: 40px;
+      padding: 10px 15px;
+      background: #e8f5e9;
+      border-left: 4px solid #1a5f2a;
+    }
+    h3 {
+      color: #444;
+      margin-top: 25px;
+    }
+    .poste-a { background: #e3f2fd; border-left-color: #1976d2; }
+    .poste-a h2 { color: #1565c0; }
+    .poste-b { background: #fff3e0; border-left-color: #f57c00; }
+    .poste-b h2 { color: #ef6c00; }
+    code {
+      background: #f5f5f5;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 0.9em;
+    }
+    pre {
+      background: #263238;
+      color: #aed581;
+      padding: 15px 20px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 0.85em;
+      line-height: 1.5;
+    }
+    .command-box {
+      background: #1e1e1e;
+      color: #4fc3f7;
+      padding: 12px 18px;
+      border-radius: 6px;
+      margin: 10px 0;
+      font-family: 'Consolas', monospace;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px 12px;
+      text-align: left;
+    }
+    th {
+      background: #f5f5f5;
+      font-weight: 600;
+    }
+    .step {
+      background: #fafafa;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .step-number {
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      background: #1a5f2a;
+      color: white;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 30px;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+    .warning {
+      background: #fff8e1;
+      border-left: 4px solid #ffc107;
+      padding: 12px 18px;
+      margin: 15px 0;
+    }
+    .success {
+      background: #e8f5e9;
+      border-left: 4px solid #4caf50;
+      padding: 12px 18px;
+      margin: 15px 0;
+    }
+    .info {
+      background: #e3f2fd;
+      border-left: 4px solid #2196f3;
+      padding: 12px 18px;
+      margin: 15px 0;
+    }
+    ul { padding-left: 25px; }
+    li { margin: 8px 0; }
+    .checklist {
+      list-style: none;
+      padding-left: 0;
+    }
+    .checklist li::before {
+      content: "☐ ";
+      font-size: 1.2em;
+    }
+    .url {
+      color: #1976d2;
+      word-break: break-all;
+    }
+    .diagram {
+      background: #fafafa;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 20px;
+      font-family: 'Consolas', monospace;
+      font-size: 0.85em;
+      white-space: pre;
+      overflow-x: auto;
+    }
+    @media print {
+      body { padding: 20px; }
+      h2 { break-after: avoid; }
+      .step { break-inside: avoid; }
+      pre { white-space: pre-wrap; }
+    }
+    .header-info {
+      display: flex;
+      justify-content: space-between;
+      color: #666;
+      font-size: 0.9em;
+      margin-bottom: 30px;
+    }
+    .logo {
+      font-size: 2.5em;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="logo">🌍</div>
+  <h1 style="text-align: center;">Guide de Compilation<br>GeoMind Desktop</h1>
+
+  <div class="header-info">
+    <span>Version 1.0.0</span>
+    <span>Commune de Bussigny</span>
+    <span>Decembre 2025</span>
+  </div>
+
+  <div class="info">
+    <strong>Objectif :</strong> Compiler l'application GeoMind en executable Windows (.exe) installable.
+  </div>
+
+  <h2>Prerequis</h2>
+
+  <table>
+    <tr>
+      <th>Outil</th>
+      <th>Version minimum</th>
+      <th>Telecharger</th>
+    </tr>
+    <tr>
+      <td>Node.js</td>
+      <td>v18 ou plus</td>
+      <td class="url">https://nodejs.org</td>
+    </tr>
+    <tr>
+      <td>Git</td>
+      <td>N'importe</td>
+      <td class="url">https://git-scm.com</td>
+    </tr>
+    <tr>
+      <td>Rust</td>
+      <td>v1.70 ou plus</td>
+      <td class="url">https://rustup.rs</td>
+    </tr>
+    <tr>
+      <td>VS Build Tools</td>
+      <td>2022</td>
+      <td class="url">https://visualstudio.microsoft.com/fr/visual-cpp-build-tools/</td>
+    </tr>
+  </table>
+
+  <hr style="margin: 40px 0; border: none; border-top: 2px dashed #ccc;">
+
+  <h2 class="poste-a" style="background: #e3f2fd; border-left-color: #1976d2; color: #1565c0;">
+    POSTE A - Poste actuel (sans droits admin)
+  </h2>
+
+  <div class="step">
+    <h3><span class="step-number">1</span> Preparer le code source</h3>
+
+    <p>Ouvrir l'explorateur de fichiers et naviguer vers :</p>
+    <div class="command-box">C:\Users\zema\GeoBrain\</div>
+
+    <p><strong>Copier tout le dossier <code>GeoBrain</code></strong> sur :</p>
+    <ul>
+      <li>Une cle USB, ou</li>
+      <li>Un dossier reseau partage</li>
+    </ul>
+
+    <div class="warning">
+      <strong>Taille estimee :</strong> 500 Mo - 1 Go<br>
+      Pour reduire la taille, vous pouvez supprimer ces dossiers avant de copier :<br>
+      <code>geomind-app\node_modules\</code> et <code>geomind-app\src-tauri\target\</code><br>
+      (ils seront recrees automatiquement)
+    </div>
+  </div>
+
+  <hr style="margin: 40px 0; border: none; border-top: 2px dashed #ccc;">
+
+  <h2 class="poste-b" style="background: #fff3e0; border-left-color: #f57c00; color: #ef6c00;">
+    POSTE B - Nouveau poste (avec droits admin)
+  </h2>
+
+  <div class="step">
+    <h3><span class="step-number">2</span> Verifier les outils installes</h3>
+
+    <p>Ouvrir <strong>PowerShell en tant qu'administrateur</strong> :</p>
+    <ul>
+      <li>Appuyer sur <code>Win + X</code></li>
+      <li>Cliquer sur "Terminal (Admin)" ou "PowerShell (Admin)"</li>
+    </ul>
+
+    <p>Copier-coller cette commande :</p>
+    <pre>Write-Host "=== VERIFICATION ===" -ForegroundColor Cyan
+Write-Host "Node.js: " -NoNewline
+try { node --version } catch { Write-Host "PAS INSTALLE" -ForegroundColor Red }
+Write-Host "Git: " -NoNewline
+try { git --version } catch { Write-Host "PAS INSTALLE" -ForegroundColor Red }
+Write-Host "Rust: " -NoNewline
+try { rustc --version } catch { Write-Host "PAS INSTALLE" -ForegroundColor Red }</pre>
+
+    <p>Noter ce qui est manquant et passer a l'etape suivante.</p>
+  </div>
+
+  <div class="step">
+    <h3><span class="step-number">3</span> Installer les outils manquants</h3>
+
+    <h4>3.1 Node.js (si manquant)</h4>
+    <ol>
+      <li>Aller sur <span class="url">https://nodejs.org</span></li>
+      <li>Cliquer sur le bouton vert <strong>"LTS"</strong></li>
+      <li>Lancer l'installateur et cliquer Suivant partout</li>
+    </ol>
+
+    <h4>3.2 Git (si manquant)</h4>
+    <ol>
+      <li>Aller sur <span class="url">https://git-scm.com/download/win</span></li>
+      <li>Telecharger et installer avec les options par defaut</li>
+    </ol>
+
+    <h4>3.3 Rust (si manquant)</h4>
+    <ol>
+      <li>Aller sur <span class="url">https://rustup.rs</span></li>
+      <li>Telecharger et lancer <code>rustup-init.exe</code></li>
+      <li>Taper <code>1</code> puis Entree pour l'installation par defaut</li>
+      <li><strong>Fermer et reouvrir le terminal</strong></li>
+    </ol>
+
+    <h4>3.4 Visual Studio Build Tools</h4>
+    <ol>
+      <li>Aller sur <span class="url">https://visualstudio.microsoft.com/fr/visual-cpp-build-tools/</span></li>
+      <li>Telecharger "Build Tools pour Visual Studio 2022"</li>
+      <li>Lancer l'installateur</li>
+      <li>Cocher <strong>"Developpement Desktop en C++"</strong></li>
+      <li>Cliquer Installer (duree: 5-10 minutes)</li>
+    </ol>
+  </div>
+
+  <div class="step">
+    <h3><span class="step-number">4</span> Copier le projet</h3>
+
+    <ol>
+      <li>Brancher la cle USB</li>
+      <li>Creer le dossier <code>C:\Dev\</code></li>
+      <li>Copier le dossier <code>GeoBrain</code> dans <code>C:\Dev\</code></li>
+    </ol>
+
+    <p>Resultat attendu :</p>
+    <div class="command-box">C:\Dev\GeoBrain\geomind-app\</div>
+  </div>
+
+  <div class="step">
+    <h3><span class="step-number">5</span> Installer les dependances</h3>
+
+    <p>Dans le terminal PowerShell, executer :</p>
+    <pre>cd C:\Dev\GeoBrain\geomind-app
+npm install</pre>
+
+    <div class="info">
+      <strong>Duree :</strong> 2-5 minutes selon la connexion internet
+    </div>
+  </div>
+
+  <div class="step">
+    <h3><span class="step-number">6</span> Compiler l'application</h3>
+
+    <pre>npm run tauri:build</pre>
+
+    <div class="info">
+      <strong>Duree :</strong> 5-15 minutes (premiere compilation)<br>
+      Les compilations suivantes seront plus rapides.
+    </div>
+  </div>
+
+  <div class="step">
+    <h3><span class="step-number">7</span> Recuperer l'installateur</h3>
+
+    <p>Une fois la compilation terminee, les fichiers sont dans :</p>
+    <div class="command-box">C:\Dev\GeoBrain\geomind-app\src-tauri\target\release\bundle\</div>
+
+    <table>
+      <tr>
+        <th>Fichier</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td><code>nsis\GeoMind_1.0.0_x64-setup.exe</code></td>
+        <td>Installateur Windows (recommande)</td>
+      </tr>
+      <tr>
+        <td><code>msi\GeoMind_1.0.0_x64.msi</code></td>
+        <td>Installateur MSI (pour deploiement entreprise)</td>
+      </tr>
+    </table>
+
+    <div class="success">
+      <strong>Termine !</strong> Vous pouvez maintenant installer GeoMind sur n'importe quel poste Windows en executant le fichier <code>GeoMind_1.0.0_x64-setup.exe</code>
+    </div>
+  </div>
+
+  <hr style="margin: 40px 0;">
+
+  <h2>Resume visuel</h2>
+
+  <div class="diagram">┌─────────────────────────────────────────────────────────────────┐
+│  POSTE A (poste actuel sans admin)                              │
+│  ──────────────────────────────────                             │
+│  → Copier C:\Users\zema\GeoBrain\ sur cle USB                   │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼ (cle USB)
+┌─────────────────────────────────────────────────────────────────┐
+│  POSTE B (nouveau poste avec admin)                             │
+│  ──────────────────────────────────                             │
+│  1. Installer Node.js, Git, Rust, VS Build Tools                │
+│  2. Coller GeoBrain dans C:\Dev\                                │
+│  3. cd C:\Dev\GeoBrain\geomind-app                              │
+│  4. npm install                                                 │
+│  5. npm run tauri:build                                         │
+│  6. Recuperer .exe dans src-tauri\target\release\bundle\        │
+└─────────────────────────────────────────────────────────────────┘</div>
+
+  <h2>Checklist</h2>
+
+  <ul class="checklist">
+    <li>Code source copie sur cle USB</li>
+    <li>Node.js v18+ installe</li>
+    <li>Git installe</li>
+    <li>Rust installe</li>
+    <li>VS Build Tools 2022 avec C++ installe</li>
+    <li>npm install execute avec succes</li>
+    <li>npm run tauri:build execute avec succes</li>
+    <li>Fichier .exe recupere</li>
+  </ul>
+
+  <hr style="margin: 40px 0;">
+
+  <p style="text-align: center; color: #666; font-size: 0.9em;">
+    GeoMind - Commune de Bussigny<br>
+    Guide genere le 13 decembre 2025
+  </p>
+
+</body>
+</html>

@@ -1,3 +1,174 @@
+## Session 27 - 13 decembre 2025 (nuit)
+**Theme** : Recherche approches CAD web avec Fabric.js
+
+### Travail effectue
+
+#### 1. Recherche approfondie fonctionnalites CAD
+- **Georeferencement** : Meilleures pratiques transformation affine
+- **Layer styling** : Modification dynamique stroke/opacite
+- **CAD editing** : Outils dessin, snapping, undo/redo
+- **DXF export** : Bibliotheques JavaScript disponibles
+
+#### 2. Analyse code existant
+- Module CAD deja present : `geomind-app/src/lib/components/CAD/CADModule.svelte`
+- Georeferencement partiel avec transformation Helmert (4 parametres)
+- dxf-parser (v1.1.2) pour lecture DXF
+- Fabric.js (v6.9.0) pour rendu canvas
+- Support MN95 (EPSG:2056) via proj4
+
+#### 3. Documentation complete creee
+**Fichier** : `docs/cad-implementation-guide.md`
+
+**Contenu** :
+1. **Georeferencement ameliore**
+   - Passage Helmert → Transformation affine 6 parametres
+   - Code complet avec ml-matrix pour resolution moindres carres
+   - Validation coords MN95, export worldfile
+   - UI amelioree avec tableau points de calage + residus
+
+2. **Layer styling dynamique**
+   - Fonction updateLayerStyle() pour strokeWidth/couleur/opacite
+   - Workaround opacite Fabric.js (RGBA pour fill, stroke opaque)
+   - Controles UI avec sliders
+
+3. **Outils edition CAD**
+   - Dessin : ligne, polyligne, rectangle, cercle
+   - Snapping grille + objets (extremites, milieux, centres)
+   - Indicateur visuel de snap
+   - Undo/Redo avec stack JSON
+
+4. **Export DXF**
+   - Bibliotheque recommandee : @tarikjabiri/dxf (moderne, TypeScript)
+   - Alternative : dxf-writer
+   - Code complet conversion Fabric.js → DXF
+   - Support coords georeferencies MN95
+
+5. **Modules utilitaires**
+   - `affineTransform.ts` : Calculs transformation affine complete
+   - `dxfExporter.ts` : Export DXF avec coords monde
+   - Structure fichiers proposee
+
+#### 4. Mise a jour memoire
+- Ajout section "Module CAD / DXF" dans `memory/context.md`
+- Etat actuel, ameliorations planifiees, packages NPM recommandes
+- References Swisstopo, Fabric.js, DXF writer
+
+### Packages NPM recommandes
+```bash
+npm install ml-matrix           # Calculs matriciels affine transform
+npm install @tarikjabiri/dxf    # Export DXF moderne
+npm install @turf/turf          # (Optionnel) Validation geometries
+```
+
+### References consultees
+- Fabric.js transformations, snapping demos
+- Swisstopo transformations MN95
+- dxf-writer, @tarikjabiri/dxf (GitHub)
+- Affine transformation theory (ESRI, GIS Geography)
+- Canvas to DXF workflow (DEV Community)
+
+### Prochaines etapes recommandees
+1. Implementer transformation affine 6 parametres
+2. Ajouter outils dessin (ligne, polyligne, etc.)
+3. Installer @tarikjabiri/dxf et implementer export
+4. Tester workflow complet : import DXF → georef → edit → export DXF georef
+
+---
+
+## Session 26 - 13 decembre 2025 (soir)
+**Theme** : Convertisseur DXF/Interlis
+
+### Travail effectue
+
+#### 1. Conversion DXF -> GeoJSON
+- Parser DXF integre sans dependance externe
+- Entites supportees : LINE, LWPOLYLINE, POLYLINE, CIRCLE, ARC, POINT, TEXT, MTEXT
+- Polylignes fermees converties en Polygon
+- Cercles approximes avec 32 points
+- Arcs convertis en LineString
+- Preservation des proprietes : layer, color, entityType
+
+#### 2. Conversion Interlis ITF -> GeoJSON (Interlis 1)
+- Parser pour format texte structure suisse
+- Structure TOPI/TABL/OBJE parsee
+- Coordonnees STPT/LIPT/ARCP extraites
+- Geometries : Point, LineString, Polygon
+- Proprietes conservees (_topic, _table, _tid, attributs)
+
+#### 3. Conversion Interlis XTF -> GeoJSON (Interlis 2)
+- Parser pour format XML suisse
+- Objets avec TID extraits
+- Geometries COORD/POLYLINE/SURFACE supportees
+- Attributs simples preserves
+- Classe et TID dans properties
+
+#### 4. Integration converter service
+- `dxfToGeojson()`, `itfToGeojson()`, `xtfToGeojson()` exportees
+- Detection auto des formats (signatures DXF, ITF, XTF)
+- Ajout dans AVAILABLE_CONVERSIONS
+- Couleurs UI pour les nouveaux formats
+
+### Support DWG implemente
+- **Backend** : Endpoint `/api/dwg/convert` avec ODA File Converter
+- **Workflow** : DWG (binaire) → ODA → DXF → Parser → GeoJSON
+- **Check status** : `/api/dwg/status` verifie si ODA est installe
+- **UI** : Detection automatique fichiers .dwg, message si ODA manquant
+- **Prerequis** : Installation ODA File Converter (gratuit)
+
+### Fichiers modifies
+- `src/lib/services/converter.ts` (parsers DXF/ITF/XTF, dwgToGeojson via backend)
+- `src/lib/components/Converter/ConverterModule.svelte` (support DWG, couleurs)
+- `server/index.js` (endpoint /api/dwg/convert et /api/dwg/status)
+
+### Resultat
+- DXF, ITF, XTF peuvent etre convertis en GeoJSON (client-side)
+- DWG peut etre converti en GeoJSON (via backend + ODA)
+- Formats specifiques au contexte suisse (Interlis) supportes
+
+---
+
+## Session 25 - 13 decembre 2025 (suite nuit)
+**Theme** : Module CAD + Bug fix Groq
+
+### Travail effectue
+
+#### 1. Module CAD - Import PDF
+- Installation `pdfjs-dist` pour lire les PDFs
+- Fonction `loadPdfAsImage()` : conversion PDF -> canvas -> Fabric.Image
+- Overlay de chargement avec progress bar pendant import
+- Support premiere page du PDF en haute resolution (2x DPI)
+
+#### 2. Module CAD - Georeferencement ameliore
+- **Calcul RMS** : Erreur quadratique moyenne des residus apres calage
+- **Residus par point** : Affichage dx, dy, distance pour chaque point de calage
+- **Delete point** : Possibilite de supprimer un point de georef
+- **Export World File** :
+  - Format 6 lignes (A, D, B, E, C, F) pour transformation affine
+  - Extension automatique selon type image (.pgw, .jgw, .tfw, etc.)
+  - Compatible QGIS et autres SIG
+
+#### 3. Bug Groq corrige
+- **Symptome** : Erreur 404 "model claude-sonnet-4-20250514 does not exist" quand Groq selectionne
+- **Cause** : `server/index.js` ligne 658 passait toujours `'claude'` au selecteur de modele
+- **Correction** :
+  - `server/index.js` : `selectModel(provider, ...)` au lieu de `selectModel('claude', ...)`
+  - `server/model-selector.js` : Ajout modeles Groq (llama-3.3-70b-versatile, mixtral)
+  - Support multi-provider dans `selectModel()`
+
+### Fichiers modifies
+- `src/lib/components/CAD/CadModule.svelte` (PDF, RMS, world file)
+- `server/index.js` (fix provider dans selectModel)
+- `server/model-selector.js` (support Groq)
+- `package.json` (ajout pdfjs-dist)
+
+### Resultats
+- Import PDF fonctionnel
+- Qualite du calage visible (RMS + residus)
+- Export world file pour utilisation QGIS
+- Groq fonctionne correctement avec ses propres modeles
+
+---
+
 ## Session 24 - 13 decembre 2025 (nuit)
 **Theme** : Unification des chats (store partage)
 

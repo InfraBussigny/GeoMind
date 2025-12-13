@@ -3,8 +3,8 @@
   import { browser } from '$app/environment';
   import { notificationsStore } from '$lib/services/communications';
 
-  // Time Pro URL
-  const timeProUrl = 'https://timepro.bussigny.ch/employee/dashboard';
+  // Time Pro URL - TODO: Make configurable
+  const timeProUrl = 'https://timepro.example.ch/employee/dashboard';
 
   // Window state
   let timeProWebWindow: Window | null = null;

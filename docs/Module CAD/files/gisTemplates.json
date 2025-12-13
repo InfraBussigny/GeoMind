@@ -1,0 +1,728 @@
+{
+  "version": "1.0.0",
+  "description": "Templates de saisie de géodonnées pour GeoMind - Module CAD Mode God",
+  "defaultSrid": 2056,
+  "commune": "Bussigny",
+  
+  "templates": [
+    {
+      "id": "parcelle",
+      "name": "Parcelle cadastrale",
+      "icon": "📐",
+      "category": "Cadastre",
+      "geometryType": "POLYGON",
+      "postgisTable": "sit.parcelles",
+      "geometryColumn": "geom",
+      "style": {
+        "strokeColor": "#FF6B6B",
+        "strokeWidth": 2,
+        "fillColor": "#FF6B6B",
+        "fillOpacity": 0.1
+      },
+      "attributes": [
+        {
+          "name": "no_parcelle",
+          "label": "N° Parcelle",
+          "type": "text",
+          "required": true,
+          "pattern": "^[0-9]{1,5}$"
+        },
+        {
+          "name": "surface_m2",
+          "label": "Surface (m²)",
+          "type": "number",
+          "computed": "ST_Area(geom)",
+          "readonly": true
+        },
+        {
+          "name": "proprietaire",
+          "label": "Propriétaire",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "date_maj",
+          "label": "Date de mise à jour",
+          "type": "date",
+          "default": "NOW()"
+        }
+      ],
+      "snapping": {
+        "enabled": true,
+        "layers": ["sit.parcelles", "sit.limites_communes"],
+        "tolerance": 0.5
+      }
+    },
+    
+    {
+      "id": "batiment",
+      "name": "Bâtiment",
+      "icon": "🏠",
+      "category": "Cadastre",
+      "geometryType": "POLYGON",
+      "postgisTable": "sit.batiments",
+      "geometryColumn": "geom",
+      "style": {
+        "strokeColor": "#4ECDC4",
+        "strokeWidth": 2,
+        "fillColor": "#4ECDC4",
+        "fillOpacity": 0.3
+      },
+      "attributes": [
+        {
+          "name": "egid",
+          "label": "EGID",
+          "type": "text",
+          "required": true,
+          "pattern": "^[0-9]{9}$",
+          "help": "Identifiant fédéral du bâtiment (9 chiffres)"
+        },
+        {
+          "name": "no_parcelle",
+          "label": "N° Parcelle",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "adresse",
+          "label": "Adresse",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "nb_logements",
+          "label": "Nombre de logements",
+          "type": "integer",
+          "min": 0,
+          "default": 1
+        },
+        {
+          "name": "annee_construction",
+          "label": "Année de construction",
+          "type": "integer",
+          "min": 1800,
+          "max": 2030
+        },
+        {
+          "name": "surface_au_sol",
+          "label": "Surface au sol (m²)",
+          "type": "number",
+          "computed": "ST_Area(geom)",
+          "readonly": true
+        }
+      ]
+    },
+    
+    {
+      "id": "conduite_eau",
+      "name": "Conduite d'eau potable",
+      "icon": "💧",
+      "category": "Réseaux",
+      "geometryType": "LINESTRING",
+      "postgisTable": "reseaux.conduites_eau",
+      "geometryColumn": "geom",
+      "style": {
+        "strokeColor": "#3498DB",
+        "strokeWidth": 3,
+        "lineDash": null
+      },
+      "attributes": [
+        {
+          "name": "diametre_mm",
+          "label": "Diamètre (mm)",
+          "type": "select",
+          "required": true,
+          "options": [32, 40, 50, 63, 75, 90, 110, 125, 160, 200, 250, 300, 400]
+        },
+        {
+          "name": "materiau",
+          "label": "Matériau",
+          "type": "select",
+          "required": true,
+          "options": [
+            {"value": "PE", "label": "Polyéthylène (PE)"},
+            {"value": "PVC", "label": "PVC"},
+            {"value": "FONTE", "label": "Fonte ductile"},
+            {"value": "ACIER", "label": "Acier"},
+            {"value": "AC", "label": "Amiante-ciment"},
+            {"value": "INCONNU", "label": "Inconnu"}
+          ]
+        },
+        {
+          "name": "annee_pose",
+          "label": "Année de pose",
+          "type": "integer",
+          "min": 1900,
+          "max": 2030
+        },
+        {
+          "name": "pression_bar",
+          "label": "Pression nominale (bar)",
+          "type": "select",
+          "options": [6, 10, 16, 25]
+        },
+        {
+          "name": "longueur_m",
+          "label": "Longueur (m)",
+          "type": "number",
+          "computed": "ST_Length(geom)",
+          "readonly": true,
+          "precision": 2
+        },
+        {
+          "name": "profondeur_m",
+          "label": "Profondeur (m)",
+          "type": "number",
+          "min": 0,
+          "max": 5,
+          "default": 1.2
+        },
+        {
+          "name": "etat",
+          "label": "État",
+          "type": "select",
+          "options": [
+            {"value": "BON", "label": "Bon"},
+            {"value": "MOYEN", "label": "Moyen"},
+            {"value": "MAUVAIS", "label": "Mauvais"},
+            {"value": "INCONNU", "label": "Inconnu"}
+          ],
+          "default": "INCONNU"
+        }
+      ],
+      "snapping": {
+        "enabled": true,
+        "layers": ["reseaux.conduites_eau", "reseaux.vannes", "reseaux.hydrantes"],
+        "tolerance": 0.1
+      }
+    },
+    
+    {
+      "id": "vanne_eau",
+      "name": "Vanne eau potable",
+      "icon": "🔧",
+      "category": "Réseaux",
+      "geometryType": "POINT",
+      "postgisTable": "reseaux.vannes",
+      "geometryColumn": "geom",
+      "style": {
+        "markerType": "circle",
+        "markerSize": 8,
+        "fillColor": "#2980B9",
+        "strokeColor": "#1A5276",
+        "strokeWidth": 2
+      },
+      "attributes": [
+        {
+          "name": "type_vanne",
+          "label": "Type de vanne",
+          "type": "select",
+          "required": true,
+          "options": [
+            {"value": "SECTIONNEMENT", "label": "Sectionnement"},
+            {"value": "VIDANGE", "label": "Vidange"},
+            {"value": "VENTOUSE", "label": "Ventouse"},
+            {"value": "REDUCTION", "label": "Réduction de pression"},
+            {"value": "CLAPET", "label": "Clapet anti-retour"}
+          ]
+        },
+        {
+          "name": "diametre_mm",
+          "label": "Diamètre (mm)",
+          "type": "select",
+          "options": [40, 50, 63, 75, 90, 110, 125, 160, 200, 250, 300]
+        },
+        {
+          "name": "marque",
+          "label": "Marque",
+          "type": "text"
+        },
+        {
+          "name": "annee_pose",
+          "label": "Année de pose",
+          "type": "integer"
+        },
+        {
+          "name": "num_plaque",
+          "label": "N° de plaque",
+          "type": "text"
+        },
+        {
+          "name": "accessibilite",
+          "label": "Accessibilité",
+          "type": "select",
+          "options": [
+            {"value": "CHAUSSEE", "label": "Sous chaussée"},
+            {"value": "TROTTOIR", "label": "Sous trottoir"},
+            {"value": "VERT", "label": "En espace vert"},
+            {"value": "PRIVE", "label": "En domaine privé"}
+          ]
+        }
+      ],
+      "snapping": {
+        "enabled": true,
+        "layers": ["reseaux.conduites_eau"],
+        "snapToVertex": true,
+        "tolerance": 0.5
+      }
+    },
+    
+    {
+      "id": "hydrante",
+      "name": "Hydrante",
+      "icon": "🚒",
+      "category": "Réseaux",
+      "geometryType": "POINT",
+      "postgisTable": "reseaux.hydrantes",
+      "geometryColumn": "geom",
+      "style": {
+        "markerType": "square",
+        "markerSize": 10,
+        "fillColor": "#E74C3C",
+        "strokeColor": "#922B21",
+        "strokeWidth": 2
+      },
+      "attributes": [
+        {
+          "name": "numero",
+          "label": "Numéro hydrante",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "type_hydrante",
+          "label": "Type",
+          "type": "select",
+          "options": [
+            {"value": "AERIENNE", "label": "Aérienne"},
+            {"value": "SOUTERRAINE", "label": "Souterraine"}
+          ],
+          "default": "SOUTERRAINE"
+        },
+        {
+          "name": "diametre_mm",
+          "label": "Diamètre (mm)",
+          "type": "select",
+          "options": [80, 100, 150],
+          "default": 80
+        },
+        {
+          "name": "debit_lmin",
+          "label": "Débit mesuré (l/min)",
+          "type": "number"
+        },
+        {
+          "name": "pression_bar",
+          "label": "Pression mesurée (bar)",
+          "type": "number",
+          "precision": 1
+        },
+        {
+          "name": "date_controle",
+          "label": "Date dernier contrôle",
+          "type": "date"
+        },
+        {
+          "name": "etat",
+          "label": "État",
+          "type": "select",
+          "options": [
+            {"value": "OK", "label": "OK"},
+            {"value": "A_CONTROLER", "label": "À contrôler"},
+            {"value": "HS", "label": "Hors service"}
+          ],
+          "default": "OK"
+        }
+      ]
+    },
+    
+    {
+      "id": "collecteur_eu",
+      "name": "Collecteur eaux usées",
+      "icon": "🔴",
+      "category": "Assainissement",
+      "geometryType": "LINESTRING",
+      "postgisTable": "assainissement.collecteurs_eu",
+      "geometryColumn": "geom",
+      "style": {
+        "strokeColor": "#8B4513",
+        "strokeWidth": 3,
+        "lineDash": null
+      },
+      "attributes": [
+        {
+          "name": "diametre_mm",
+          "label": "Diamètre (mm)",
+          "type": "select",
+          "required": true,
+          "options": [150, 200, 250, 300, 400, 500, 600, 800, 1000]
+        },
+        {
+          "name": "materiau",
+          "label": "Matériau",
+          "type": "select",
+          "options": [
+            {"value": "BETON", "label": "Béton"},
+            {"value": "GRES", "label": "Grès"},
+            {"value": "PVC", "label": "PVC"},
+            {"value": "PE", "label": "PE"},
+            {"value": "PP", "label": "Polypropylène"},
+            {"value": "FONTE", "label": "Fonte"},
+            {"value": "INCONNU", "label": "Inconnu"}
+          ]
+        },
+        {
+          "name": "pente_pour_mille",
+          "label": "Pente (‰)",
+          "type": "number",
+          "precision": 1
+        },
+        {
+          "name": "longueur_m",
+          "label": "Longueur (m)",
+          "type": "number",
+          "computed": "ST_Length(geom)",
+          "readonly": true
+        },
+        {
+          "name": "annee_pose",
+          "label": "Année de pose",
+          "type": "integer"
+        },
+        {
+          "name": "etat_structurel",
+          "label": "État structurel",
+          "type": "select",
+          "options": [
+            {"value": "1", "label": "1 - Très bon"},
+            {"value": "2", "label": "2 - Bon"},
+            {"value": "3", "label": "3 - Moyen"},
+            {"value": "4", "label": "4 - Mauvais"},
+            {"value": "5", "label": "5 - Très mauvais"},
+            {"value": "NC", "label": "Non contrôlé"}
+          ]
+        },
+        {
+          "name": "date_inspection",
+          "label": "Date dernière inspection TV",
+          "type": "date"
+        }
+      ]
+    },
+    
+    {
+      "id": "regard_eu",
+      "name": "Regard eaux usées",
+      "icon": "⭕",
+      "category": "Assainissement",
+      "geometryType": "POINT",
+      "postgisTable": "assainissement.regards",
+      "geometryColumn": "geom",
+      "style": {
+        "markerType": "circle",
+        "markerSize": 8,
+        "fillColor": "#8B4513",
+        "strokeColor": "#5D3A1A",
+        "strokeWidth": 2
+      },
+      "attributes": [
+        {
+          "name": "numero",
+          "label": "N° regard",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "type_regard",
+          "label": "Type",
+          "type": "select",
+          "options": [
+            {"value": "VISITE", "label": "Regard de visite"},
+            {"value": "BRANCHEMENT", "label": "Regard de branchement"},
+            {"value": "CHUTE", "label": "Regard à chute"},
+            {"value": "CHASSE", "label": "Regard de chasse"}
+          ]
+        },
+        {
+          "name": "cote_tampon",
+          "label": "Cote tampon (m)",
+          "type": "number",
+          "precision": 2,
+          "help": "Altitude du tampon en m (MN95)"
+        },
+        {
+          "name": "cote_radier",
+          "label": "Cote radier (m)",
+          "type": "number",
+          "precision": 2,
+          "help": "Altitude du radier en m (MN95)"
+        },
+        {
+          "name": "profondeur_m",
+          "label": "Profondeur (m)",
+          "type": "number",
+          "computed": "cote_tampon - cote_radier",
+          "readonly": true,
+          "precision": 2
+        },
+        {
+          "name": "diametre_mm",
+          "label": "Diamètre (mm)",
+          "type": "select",
+          "options": [600, 800, 1000, 1200]
+        }
+      ],
+      "snapping": {
+        "enabled": true,
+        "layers": ["assainissement.collecteurs_eu", "assainissement.collecteurs_ec"],
+        "tolerance": 0.5
+      }
+    },
+    
+    {
+      "id": "arbre",
+      "name": "Arbre",
+      "icon": "🌳",
+      "category": "Espaces verts",
+      "geometryType": "POINT",
+      "postgisTable": "espaces_verts.arbres",
+      "geometryColumn": "geom",
+      "style": {
+        "markerType": "circle",
+        "markerSize": 10,
+        "fillColor": "#27AE60",
+        "strokeColor": "#1E8449",
+        "strokeWidth": 2
+      },
+      "attributes": [
+        {
+          "name": "essence",
+          "label": "Essence",
+          "type": "autocomplete",
+          "required": true,
+          "source": "essences_arbres",
+          "help": "Nom latin de l'essence"
+        },
+        {
+          "name": "circonference_cm",
+          "label": "Circonférence (cm)",
+          "type": "integer",
+          "help": "Mesurée à 1m du sol"
+        },
+        {
+          "name": "hauteur_m",
+          "label": "Hauteur (m)",
+          "type": "number",
+          "precision": 1
+        },
+        {
+          "name": "diametre_couronne_m",
+          "label": "Diamètre couronne (m)",
+          "type": "number",
+          "precision": 1
+        },
+        {
+          "name": "annee_plantation",
+          "label": "Année plantation",
+          "type": "integer"
+        },
+        {
+          "name": "etat_sanitaire",
+          "label": "État sanitaire",
+          "type": "select",
+          "options": [
+            {"value": "SAIN", "label": "Sain"},
+            {"value": "AFFAIBLI", "label": "Affaibli"},
+            {"value": "MALADE", "label": "Malade"},
+            {"value": "MORT", "label": "Mort"},
+            {"value": "NC", "label": "Non contrôlé"}
+          ]
+        },
+        {
+          "name": "date_derniere_taille",
+          "label": "Dernière taille",
+          "type": "date"
+        },
+        {
+          "name": "remarques",
+          "label": "Remarques",
+          "type": "textarea"
+        }
+      ]
+    },
+    
+    {
+      "id": "mobilier_urbain",
+      "name": "Mobilier urbain",
+      "icon": "🪑",
+      "category": "Voirie",
+      "geometryType": "POINT",
+      "postgisTable": "voirie.mobilier_urbain",
+      "geometryColumn": "geom",
+      "style": {
+        "markerType": "square",
+        "markerSize": 8,
+        "fillColor": "#9B59B6",
+        "strokeColor": "#6C3483",
+        "strokeWidth": 2
+      },
+      "attributes": [
+        {
+          "name": "type_mobilier",
+          "label": "Type",
+          "type": "select",
+          "required": true,
+          "options": [
+            {"value": "BANC", "label": "Banc"},
+            {"value": "POUBELLE", "label": "Poubelle"},
+            {"value": "ABRIBUS", "label": "Abribus"},
+            {"value": "PANNEAU", "label": "Panneau d'affichage"},
+            {"value": "FONTAINE", "label": "Fontaine"},
+            {"value": "BORNE", "label": "Borne"},
+            {"value": "BARRIERE", "label": "Barrière"},
+            {"value": "JARDINIERE", "label": "Jardinière"},
+            {"value": "AUTRE", "label": "Autre"}
+          ]
+        },
+        {
+          "name": "modele",
+          "label": "Modèle/Marque",
+          "type": "text"
+        },
+        {
+          "name": "materiau",
+          "label": "Matériau",
+          "type": "select",
+          "options": [
+            {"value": "BOIS", "label": "Bois"},
+            {"value": "METAL", "label": "Métal"},
+            {"value": "BETON", "label": "Béton"},
+            {"value": "PLASTIQUE", "label": "Plastique"},
+            {"value": "MIXTE", "label": "Mixte"}
+          ]
+        },
+        {
+          "name": "annee_installation",
+          "label": "Année installation",
+          "type": "integer"
+        },
+        {
+          "name": "etat",
+          "label": "État",
+          "type": "select",
+          "options": [
+            {"value": "BON", "label": "Bon"},
+            {"value": "MOYEN", "label": "Moyen"},
+            {"value": "MAUVAIS", "label": "À remplacer"}
+          ]
+        }
+      ]
+    },
+    
+    {
+      "id": "eclairage",
+      "name": "Point lumineux",
+      "icon": "💡",
+      "category": "Éclairage",
+      "geometryType": "POINT",
+      "postgisTable": "eclairage.points_lumineux",
+      "geometryColumn": "geom",
+      "style": {
+        "markerType": "circle",
+        "markerSize": 8,
+        "fillColor": "#F1C40F",
+        "strokeColor": "#B7950B",
+        "strokeWidth": 2
+      },
+      "attributes": [
+        {
+          "name": "numero_pl",
+          "label": "N° point lumineux",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "type_support",
+          "label": "Type de support",
+          "type": "select",
+          "options": [
+            {"value": "CANDELABRE", "label": "Candélabre"},
+            {"value": "CONSOLE", "label": "Console façade"},
+            {"value": "POTEAU", "label": "Poteau bois"},
+            {"value": "SUSPENSION", "label": "Suspension"}
+          ]
+        },
+        {
+          "name": "hauteur_feu_m",
+          "label": "Hauteur feu (m)",
+          "type": "number",
+          "precision": 1
+        },
+        {
+          "name": "type_luminaire",
+          "label": "Type luminaire",
+          "type": "select",
+          "options": [
+            {"value": "LED", "label": "LED"},
+            {"value": "SHP", "label": "Sodium HP"},
+            {"value": "SBP", "label": "Sodium BP"},
+            {"value": "HM", "label": "Halogénure métallique"},
+            {"value": "AUTRE", "label": "Autre"}
+          ]
+        },
+        {
+          "name": "puissance_w",
+          "label": "Puissance (W)",
+          "type": "integer"
+        },
+        {
+          "name": "armoire",
+          "label": "N° armoire",
+          "type": "text"
+        }
+      ]
+    }
+  ],
+  
+  "lookupTables": {
+    "essences_arbres": [
+      {"value": "Acer campestre", "label": "Érable champêtre"},
+      {"value": "Acer platanoides", "label": "Érable plane"},
+      {"value": "Acer pseudoplatanus", "label": "Érable sycomore"},
+      {"value": "Betula pendula", "label": "Bouleau verruqueux"},
+      {"value": "Carpinus betulus", "label": "Charme commun"},
+      {"value": "Fagus sylvatica", "label": "Hêtre commun"},
+      {"value": "Fraxinus excelsior", "label": "Frêne commun"},
+      {"value": "Platanus x hispanica", "label": "Platane commun"},
+      {"value": "Quercus robur", "label": "Chêne pédonculé"},
+      {"value": "Tilia cordata", "label": "Tilleul à petites feuilles"},
+      {"value": "Tilia platyphyllos", "label": "Tilleul à grandes feuilles"}
+    ]
+  },
+  
+  "validation": {
+    "geometryRules": {
+      "POLYGON": {
+        "minArea": 1,
+        "maxArea": 1000000,
+        "mustBeClosed": true,
+        "noSelfIntersection": true
+      },
+      "LINESTRING": {
+        "minLength": 0.1,
+        "maxLength": 10000,
+        "noSelfIntersection": true
+      },
+      "POINT": {
+        "mustBeWithinBounds": true
+      }
+    },
+    "bounds": {
+      "minE": 2530000,
+      "maxE": 2535000,
+      "minN": 1152000,
+      "maxN": 1157000,
+      "srid": 2056
+    }
+  }
+}

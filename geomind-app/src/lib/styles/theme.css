@@ -42,7 +42,7 @@
    Sobre et professionnel
    ======================================== */
 :root, [data-theme="light"] {
-  /* Couleurs principales - Bleu Bussigny */
+  /* Couleurs principales */
   --primary: #0066a1;
   --primary-dark: #004d7a;
   --primary-light: #3399cc;
@@ -116,9 +116,9 @@
   --gris-light: #94a3b8;
   --gris-muted: #64748b;
   --border-glow: var(--primary);
-  --bleu-bussigny: var(--primary);
-  --bleu-bussigny-dark: var(--primary-dark);
-  --bleu-bussigny-light: var(--primary-light);
+  --bleu-primary: var(--primary);
+  --bleu-primary-dark: var(--primary-dark);
+  --bleu-primary-light: var(--primary-light);
   --gris-fonce: var(--border-color);
   --gris-moyen: #cbd5e1;
   --gris-clair: #94a3b8;
@@ -204,9 +204,9 @@
   --gris-light: #5a5a6a;
   --gris-muted: #7a7a8a;
   --border-glow: var(--primary);
-  --bleu-bussigny: var(--primary);
-  --bleu-bussigny-dark: var(--primary-dark);
-  --bleu-bussigny-light: var(--primary-light);
+  --bleu-primary: var(--primary);
+  --bleu-primary-dark: var(--primary-dark);
+  --bleu-primary-light: var(--primary-light);
   --gris-fonce: var(--border-color);
   --gris-moyen: #3a3a4a;
   --gris-clair: #5a5a6a;

@@ -3,6 +3,7 @@
  * Gère les appels API aux LLMs et les opérations système
  */
 
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { readFile, writeFile, readdir, stat, mkdir } from 'fs/promises';
@@ -48,15 +49,54 @@ async function getClaudeCredentials() {
 }
 
 async function getGeoMindConfig() {
+  let config = { providers: {} };
+
+  // 1. Lire depuis le fichier config
   try {
     if (existsSync(GEOMIND_CONFIG_PATH)) {
       const data = await readFile(GEOMIND_CONFIG_PATH, 'utf-8');
-      return JSON.parse(data);
+      config = JSON.parse(data);
     }
   } catch (error) {
     console.error('Error reading GeoMind config:', error);
   }
-  return { providers: {} };
+
+  // 2. Fusionner avec les variables d'environnement (prioritaires)
+  if (!config.providers) config.providers = {};
+
+  // Groq depuis .env
+  if (process.env.GROQ_API_KEY) {
+    config.providers.groq = {
+      ...config.providers.groq,
+      apiKey: process.env.GROQ_API_KEY
+    };
+  }
+
+  // OpenAI depuis .env
+  if (process.env.OPENAI_API_KEY) {
+    config.providers.openai = {
+      ...config.providers.openai,
+      apiKey: process.env.OPENAI_API_KEY
+    };
+  }
+
+  // Anthropic depuis .env
+  if (process.env.ANTHROPIC_API_KEY) {
+    config.providers.anthropic = {
+      ...config.providers.anthropic,
+      apiKey: process.env.ANTHROPIC_API_KEY
+    };
+  }
+
+  // Google depuis .env
+  if (process.env.GOOGLE_API_KEY) {
+    config.providers.google = {
+      ...config.providers.google,
+      apiKey: process.env.GOOGLE_API_KEY
+    };
+  }
+
+  return config;
 }
 
 async function saveGeoMindConfig(config) {
@@ -72,6 +112,17 @@ async function saveGeoMindConfig(config) {
 // ============================================
 
 const PROVIDERS = {
+  groq: {
+    name: 'Groq (Gratuit)',
+    models: [
+      { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', default: true },
+      { id: 'llama-3.1-70b-versatile', name: 'Llama 3.1 70B' },
+      { id: 'mixtral-8x7b-32768', name: 'Mixtral 8x7B' },
+      { id: 'gemma2-9b-it', name: 'Gemma 2 9B' },
+    ],
+    authType: 'apikey',
+    baseUrl: 'https://api.groq.com/openai/v1'
+  },
   claude: {
     name: 'Claude (Anthropic)',
     models: [
@@ -582,11 +633,19 @@ app.post('/api/chat/agent', async (req, res) => {
   });
 
   try {
-    if (provider !== 'claude') {
-      throw new Error('Agent mode only supported for Claude');
+    // Providers supportant le tool use
+    const toolUseProviders = ['claude', 'groq', 'openai'];
+
+    if (!toolUseProviders.includes(provider)) {
+      // Pour les providers sans tool use, utiliser l'endpoint enrichi avec sql-assistant
+      throw new Error(`Agent mode with tool use requires Claude, Groq, or OpenAI. For ${provider}, use the enhanced sql-assistant mode.`);
     }
 
-    const auth = await getClaudeAuth();
+    // Auth selon le provider
+    let auth = null;
+    if (provider === 'claude') {
+      auth = await getClaudeAuth();
+    }
 
     // Récupérer le dernier message utilisateur pour l'analyse
     const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content || '';
@@ -596,7 +655,7 @@ app.post('/api/chat/agent', async (req, res) => {
     let modelSelectionInfo = null;
 
     if (autoSelectModel !== false) {
-      const selection = selectModel('claude', lastUserMessage, messages);
+      const selection = selectModel(provider, lastUserMessage, messages);
       selectedModelId = selection.model;
       modelSelectionInfo = selection;
       console.log(`[Agent] Auto-selected model: ${selectedModelId} (${selection.reason})`);
@@ -637,7 +696,7 @@ app.post('/api/chat/agent', async (req, res) => {
     console.log(`[Agent] Available tools for mode "${mode}": ${availableTools.length}/${TOOL_DEFINITIONS.length}`);
 
     // Convertir les messages
-    const claudeMessages = messages.map(m => ({
+    const agentMessages = messages.map(m => ({
       role: m.role === 'user' ? 'user' : 'assistant',
       content: m.content
     }));
@@ -646,6 +705,80 @@ app.post('/api/chat/agent', async (req, res) => {
     const MAX_ITERATIONS = 10;
     let continueLoop = true;
 
+    // =============================================
+    // GROQ AGENT LOOP (non-streaming avec tool use)
+    // =============================================
+    if (provider === 'groq') {
+      console.log(`[Agent/Groq] Starting Groq agent with model: ${selectedModelId || 'llama-3.3-70b-versatile'}`);
+
+      while (continueLoop && iteration < MAX_ITERATIONS && !isAborted) {
+        iteration++;
+        console.log(`[Agent/Groq] Iteration ${iteration}`);
+
+        try {
+          const result = await callGroq(
+            selectedModelId || 'llama-3.3-70b-versatile',
+            agentMessages,
+            availableTools,
+            systemPrompt
+          );
+
+          // Envoyer le contenu texte
+          if (result.content) {
+            res.write(`data: ${JSON.stringify({ type: 'content', content: result.content })}\n\n`);
+          }
+
+          // Traiter les tool calls
+          if (result.toolCalls && result.toolCalls.length > 0) {
+            console.log(`[Agent/Groq] Got ${result.toolCalls.length} tool calls`);
+
+            // Ajouter la réponse de l'assistant avec les tool calls
+            agentMessages.push({
+              role: 'assistant',
+              content: result.content || '',
+              tool_calls: result.toolCalls.map(tc => ({
+                id: tc.id,
+                type: 'function',
+                function: { name: tc.name, arguments: JSON.stringify(tc.input) }
+              }))
+            });
+
+            // Exécuter chaque outil
+            for (const toolCall of result.toolCalls) {
+              res.write(`data: ${JSON.stringify({ type: 'tool_use', tool: toolCall.name, input: toolCall.input })}\n\n`);
+
+              console.log(`[Tools] Executing: ${toolCall.name}`, toolCall.input);
+              const toolResult = await executeTool(toolCall.name, toolCall.input);
+
+              res.write(`data: ${JSON.stringify({ type: 'tool_result', tool: toolCall.name, result: toolResult })}\n\n`);
+
+              // Ajouter le résultat de l'outil aux messages
+              agentMessages.push({
+                role: 'tool',
+                tool_call_id: toolCall.id,
+                content: JSON.stringify(toolResult)
+              });
+            }
+            // Continuer la boucle pour laisser le modèle répondre
+          } else {
+            // Pas de tool calls, on a fini
+            continueLoop = false;
+          }
+        } catch (error) {
+          console.error('[Agent/Groq] Error:', error.message);
+          res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`);
+          continueLoop = false;
+        }
+      }
+
+      res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
+      res.end();
+      return;
+    }
+
+    // =============================================
+    // CLAUDE AGENT LOOP (streaming avec tool use)
+    // =============================================
     while (continueLoop && iteration < MAX_ITERATIONS && !isAborted) {
       iteration++;
       console.log(`[Agent] Iteration ${iteration}`);
@@ -658,7 +791,7 @@ app.post('/api/chat/agent', async (req, res) => {
         model: selectedModelId || 'claude-3-5-haiku-20241022',
         max_tokens: 8096,
         system: systemPrompt,
-        messages: claudeMessages,
+        messages: agentMessages,
         tools: availableTools,  // Outils filtrés selon le mode
         stream: true  // ACTIVER LE STREAMING
       };
@@ -829,12 +962,12 @@ app.post('/api/chat/agent', async (req, res) => {
       if (isAborted) break;
 
       // Ajouter la réponse de l'assistant et les résultats d'outils aux messages
-      claudeMessages.push({
+      agentMessages.push({
         role: 'assistant',
         content: fullContent
       });
 
-      claudeMessages.push({
+      agentMessages.push({
         role: 'user',
         content: toolResults
       });
@@ -1136,6 +1269,173 @@ async function callPerplexity(model, messages) {
     content: data.choices[0]?.message?.content || '',
     usage: data.usage
   };
+}
+
+/**
+ * Call Groq API (OpenAI-compatible, with tool use support)
+ * Free tier available, very fast inference
+ */
+async function callGroq(model, messages, tools, systemPrompt) {
+  const config = await getGeoMindConfig();
+  const apiKey = config.providers?.groq?.apiKey;
+  if (!apiKey) throw new Error('Groq API key not configured. Get one free at https://console.groq.com');
+
+  const groqMessages = [];
+
+  // Add system prompt if provided
+  if (systemPrompt) {
+    groqMessages.push({ role: 'system', content: systemPrompt });
+  }
+
+  // Add conversation messages
+  for (const m of messages) {
+    if (m.role === 'system' && !systemPrompt) {
+      groqMessages.push({ role: 'system', content: m.content });
+    } else if (m.role === 'tool') {
+      // Tool results need tool_call_id
+      groqMessages.push({
+        role: 'tool',
+        tool_call_id: m.tool_call_id,
+        content: m.content
+      });
+    } else if (m.role === 'assistant' && m.tool_calls) {
+      // Assistant messages with tool calls
+      groqMessages.push({
+        role: 'assistant',
+        content: m.content || '',
+        tool_calls: m.tool_calls
+      });
+    } else if (m.role !== 'system') {
+      groqMessages.push({ role: m.role, content: m.content });
+    }
+  }
+
+  const body = {
+    model: model || 'llama-3.3-70b-versatile',
+    messages: groqMessages,
+    max_tokens: 8096,
+    temperature: 0.7
+  };
+
+  // Add tools if provided (OpenAI format)
+  if (tools && tools.length > 0) {
+    body.tools = tools.map(t => ({
+      type: 'function',
+      function: {
+        name: t.name,
+        description: t.description,
+        parameters: t.input_schema
+      }
+    }));
+    body.tool_choice = 'auto';
+  }
+
+  console.log(`[Groq] Calling model: ${body.model} with ${tools?.length || 0} tools`);
+
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Groq error: ${response.status} - ${error}`);
+  }
+
+  const data = await response.json();
+  const message = data.choices[0]?.message;
+
+  return {
+    content: message?.content || '',
+    toolCalls: message?.tool_calls?.map(tc => ({
+      id: tc.id,
+      name: tc.function.name,
+      input: JSON.parse(tc.function.arguments || '{}')
+    })) || [],
+    usage: data.usage,
+    model: data.model
+  };
+}
+
+/**
+ * Stream Groq API response
+ */
+async function streamGroq(model, messages, tools, res, systemPrompt) {
+  const config = await getGeoMindConfig();
+  const apiKey = config.providers?.groq?.apiKey;
+  if (!apiKey) throw new Error('Groq API key not configured');
+
+  const groqMessages = [];
+  if (systemPrompt) {
+    groqMessages.push({ role: 'system', content: systemPrompt });
+  }
+  for (const m of messages) {
+    if (m.role !== 'system') {
+      groqMessages.push({ role: m.role, content: m.content });
+    }
+  }
+
+  const body = {
+    model: model || 'llama-3.3-70b-versatile',
+    messages: groqMessages,
+    max_tokens: 8096,
+    stream: true
+  };
+
+  if (tools && tools.length > 0) {
+    body.tools = tools.map(t => ({
+      type: 'function',
+      function: { name: t.name, description: t.description, parameters: t.input_schema }
+    }));
+  }
+
+  console.log(`[Groq] Streaming model: ${body.model}`);
+
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Groq streaming error: ${response.status} - ${error}`);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    const chunk = decoder.decode(value);
+    const lines = chunk.split('\n');
+
+    for (const line of lines) {
+      if (line.startsWith('data: ')) {
+        const data = line.slice(6);
+        if (data === '[DONE]') {
+          res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
+        } else {
+          try {
+            const parsed = JSON.parse(data);
+            const delta = parsed.choices?.[0]?.delta;
+            if (delta?.content) {
+              res.write(`data: ${JSON.stringify({ type: 'content', content: delta.content })}\n\n`);
+            }
+          } catch (e) {}
+        }
+      }
+    }
+  }
 }
 
 // ============================================
@@ -2341,6 +2641,47 @@ app.post('/api/connections/:id/sql', async (req, res) => {
   }
 });
 
+// Exécute une requête SQL générée par IA avec validation et protections
+app.post('/api/connections/:id/ai-sql', async (req, res) => {
+  try {
+    const { query, options = {} } = req.body;
+    if (!query) {
+      return res.status(400).json({ error: 'Query required' });
+    }
+    // Options de sécurité par défaut pour les requêtes IA
+    const secureOptions = {
+      readOnly: options.readOnly !== false,  // Lecture seule par défaut
+      allowedTables: options.allowedTables || [],
+      maxRows: Math.min(options.maxRows || 1000, 10000), // Max 10k lignes
+      timeout: Math.min(options.timeout || 30000, 60000) // Max 60s
+    };
+    const result = await connections.executeAISQL(req.params.id, query, secureOptions);
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+// Liste les tables d'une connexion PostgreSQL
+app.get('/api/connections/:id/tables', async (req, res) => {
+  try {
+    const result = await connections.listTables(req.params.id);
+    res.json({ success: true, tables: result });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+// Obtient le schéma d'une table spécifique
+app.get('/api/connections/:id/tables/:tableName/schema', async (req, res) => {
+  try {
+    const result = await connections.getTableSchema(req.params.id, req.params.tableName);
+    res.json({ success: true, columns: result });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
 // Exécute une commande SSH
 app.post('/api/connections/:id/ssh', async (req, res) => {
   try {
@@ -3103,6 +3444,415 @@ function initDefaultConnections() {
       console.error('[Init] ❌ Erreur ajout connexion SDOL:', error.message);
     }
   }
+}
+
+// ============================================
+// VPN (FORTICLIENT) API
+// ============================================
+
+const FORTICLIENT_PATH = 'C:\\Program Files\\Fortinet\\FortiClient';
+const FORTICLIENT_CONSOLE = `"${FORTICLIENT_PATH}\\FortiTray.exe"`;
+
+// Get VPN connection status
+app.get('/api/vpn/status', async (req, res) => {
+  try {
+    const { promisify } = await import('util');
+    const execAsync = promisify(exec);
+
+    // Check if FortiClient process is running
+    const { stdout: taskList } = await execAsync('tasklist /FI "IMAGENAME eq FortiTray.exe" /NH', { encoding: 'utf8' });
+    const fortiClientRunning = taskList.toLowerCase().includes('fortitray.exe');
+
+    // Check network interfaces for FortiClient VPN
+    const { stdout: ipconfig } = await execAsync('ipconfig', { encoding: 'utf8' });
+
+    // Try to get more details from FortiClient
+    let vpnName = null;
+    let vpnIp = null;
+    let vpnConnected = false;
+
+    // Method 1: Check for VPN IP range 10.200.200.x (Bussigny VPN specific)
+    const vpnIpMatch = ipconfig.match(/IPv4[^:]*:\s*(10\.200\.200\.\d+)/i);
+    if (vpnIpMatch) {
+      vpnConnected = true;
+      vpnIp = vpnIpMatch[1];
+      vpnName = 'Bussigny VPN';
+    }
+
+    // Method 2: Fallback to check for fortissl adapter name
+    if (!vpnConnected) {
+      if (ipconfig.includes('fortissl') || ipconfig.includes('FortiClient')) {
+        vpnConnected = true;
+        const fortiMatch = ipconfig.match(/fortissl[\s\S]*?IPv4[^:]*:\s*([\d.]+)/i);
+        if (fortiMatch) {
+          vpnIp = fortiMatch[1];
+        }
+        vpnName = 'FortiClient SSL VPN';
+      }
+    }
+
+    res.json({
+      success: true,
+      status: {
+        fortiClientInstalled: existsSync(FORTICLIENT_PATH),
+        fortiClientRunning,
+        vpnConnected,
+        vpnName,
+        vpnIp
+      }
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      error: error.message,
+      status: {
+        fortiClientInstalled: existsSync(FORTICLIENT_PATH),
+        fortiClientRunning: false,
+        vpnConnected: false
+      }
+    });
+  }
+});
+
+// Connect to VPN - Opens FortiTray for manual connection
+// Note: FortiClient EMS-managed installations don't support CLI connect
+app.post('/api/vpn/connect', async (req, res) => {
+  try {
+    // Open FortiTray - user will need to connect manually
+    exec(FORTICLIENT_CONSOLE, { encoding: 'utf8' }, (error) => {
+      if (error) {
+        console.log('[VPN] Launch error:', error.message);
+      }
+    });
+
+    res.json({
+      success: true,
+      message: 'FortiClient ouvert - Connectez-vous manuellement via l\'interface',
+      manual: true
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Disconnect VPN - Opens FortiTray for manual disconnection
+app.post('/api/vpn/disconnect', async (req, res) => {
+  try {
+    // Open FortiTray - user will need to disconnect manually
+    exec(FORTICLIENT_CONSOLE, { encoding: 'utf8' }, (error) => {
+      if (error) {
+        console.log('[VPN] Launch error:', error.message);
+      }
+    });
+
+    res.json({
+      success: true,
+      message: 'FortiClient ouvert - Déconnectez-vous manuellement via l\'interface',
+      manual: true
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Launch FortiClient Console GUI
+app.post('/api/vpn/launch', async (req, res) => {
+  try {
+    // Launch FortiClient Console (non-blocking)
+    exec(FORTICLIENT_CONSOLE, { encoding: 'utf8' }, (error) => {
+      if (error) {
+        console.log('[VPN] Launch error:', error.message);
+      }
+    });
+
+    res.json({
+      success: true,
+      message: 'FortiClient Console lancé'
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Get saved VPN profiles (if accessible)
+app.get('/api/vpn/profiles', async (req, res) => {
+  try {
+    // FortiClient stores profiles in registry or config files
+    // This is a simplified version - actual implementation may vary
+    const profiles = [
+      { name: 'VPN Commune', server: 'vpn.bussigny.ch', default: true },
+    ];
+
+    res.json({
+      success: true,
+      profiles
+    });
+  } catch (error) {
+    res.json({
+      success: true,
+      profiles: [],
+      warning: 'Impossible de lire les profils VPN'
+    });
+  }
+});
+
+// ============================================
+// DWG CONVERSION (ODA FILE CONVERTER)
+// ============================================
+
+const ODA_PATHS = [
+  'C:\\Program Files\\ODA\\ODAFileConverter\\ODAFileConverter.exe',
+  'C:\\Program Files (x86)\\ODA\\ODAFileConverter\\ODAFileConverter.exe',
+  join(homedir(), 'ODAFileConverter', 'ODAFileConverter.exe'),
+];
+
+function findOdaConverter() {
+  for (const p of ODA_PATHS) {
+    if (existsSync(p)) return p;
+  }
+  return null;
+}
+
+// Check ODA status
+app.get('/api/dwg/status', (req, res) => {
+  const odaPath = findOdaConverter();
+  res.json({
+    odaInstalled: !!odaPath,
+    odaPath: odaPath,
+    downloadUrl: 'https://www.opendesign.com/guestfiles/oda_file_converter'
+  });
+});
+
+// Convert DWG to GeoJSON
+app.post('/api/dwg/convert', async (req, res) => {
+  const odaPath = findOdaConverter();
+
+  if (!odaPath) {
+    return res.status(400).json({
+      success: false,
+      error: 'ODA File Converter non installé',
+      downloadUrl: 'https://www.opendesign.com/guestfiles/oda_file_converter',
+      instructions: 'Téléchargez et installez ODA File Converter (gratuit) puis réessayez.'
+    });
+  }
+
+  try {
+    const { filename, content } = req.body; // content is base64
+
+    if (!content) {
+      return res.status(400).json({ success: false, error: 'Contenu manquant' });
+    }
+
+    // Create temp directories
+    const tempDir = join(homedir(), '.geomind', 'temp');
+    const inputDir = join(tempDir, 'dwg_input');
+    const outputDir = join(tempDir, 'dwg_output');
+
+    await mkdir(inputDir, { recursive: true });
+    await mkdir(outputDir, { recursive: true });
+
+    // Clean output dir
+    const existingFiles = await readdir(outputDir).catch(() => []);
+    for (const f of existingFiles) {
+      await import('fs/promises').then(fs => fs.unlink(join(outputDir, f))).catch(() => {});
+    }
+
+    // Save DWG file
+    const dwgBuffer = Buffer.from(content, 'base64');
+    const inputFile = join(inputDir, filename || 'input.dwg');
+    await writeFile(inputFile, dwgBuffer);
+
+    // Run ODA converter: ODAFileConverter "inputDir" "outputDir" ACAD2018 DXF 0 1 "*.DWG"
+    const odaCmd = `"${odaPath}" "${inputDir}" "${outputDir}" ACAD2018 DXF 0 1 "*.DWG"`;
+
+    await new Promise((resolve, reject) => {
+      exec(odaCmd, { timeout: 60000 }, (error, stdout, stderr) => {
+        if (error && !stdout.includes('Audit')) {
+          reject(new Error(`ODA conversion failed: ${error.message}`));
+        } else {
+          resolve(stdout);
+        }
+      });
+    });
+
+    // Find output DXF file
+    const outputFiles = await readdir(outputDir);
+    const dxfFile = outputFiles.find(f => f.toLowerCase().endsWith('.dxf'));
+
+    if (!dxfFile) {
+      return res.status(500).json({
+        success: false,
+        error: 'Conversion DWG→DXF échouée, aucun fichier DXF généré'
+      });
+    }
+
+    // Read DXF content
+    const dxfContent = await readFile(join(outputDir, dxfFile), 'utf-8');
+
+    // Convert DXF to GeoJSON (inline parser)
+    const geojson = parseDxfToGeoJson(dxfContent);
+
+    // Cleanup
+    await import('fs/promises').then(fs => fs.unlink(inputFile)).catch(() => {});
+    await import('fs/promises').then(fs => fs.unlink(join(outputDir, dxfFile))).catch(() => {});
+
+    res.json({
+      success: true,
+      geojson,
+      filename: (filename || 'drawing').replace(/\.dwg$/i, '.geojson'),
+      entityCount: geojson.features?.length || 0
+    });
+
+  } catch (error) {
+    console.error('DWG conversion error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Erreur de conversion DWG'
+    });
+  }
+});
+
+// DXF to GeoJSON parser (server-side version)
+function parseDxfToGeoJson(dxfContent) {
+  const features = [];
+  const lines = dxfContent.split('\n');
+  let i = 0;
+  let entityType = '';
+  let currentEntity = {};
+  let inEntities = false;
+
+  while (i < lines.length) {
+    const code = parseInt(lines[i]?.trim() || '0');
+    const value = lines[i + 1]?.trim() || '';
+    i += 2;
+
+    if (code === 0 && value === 'SECTION') {
+      const sectionCode = parseInt(lines[i]?.trim() || '0');
+      const sectionName = lines[i + 1]?.trim() || '';
+      if (sectionCode === 2) {
+        inEntities = sectionName === 'ENTITIES';
+      }
+      i += 2;
+      continue;
+    }
+
+    if (code === 0 && value === 'ENDSEC') {
+      inEntities = false;
+      continue;
+    }
+
+    if (!inEntities) continue;
+
+    if (code === 0) {
+      if (entityType && Object.keys(currentEntity).length > 0) {
+        const feature = dxfEntityToFeature(entityType, currentEntity);
+        if (feature) features.push(feature);
+      }
+      entityType = value;
+      currentEntity = { layer: '0' };
+      continue;
+    }
+
+    switch (code) {
+      case 8: currentEntity.layer = value; break;
+      case 10: currentEntity.x = parseFloat(value); break;
+      case 20: currentEntity.y = parseFloat(value); break;
+      case 11: currentEntity.x2 = parseFloat(value); break;
+      case 21: currentEntity.y2 = parseFloat(value); break;
+      case 40: currentEntity.radius = parseFloat(value); break;
+      case 50: currentEntity.startAngle = parseFloat(value); break;
+      case 51: currentEntity.endAngle = parseFloat(value); break;
+      case 1: currentEntity.text = value; break;
+      case 62: currentEntity.color = parseInt(value); break;
+      case 90: currentEntity.vertexCount = parseInt(value); break;
+      case 70: currentEntity.flags = parseInt(value); break;
+    }
+
+    if (entityType === 'LWPOLYLINE' && code === 10) {
+      if (!currentEntity.vertices) currentEntity.vertices = [];
+      currentEntity.vertices.push([parseFloat(value), 0]);
+    }
+    if (entityType === 'LWPOLYLINE' && code === 20) {
+      if (currentEntity.vertices?.length > 0) {
+        currentEntity.vertices[currentEntity.vertices.length - 1][1] = parseFloat(value);
+      }
+    }
+  }
+
+  if (entityType && Object.keys(currentEntity).length > 0) {
+    const feature = dxfEntityToFeature(entityType, currentEntity);
+    if (feature) features.push(feature);
+  }
+
+  return { type: 'FeatureCollection', features };
+}
+
+function dxfEntityToFeature(type, entity) {
+  const props = { layer: entity.layer, color: entity.color, entityType: type };
+
+  switch (type) {
+    case 'POINT':
+      if (entity.x !== undefined && entity.y !== undefined) {
+        return { type: 'Feature', geometry: { type: 'Point', coordinates: [entity.x, entity.y] }, properties: props };
+      }
+      break;
+
+    case 'LINE':
+      if (entity.x !== undefined && entity.y !== undefined && entity.x2 !== undefined && entity.y2 !== undefined) {
+        return { type: 'Feature', geometry: { type: 'LineString', coordinates: [[entity.x, entity.y], [entity.x2, entity.y2]] }, properties: props };
+      }
+      break;
+
+    case 'LWPOLYLINE':
+    case 'POLYLINE':
+      if (entity.vertices?.length >= 2) {
+        const isClosed = (entity.flags || 0) & 1;
+        if (isClosed && entity.vertices.length >= 3) {
+          const coords = [...entity.vertices];
+          if (coords[0][0] !== coords[coords.length-1][0] || coords[0][1] !== coords[coords.length-1][1]) {
+            coords.push([...coords[0]]);
+          }
+          return { type: 'Feature', geometry: { type: 'Polygon', coordinates: [coords] }, properties: props };
+        } else {
+          return { type: 'Feature', geometry: { type: 'LineString', coordinates: entity.vertices }, properties: props };
+        }
+      }
+      break;
+
+    case 'CIRCLE':
+      if (entity.x !== undefined && entity.y !== undefined && entity.radius) {
+        const coords = [];
+        for (let i = 0; i <= 32; i++) {
+          const angle = (i / 32) * 2 * Math.PI;
+          coords.push([entity.x + entity.radius * Math.cos(angle), entity.y + entity.radius * Math.sin(angle)]);
+        }
+        return { type: 'Feature', geometry: { type: 'Polygon', coordinates: [coords] }, properties: { ...props, radius: entity.radius } };
+      }
+      break;
+
+    case 'ARC':
+      if (entity.x !== undefined && entity.y !== undefined && entity.radius) {
+        const start = (entity.startAngle || 0) * Math.PI / 180;
+        const end = (entity.endAngle || 360) * Math.PI / 180;
+        const arcLength = end > start ? end - start : (2 * Math.PI - start + end);
+        const segments = Math.max(8, Math.ceil(arcLength / (Math.PI / 16)));
+        const coords = [];
+        for (let i = 0; i <= segments; i++) {
+          const angle = start + (i / segments) * arcLength;
+          coords.push([entity.x + entity.radius * Math.cos(angle), entity.y + entity.radius * Math.sin(angle)]);
+        }
+        return { type: 'Feature', geometry: { type: 'LineString', coordinates: coords }, properties: { ...props, radius: entity.radius } };
+      }
+      break;
+
+    case 'TEXT':
+    case 'MTEXT':
+      if (entity.x !== undefined && entity.y !== undefined) {
+        return { type: 'Feature', geometry: { type: 'Point', coordinates: [entity.x, entity.y] }, properties: { ...props, text: entity.text } };
+      }
+      break;
+  }
+  return null;
 }
 
 // ============================================

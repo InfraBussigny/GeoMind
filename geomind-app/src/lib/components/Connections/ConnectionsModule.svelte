@@ -375,7 +375,7 @@
           <div class="form-row">
             <div class="form-group flex-grow">
               <label for="conn-host">Hôte</label>
-              <input type="text" id="conn-host" bind:value={formHost} placeholder="Ex: db.bussigny.ch" />
+              <input type="text" id="conn-host" bind:value={formHost} placeholder="Ex: db.example.ch" />
             </div>
             <div class="form-group" style="width: 100px;">
               <label for="conn-port">Port</label>
@@ -387,7 +387,7 @@
         {#if formType === 'wms' || formType === 'wfs'}
           <div class="form-group">
             <label for="conn-url">URL du service</label>
-            <input type="url" id="conn-url" bind:value={formUrl} placeholder="https://geo.bussigny.ch/geoserver/wms" />
+            <input type="url" id="conn-url" bind:value={formUrl} placeholder="https://geo.example.ch/geoserver/wms" />
           </div>
           <div class="form-group">
             <label for="conn-version">Version (optionnel)</label>

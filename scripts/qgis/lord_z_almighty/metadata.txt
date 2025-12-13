@@ -1,0 +1,16 @@
+[general]
+name=Lord Z Almighty
+qgisMinimumVersion=3.0
+description=Le Seigneur Z pointe majestueusement sur vos parcelles avec style
+version=1.0.0
+author=Marc Zimmermann (Lord Z)
+email=marc.zimmermann@bussigny.ch
+about=Extension epique qui affiche Lord Z pointant sur une parcelle avec une bulle BD contenant les informations cadastrales. Parce que la cartographie merite un peu de panache!
+tracker=https://github.com/marc-zimmermann/geobrain
+repository=https://github.com/marc-zimmermann/geobrain
+tags=parcelle, cadastre, fun, lord z, bd, bulle
+homepage=https://github.com/marc-zimmermann/geobrain
+category=Fun
+icon=icon.png
+experimental=False
+deprecated=False

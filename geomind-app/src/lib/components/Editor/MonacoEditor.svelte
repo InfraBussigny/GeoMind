@@ -140,8 +140,11 @@
     return 'plaintext';
   }
 
-  onMount(async () => {
+  onMount(() => {
     if (!browser) return;
+
+    // Use IIFE to handle async initialization
+    (async () => {
 
     // Dynamic import Monaco
     monaco = await import('monaco-editor');
@@ -256,6 +259,7 @@
 
     // Expose editor instance
     onmount?.(editor);
+    })();
 
     return () => {
       editor?.dispose();

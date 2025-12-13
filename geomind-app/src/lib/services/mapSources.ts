@@ -120,18 +120,18 @@ export const DEFAULT_SOURCES: MapSource[] = [
     category: 'Canton VD'
   },
 
-  // Bussigny
+  // Géoportail local (exemple)
   {
-    id: 'bussigny-geoportail',
-    name: 'Géoportail Bussigny',
+    id: 'local-geoportail',
+    name: 'Géoportail local',
     type: 'wms',
-    url: 'https://geo.bussigny.ch/qgis/wms',
+    url: 'https://geo.example.ch/qgis/wms',
     version: '1.3.0',
-    attribution: '© Commune de Bussigny',
+    attribution: '© GeoMind',
     projection: 'EPSG:2056',
     isActive: true,
     isDefault: false,
-    category: 'Bussigny'
+    category: 'Local'
   },
 
   // OpenStreetMap

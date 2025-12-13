@@ -10,7 +10,7 @@ import { browser } from '$app/environment';
 // Types
 // ============================================
 
-export type AIProvider = 'anthropic' | 'google' | 'openai' | 'mistral' | 'deepseek' | 'perplexity' | 'ollama' | 'lmstudio' | 'custom';
+export type AIProvider = 'anthropic' | 'google' | 'openai' | 'mistral' | 'deepseek' | 'perplexity' | 'groq' | 'ollama' | 'lmstudio' | 'custom';
 
 export interface AIModel {
   id: string;
@@ -290,7 +290,69 @@ export const AVAILABLE_MODELS: AIModel[] = [
     isLocal: false
   },
 
+  // Groq (gratuit/très bon marché, très rapide, tool use)
+  {
+    id: 'llama-3.3-70b-versatile',
+    name: 'Llama 3.3 70B (Groq)',
+    provider: 'groq',
+    contextLength: 128000,
+    inputPrice: 0.59,
+    outputPrice: 0.79,
+    capabilities: ['chat', 'code', 'function_calling'],
+    isLocal: false
+  },
+  {
+    id: 'llama-3.1-70b-versatile',
+    name: 'Llama 3.1 70B (Groq)',
+    provider: 'groq',
+    contextLength: 128000,
+    inputPrice: 0.59,
+    outputPrice: 0.79,
+    capabilities: ['chat', 'code', 'function_calling'],
+    isLocal: false
+  },
+  {
+    id: 'llama-3.1-8b-instant',
+    name: 'Llama 3.1 8B Instant (Groq)',
+    provider: 'groq',
+    contextLength: 128000,
+    inputPrice: 0.05,
+    outputPrice: 0.08,
+    capabilities: ['chat', 'code'],
+    isLocal: false
+  },
+  {
+    id: 'mixtral-8x7b-32768',
+    name: 'Mixtral 8x7B (Groq)',
+    provider: 'groq',
+    contextLength: 32768,
+    inputPrice: 0.24,
+    outputPrice: 0.24,
+    capabilities: ['chat', 'code', 'function_calling'],
+    isLocal: false
+  },
+  {
+    id: 'llama3-groq-70b-8192-tool-use-preview',
+    name: 'Llama 3 70B Tool Use (Groq)',
+    provider: 'groq',
+    contextLength: 8192,
+    inputPrice: 0.89,
+    outputPrice: 0.89,
+    capabilities: ['chat', 'code', 'function_calling'],
+    isLocal: false
+  },
+
   // Local - Ollama (examples, dynamically loaded)
+  {
+    id: 'sqlcoder',
+    name: 'SQLCoder (SQL specialist)',
+    provider: 'ollama',
+    contextLength: 16000,
+    inputPrice: 0,
+    outputPrice: 0,
+    capabilities: ['code'],
+    isLocal: true
+  },
   {
     id: 'llama3.2',
     name: 'Llama 3.2',
@@ -382,10 +444,16 @@ const DEFAULT_CONFIGS: AIProviderConfig[] = [
     authType: 'api_key'
   },
   {
+    provider: 'groq',
+    enabled: true,
+    defaultModel: 'llama-3.3-70b-versatile',
+    authType: 'api_key'
+  },
+  {
     provider: 'ollama',
     enabled: false,
     baseUrl: 'http://localhost:11434',
-    defaultModel: 'llama3.2'
+    defaultModel: 'sqlcoder'
   },
   {
     provider: 'lmstudio',
@@ -420,8 +488,8 @@ interface RoutingRule {
 function loadConfig(): AIConfigState {
   const defaultState: AIConfigState = {
     providers: DEFAULT_CONFIGS,
-    activeProvider: 'anthropic',
-    activeModel: 'claude-3-5-sonnet-20241022',
+    activeProvider: 'groq',
+    activeModel: 'llama-3.3-70b-versatile',
     autoRoute: false,
     routingRules: []
   };

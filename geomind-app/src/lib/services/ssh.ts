@@ -432,29 +432,29 @@ export async function sftpDelete(connectionId: string, path: string): Promise<{ 
 }
 
 // ============================================
-// Predefined Connections (Bussigny infrastructure)
+// Predefined Connections (Example templates)
 // ============================================
 
 export const PREDEFINED_CONNECTIONS: Omit<SSHConnection, 'id' | 'status'>[] = [
   {
     name: 'SRV-FME',
-    host: 'srv-fme.bussigny.local',
+    host: 'srv-fme.local',
     port: 22,
     username: '',
     authType: 'password',
-    category: 'Serveurs Bussigny'
+    category: 'Serveurs locaux'
   },
   {
     name: 'SRV-SAI',
-    host: 'srv-sai.bussigny.local',
+    host: 'srv-sai.local',
     port: 22,
     username: '',
     authType: 'password',
-    category: 'Serveurs Bussigny'
+    category: 'Serveurs locaux'
   },
   {
-    name: 'Exoscale (Géoportail)',
-    host: 'geo.bussigny.ch',
+    name: 'Géoportail Cloud',
+    host: 'geo.example.ch',
     port: 22,
     username: '',
     authType: 'key',

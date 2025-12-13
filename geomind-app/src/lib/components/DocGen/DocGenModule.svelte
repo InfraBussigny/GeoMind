@@ -32,7 +32,7 @@
 <div class="docgen-module">
   <header class="docgen-header">
     <h1>📄 Génération de documents</h1>
-    <p>Créez des documents professionnels aux couleurs de Bussigny</p>
+    <p>Créez des documents professionnels</p>
   </header>
 
   <div class="docgen-content">

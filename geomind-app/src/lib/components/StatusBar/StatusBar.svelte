@@ -1,186 +1,233 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
+  import { browser } from '$app/environment';
   import {
-    currentProvider,
-    currentModel,
+    currentModule,
     backendConnected,
-    isLoading
+    isLoading,
+    appMode,
+    wakeLockStore
   } from '$lib/stores/app';
-  import { getUsageStats, type UsageStats } from '$lib/services/api';
-
-  // Props
-  let { currentProject = 'GeoMind' }: { currentProject?: string } = $props();
 
   // State
-  let usageStats = $state<UsageStats | null>(null);
-  let systemStats = $state({ cpu: 0, memory: 0 });
   let currentTime = $state(new Date());
   let sessionStart = $state(new Date());
-  let refreshInterval: ReturnType<typeof setInterval>;
   let timeInterval: ReturnType<typeof setInterval>;
 
+  // Connection states
+  let vpnConnected = $state(false);
+  let serverConnections = $state<{name: string; host: string; isConnected: boolean}[]>([]);
+  let showServerDetails = $state(false);
+
+  // VPN check interval
+  let vpnCheckInterval: ReturnType<typeof setInterval>;
+  let serverCheckInterval: ReturnType<typeof setInterval>;
+
   onMount(() => {
-    loadUsageStats();
-    // Rafraichir les stats toutes les 30 secondes
-    refreshInterval = setInterval(loadUsageStats, 30000);
-    // Mettre a jour l'heure chaque seconde
+    if (!browser) return;
+
+    // Update time every second
     timeInterval = setInterval(() => {
       currentTime = new Date();
     }, 1000);
+
+    // Check VPN status periodically
+    checkVpnStatus();
+    vpnCheckInterval = setInterval(checkVpnStatus, 30000);
+
+    // Check servers status periodically
+    checkServersStatus();
+    serverCheckInterval = setInterval(checkServersStatus, 10000);
   });
 
   onDestroy(() => {
-    if (refreshInterval) clearInterval(refreshInterval);
     if (timeInterval) clearInterval(timeInterval);
+    if (vpnCheckInterval) clearInterval(vpnCheckInterval);
+    if (serverCheckInterval) clearInterval(serverCheckInterval);
   });
 
-  async function loadUsageStats() {
+  async function checkVpnStatus() {
     try {
-      usageStats = await getUsageStats();
-    } catch (e) {
-      // Silently fail - backend might not have this endpoint yet
-      console.debug('Usage stats not available');
+      const res = await fetch('http://localhost:3001/api/vpn/status');
+      const data = await res.json();
+      if (data.success) {
+        vpnConnected = data.status.vpnConnected;
+      }
+    } catch {
+      vpnConnected = false;
     }
   }
 
-  // Formater le nom du modele
-  function formatModelName(modelId: string): string {
-    const modelNames: Record<string, string> = {
-      'claude-sonnet-4-20250514': 'Sonnet 4',
-      'claude-opus-4-20250514': 'Opus 4',
-      'claude-3-5-haiku-20241022': 'Haiku 3.5',
-      'claude-3-5-sonnet-20241022': 'Sonnet 3.5',
-      'gpt-4o': 'GPT-4o',
-      'gpt-4o-mini': 'GPT-4o Mini',
-      'mistral-large-latest': 'Mistral Large',
-      'deepseek-chat': 'DeepSeek'
-    };
-    return modelNames[modelId] || modelId.split('-').slice(0, 2).join(' ');
+  async function checkServersStatus() {
+    // Fetch connections from backend API
+    try {
+      const res = await fetch('http://localhost:3001/api/connections');
+      if (res.ok) {
+        const connections = await res.json();
+        serverConnections = connections.map((c: any) => ({
+          name: c.name || c.database || 'Sans nom',
+          host: c.host || c.url || 'localhost',
+          isConnected: c.status === 'connected'
+        }));
+      } else {
+        serverConnections = [];
+      }
+    } catch {
+      serverConnections = [];
+    }
   }
 
-  // Formater les tokens
-  function formatTokens(count: number): string {
-    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
-    if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
-    return count.toString();
-  }
+  // Derived values for servers
+  const connectedServersCount = $derived(serverConnections.filter(s => s.isConnected).length);
+  const totalServersCount = $derived(serverConnections.length);
 
-  // Formater le cout
-  function formatCost(cost: number): string {
-    return `$${cost.toFixed(2)}`;
-  }
+  // Module names
+  const moduleNames: Record<string, string> = {
+    chat: 'Assistant',
+    canvas: 'Cartes',
+    cad: 'CAD',
+    editor: 'Editeur',
+    databases: 'Databases',
+    converter: 'Convertisseur',
+    wakelock: 'Anti-veille',
+    timepro: 'TimePro',
+    comm: 'Communications',
+    docgen: 'Documents',
+    connections: 'Connexions',
+    settings: 'Parametres',
+    wip: 'WIP',
+    vpn: 'VPN',
+    kdrive: 'kDrive'
+  };
 
-  // Calculer le temps de session
-  function getSessionDuration(): string {
-    const diff = currentTime.getTime() - sessionStart.getTime();
-    const hours = Math.floor(diff / 3600000);
-    const minutes = Math.floor((diff % 3600000) / 60000);
-    if (hours > 0) return `${hours}h ${minutes}m`;
-    return `${minutes}m`;
-  }
-
-  // Formater l'heure
+  // Format time
   function formatTime(date: Date): string {
     return date.toLocaleTimeString('fr-CH', { hour: '2-digit', minute: '2-digit' });
   }
 
-  // Status de connexion
-  function getConnectionStatus(): { text: string; class: string } {
-    if (!$backendConnected) return { text: 'Deconnecte', class: 'disconnected' };
-    if ($isLoading) return { text: 'Generation...', class: 'loading' };
-    return { text: 'Connecte', class: 'connected' };
+  // Session duration
+  function getSessionDuration(): string {
+    const diff = currentTime.getTime() - sessionStart.getTime();
+    const hours = Math.floor(diff / 3600000);
+    const minutes = Math.floor((diff % 3600000) / 60000);
+    if (hours > 0) return `${hours}h${minutes.toString().padStart(2, '0')}`;
+    return `${minutes}m`;
   }
 
-  const connectionStatus = $derived(getConnectionStatus());
+  // Mode display
+  function getModeDisplay(mode: string): { label: string; class: string } {
+    switch (mode) {
+      case 'expert': return { label: 'Expert', class: 'expert' };
+      case 'god': return { label: 'GOD', class: 'god' };
+      case 'bfsa': return { label: 'BFSA', class: 'bfsa' };
+      default: return { label: 'Standard', class: 'standard' };
+    }
+  }
+
+  const modeInfo = $derived(getModeDisplay($appMode));
+
+  // Format wake lock time
+  function formatWakeLockTime(seconds: number): string {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    if (h > 0) return `${h}h${m.toString().padStart(2, '0')}`;
+    return `${m}m`;
+  }
 </script>
 
 <footer class="status-bar">
-  <!-- Section gauche: Projet et statut -->
+  <!-- Section gauche: Module actif & Mode -->
   <div class="status-section left">
-    <div class="status-item project">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-      </svg>
-      <span class="value">{currentProject}</span>
+    <div class="status-item module-indicator">
+      <span class="module-name">{moduleNames[$currentModule] || $currentModule}</span>
     </div>
 
     <div class="status-divider"></div>
 
-    <div class="status-item connection {connectionStatus.class}">
-      <span class="status-dot"></span>
-      <span class="value">{connectionStatus.text}</span>
+    <div class="status-item mode-indicator {modeInfo.class}">
+      <span class="mode-label">{modeInfo.label}</span>
     </div>
   </div>
 
-  <!-- Section centrale: Modele et tokens -->
+  <!-- Section centrale: Indicateurs de connexion -->
   <div class="status-section center">
-    {#if $backendConnected}
-      <div class="status-item model">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M12 1v6m0 6v10"/>
-          <path d="M1 12h6m6 0h10"/>
-        </svg>
-        <span class="label">Modele:</span>
-        <span class="value highlight">{formatModelName($currentModel)}</span>
-      </div>
+    <!-- Backend IA -->
+    <div class="status-item connection-indicator" class:connected={$backendConnected} class:loading={$isLoading} title="Backend IA">
+      <span class="indicator-dot"></span>
+      <span class="indicator-label">Backend</span>
+    </div>
 
-      <div class="status-divider"></div>
+    <div class="status-divider"></div>
 
-      <div class="status-item tokens">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-        </svg>
-        <span class="label">Session:</span>
-        <span class="value">{usageStats ? formatTokens(usageStats.sessionTokens) : '0'} tok</span>
-        {#if usageStats && usageStats.sessionCost > 0}
-          <span class="cost">({formatCost(usageStats.sessionCost)})</span>
-        {/if}
-      </div>
+    <!-- VPN -->
+    <div class="status-item connection-indicator" class:connected={vpnConnected} title="VPN FortiClient">
+      <span class="indicator-dot"></span>
+      <span class="indicator-label">VPN</span>
+    </div>
 
-      {#if usageStats && usageStats.monthlyTokens > 0}
-        <div class="status-divider"></div>
+    <div class="status-divider"></div>
 
-        <div class="status-item monthly">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-            <line x1="16" y1="2" x2="16" y2="6"/>
-            <line x1="8" y1="2" x2="8" y2="6"/>
-            <line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
-          <span class="label">Mois:</span>
-          <span class="value">{formatTokens(usageStats.monthlyTokens)}</span>
-          {#if usageStats.monthlyLimit}
-            <span class="quota">/ {formatTokens(usageStats.monthlyLimit)}</span>
-            <div class="quota-bar">
-              <div
-                class="quota-fill"
-                class:warning={usageStats.monthlyTokens / usageStats.monthlyLimit > 0.8}
-                class:danger={usageStats.monthlyTokens / usageStats.monthlyLimit > 0.95}
-                style="width: {Math.min(100, (usageStats.monthlyTokens / usageStats.monthlyLimit) * 100)}%"
-              ></div>
+    <!-- Serveurs PostGIS -->
+    <div
+      class="status-item connection-indicator servers-indicator"
+      class:connected={connectedServersCount > 0}
+      class:has-servers={totalServersCount > 0}
+      onmouseenter={() => showServerDetails = true}
+      onmouseleave={() => showServerDetails = false}
+      role="button"
+      tabindex="0"
+    >
+      <span class="indicator-dot"></span>
+      <span class="indicator-label">Serveurs</span>
+      {#if totalServersCount > 0}
+        <span class="indicator-count">{connectedServersCount}/{totalServersCount}</span>
+      {/if}
+
+      <!-- Server details dropdown -->
+      {#if showServerDetails && serverConnections.length > 0}
+        <div class="server-details-dropdown">
+          <div class="dropdown-header">Connexions PostGIS</div>
+          {#each serverConnections as server}
+            <div class="server-item" class:connected={server.isConnected}>
+              <span class="server-dot"></span>
+              <span class="server-name">{server.name}</span>
+              <span class="server-host">{server.host}</span>
             </div>
-          {/if}
+          {/each}
+        </div>
+      {:else if showServerDetails && serverConnections.length === 0}
+        <div class="server-details-dropdown">
+          <div class="dropdown-empty">Aucune connexion configuree</div>
         </div>
       {/if}
-    {/if}
+    </div>
+
+    <div class="status-divider"></div>
+
+    <!-- Anti-veille -->
+    <div class="status-item connection-indicator" class:connected={$wakeLockStore.isActive} title="Anti-veille ecran">
+      <span class="indicator-dot"></span>
+      <span class="indicator-label">Veille</span>
+      {#if $wakeLockStore.isActive}
+        <span class="indicator-time">{formatWakeLockTime($wakeLockStore.activeTime)}</span>
+      {/if}
+    </div>
   </div>
 
-  <!-- Section droite: Temps et systeme -->
+  <!-- Section droite: Session & Heure -->
   <div class="status-section right">
-    <div class="status-item session-time">
+    <div class="status-item session-info">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="10"/>
         <polyline points="12 6 12 12 16 14"/>
       </svg>
-      <span class="label">Session:</span>
-      <span class="value">{getSessionDuration()}</span>
+      <span class="session-duration">{getSessionDuration()}</span>
     </div>
 
     <div class="status-divider"></div>
 
-    <div class="status-item time">
-      <span class="value">{formatTime(currentTime)}</span>
+    <div class="status-item time-display">
+      <span class="time">{formatTime(currentTime)}</span>
     </div>
   </div>
 </footer>
@@ -190,33 +237,20 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 28px;
-    padding: 0 var(--spacing-md);
-    background: var(--noir-profond);
-    color: var(--text-secondary);
+    height: 26px;
+    padding: 0 12px;
+    background: var(--noir-profond, #0a0a0f);
+    color: var(--text-secondary, #888);
     font-size: 11px;
-    font-family: var(--font-mono);
-    border-top: 1px solid var(--border-color);
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    border-top: 1px solid var(--border-color, #1a1a2e);
     user-select: none;
-    position: relative;
-  }
-
-  /* Ligne verte subtile en haut */
-  .status-bar::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--cyber-green), transparent);
-    opacity: 0.3;
   }
 
   .status-section {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: 8px;
   }
 
   .status-section.left {
@@ -226,6 +260,7 @@
   .status-section.center {
     flex: 1;
     justify-content: center;
+    gap: 12px;
   }
 
   .status-section.right {
@@ -235,149 +270,273 @@
   .status-item {
     display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 2px 8px;
+    gap: 5px;
+    padding: 2px 6px;
     border-radius: 3px;
-    transition: all var(--transition-fast);
-    border: 1px solid transparent;
-  }
-
-  .status-item:hover {
-    background: var(--noir-card);
-    border-color: var(--border-color);
+    transition: all 0.15s;
   }
 
   .status-divider {
     width: 1px;
     height: 12px;
-    background: var(--border-color);
-  }
-
-  .icon {
-    width: 12px;
-    height: 12px;
-    opacity: 0.6;
-  }
-
-  .label {
+    background: var(--border-color, #1a1a2e);
     opacity: 0.5;
+  }
+
+  /* Module indicator */
+  .module-indicator {
+    background: rgba(0, 255, 136, 0.1);
+    border: 1px solid rgba(0, 255, 136, 0.2);
+  }
+
+  .module-name {
+    color: var(--cyber-green, #00ff88);
+    font-weight: 600;
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
 
-  .value {
-    font-weight: 500;
-    color: var(--text-primary);
+  /* Mode indicator */
+  .mode-indicator {
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
-  .value.highlight {
-    color: var(--cyber-green);
-    text-shadow: 0 0 8px var(--cyber-green-glow);
+  .mode-indicator.standard {
+    background: rgba(100, 100, 100, 0.2);
+    color: #888;
+    border: 1px solid rgba(100, 100, 100, 0.3);
   }
 
-  .cost, .quota {
-    opacity: 0.5;
-    font-size: 10px;
+  .mode-indicator.expert {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.3);
   }
 
-  /* Connection status */
-  .status-dot {
+  .mode-indicator.god {
+    background: rgba(168, 85, 247, 0.2);
+    color: #a855f7;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    animation: god-glow 2s infinite;
+  }
+
+  .mode-indicator.bfsa {
+    background: rgba(234, 179, 8, 0.2);
+    color: #eab308;
+    border: 1px solid rgba(234, 179, 8, 0.3);
+  }
+
+  @keyframes god-glow {
+    0%, 100% { box-shadow: 0 0 4px rgba(168, 85, 247, 0.3); }
+    50% { box-shadow: 0 0 8px rgba(168, 85, 247, 0.5); }
+  }
+
+  /* Connection indicators */
+  .connection-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .indicator-dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: var(--gris-light);
+    background: #ef4444;
+    transition: all 0.3s;
   }
 
-  .connection.connected .status-dot {
-    background: var(--cyber-green);
-    box-shadow: 0 0 8px var(--cyber-green-glow);
-    animation: pulse-glow-dot 2s infinite;
+  .connection-indicator.connected .indicator-dot {
+    background: #22c55e;
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
   }
 
-  .connection.disconnected .status-dot {
-    background: var(--error);
-    box-shadow: 0 0 6px var(--error-glow);
+  .connection-indicator.loading .indicator-dot {
+    background: #3b82f6;
+    animation: pulse-loading 0.8s infinite;
   }
 
-  .connection.loading .status-dot {
-    background: var(--accent-cyan);
-    animation: pulse-dot 0.8s infinite;
-    box-shadow: 0 0 8px var(--info-glow);
-  }
-
-  @keyframes pulse-dot {
+  @keyframes pulse-loading {
     0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(0.8); }
+    50% { opacity: 0.5; transform: scale(0.8); }
   }
 
-  @keyframes pulse-glow-dot {
-    0%, 100% { box-shadow: 0 0 4px var(--cyber-green-glow); }
-    50% { box-shadow: 0 0 10px var(--cyber-green-glow); }
+  .indicator-label {
+    font-size: 10px;
+    color: var(--text-secondary, #888);
+    transition: color 0.2s;
   }
 
-  /* Quota bar */
-  .quota-bar {
-    width: 40px;
-    height: 3px;
-    background: var(--noir-card);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-left: 4px;
-    border: 1px solid var(--border-color);
+  .connection-indicator.connected .indicator-label {
+    color: var(--text-primary, #fff);
   }
 
-  .quota-fill {
-    height: 100%;
-    background: var(--cyber-green);
-    transition: width 0.3s ease;
-    box-shadow: 0 0 6px var(--cyber-green-glow);
+  .indicator-count {
+    font-size: 9px;
+    color: var(--text-secondary, #888);
+    opacity: 0.7;
   }
 
-  .quota-fill.warning {
-    background: var(--warning);
-    box-shadow: 0 0 6px var(--warning-glow);
+  .indicator-time {
+    font-size: 9px;
+    color: #22c55e;
+    font-weight: 500;
   }
 
-  .quota-fill.danger {
-    background: var(--error);
-    box-shadow: 0 0 6px var(--error-glow);
-    animation: pulse-danger 1s infinite;
+  /* Session info */
+  .session-info {
+    color: var(--text-secondary, #888);
   }
 
-  @keyframes pulse-danger {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
+  .session-info .icon {
+    width: 12px;
+    height: 12px;
+    opacity: 0.6;
   }
 
-  /* Project */
-  .project {
-    color: var(--cyber-green);
-  }
-
-  .project .icon {
-    opacity: 1;
-    color: var(--cyber-green);
-  }
-
-  .project .value {
-    color: var(--cyber-green);
-    text-shadow: 0 0 8px var(--cyber-green-glow);
-  }
-
-  /* Model */
-  .model .value.highlight {
-    color: var(--accent-cyan);
-    text-shadow: 0 0 8px var(--info-glow);
-  }
-
-  /* Time */
-  .time .value {
+  .session-duration {
+    font-size: 10px;
     font-variant-numeric: tabular-nums;
-    color: var(--text-muted);
   }
 
-  .session-time .value {
-    color: var(--text-secondary);
+  /* Time display */
+  .time-display {
+    min-width: 40px;
+    justify-content: flex-end;
+  }
+
+  .time {
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-muted, #666);
+  }
+
+  /* Hover effects */
+  .connection-indicator:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .connection-indicator:hover .indicator-label {
+    color: var(--text-primary, #fff);
+  }
+
+  /* Server indicator with dropdown */
+  .servers-indicator {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .servers-indicator.has-servers:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  /* Server details dropdown */
+  .server-details-dropdown {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 8px;
+    min-width: 200px;
+    background: var(--noir-profond, #0a0a0f);
+    border: 1px solid var(--border-color, #1a1a2e);
+    border-radius: 6px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    overflow: hidden;
+  }
+
+  .dropdown-header {
+    padding: 8px 12px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary, #888);
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--border-color, #1a1a2e);
+  }
+
+  .dropdown-empty {
+    padding: 12px;
+    font-size: 11px;
+    color: var(--text-secondary, #888);
+    text-align: center;
+  }
+
+  .server-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    transition: background 0.15s;
+  }
+
+  .server-item:last-child {
+    border-bottom: none;
+  }
+
+  .server-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .server-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ef4444;
+    flex-shrink: 0;
+  }
+
+  .server-item.connected .server-dot {
+    background: #22c55e;
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
+  }
+
+  .server-name {
+    flex: 1;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-primary, #fff);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .server-host {
+    font-size: 9px;
+    color: var(--text-secondary, #888);
+    font-family: var(--font-mono, monospace);
+  }
+
+  /* Arrow indicator */
+  .server-details-dropdown::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid var(--border-color, #1a1a2e);
+  }
+
+  .server-details-dropdown::before {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid var(--noir-profond, #0a0a0f);
+    z-index: 1;
   }
 </style>

@@ -17,7 +17,7 @@ import { existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { homedir } from 'os';
 
-const GEOMIND_ROOT = join(homedir(), 'GeoMind');
+const GEOMIND_ROOT = join(homedir(), 'GeoBrain');
 const MEMORY_DIR = join(GEOMIND_ROOT, 'memory');
 const MEMORY_INDEX_PATH = join(MEMORY_DIR, '.index.json');
 

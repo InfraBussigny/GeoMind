@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Template QGIS - Plan Cadastral Servitude
+  Format: A3 Paysage (420 x 297 mm)
+  Commune de Bussigny
+
+  Variables à définir dans le projet:
+  - @commune : Nom de la commune (défaut: BUSSIGNY)
+  - @plan_numero : Numéro(s) du plan cadastral
+  - @echelle : Échelle (ex: 1:500, 1:1000)
+  - @servitude_type : Type de servitude
+  - @servitude_couleur : Couleur de la servitude (#00AA00, #FF0000, etc.)
+  - @coord_e : Coordonnée Est centrale
+  - @coord_n : Coordonnée Nord centrale
+  - @cns_feuille : Numéro de feuille CNS
+  - @dossier_ref : Référence du dossier
+  - @nrf : Numéro RF (optionnel)
+  - @date_plan : Date du plan
+-->
+<Layout name="Plan Servitude A3" units="mm" printResolution="300" worldFileMap="">
+  <Snapper snapToGuides="1" snapToItems="1" snapToGrid="0" tolerance="5"/>
+  <Grid offsetX="0" resolution="10" resUnits="mm" offsetUnits="mm" offsetY="0"/>
+  <PageCollection>
+    <LayoutPage size="420,297" uuid="{page-1}" position="0,0"/>
+  </PageCollection>
+
+  <!-- ========================================
+       CADRE EXTERIEUR
+       ======================================== -->
+  <LayoutItem frame="true" frameJoinStyle="miter" type="65643"
+              position="5,5" size="410,287"
+              outlineWidthM="0.5,mm"
+              uuid="{cadre-ext}"
+              blendMode="0" opacity="1" visibility="1">
+    <FrameColor red="0" green="0" blue="0" alpha="255"/>
+    <BackgroundColor red="255" green="255" blue="255" alpha="255"/>
+  </LayoutItem>
+
+  <!-- ========================================
+       EN-TETE
+       ======================================== -->
+
+  <!-- Titre principal -->
+  <LayoutItem type="65641" position="10,8" size="300,12" uuid="{titre-principal}"
+              halign="4" valign="128" visibility="1">
+    <LabelText>PLAN CADASTRAL - SERVITUDE</LabelText>
+    <LabelFont style="Bold" description="Arial,14,-1,5,75,0,0,0,0,0"/>
+    <FontColor red="0" green="0" blue="0" alpha="255"/>
+  </LayoutItem>
+
+  <!-- Ligne sous titre -->
+  <LayoutItem type="65645" position="10,19" uuid="{ligne-titre}"
+              frameJoinStyle="miter" visibility="1">
+    <nodes>
+      <node x="0" y="0"/>
+      <node x="200" y="0"/>
+    </nodes>
+    <symbol type="line" clip_to_extent="1">
+      <layer class="SimpleLine" pass="0">
+        <prop k="line_color" v="0,0,0,255"/>
+        <prop k="line_width" v="0.5"/>
+      </layer>
+    </symbol>
+  </LayoutItem>
+
+  <!-- N°RF (haut droite) -->
+  <LayoutItem type="65641" position="370,8" size="40,8" uuid="{nrf-label}"
+              halign="2" valign="128" visibility="1">
+    <LabelText>N°RF</LabelText>
+    <LabelFont style="" description="Arial,9,-1,5,50,0,0,0,0,0"/>
+    <FontColor red="0" green="0" blue="0" alpha="255"/>
+  </LayoutItem>
+
+  <LayoutItem type="65641" position="370,15" size="40,10" uuid="{nrf-valeur}"
+              halign="4" valign="128" visibility="1"
+              frame="true" frameJoinStyle="miter" outlineWidthM="0.3,mm">
+    <LabelText>[%@nrf%]</LabelText>
+    <LabelFont style="" description="Arial,10,-1,5,50,0,0,0,0,0"/>
+    <FontColor red="0" green="0" blue="0" alpha="255"/>
+    <FrameColor red="0" green="0" blue="0" alpha="255"/>
+  </LayoutItem>
+
+  <!-- Bloc gauche: Commune, Plan, Echelle -->
+  <LayoutItem type="65641" position="10,22" size="150,7" uuid="{commune}"
+              halign="1" valign="128" visibility="1">
+    <LabelText>COMMUNE DE [%coalesce(@commune, 'BUSSIGNY')%]</LabelText>
+    <LabelFont style="Bold" description="Arial,11,-1,5,75,0,0,0,0,0"/>
+    <FontColor red="0" green="0" blue="0" alpha="255"/>
+  </LayoutItem>
+
+  <LayoutItem type="65641" position="10,29" size="150,6" uuid="{plan-numero}"
+              halign="1" valign="128" visibility="1">
+    <LabelText>[%'Plan ' || coalesce(@plan_numero, '...')%]</LabelText>
+    <LabelFont style="" description="Arial,10,-1,5,50,0,0,0,0,0"/>
+    <FontColor red="0" green="0" blue="0" alpha="255"/>
+  </LayoutItem>
+
+  <LayoutItem type="65641" position="10,35" size="150,6" uuid="{echelle}"
+              halign="1" valign="128" visibility="1">
+    <LabelText>[%'Echelle ' || coalesce(@echelle, '1:500')%]</LabelText>
+    <LabelFont style="" description="Arial,10,-1,5,50,0,0,0,0,0"/>
+    <FontColor red="0" green="0" blue="0" alpha="255"/>
+  </LayoutItem>
+
+  <!-- Bloc droite: Mensuration, Coordonnées -->
+  <LayoutItem type="65641" position="250,22" size="120,6" uuid="{mensuration}"
+              halign="2" valign="128" visibility="1">
+    <LabelText>Mensuration numérique</LabelText>
+    <LabelFont style="" description="Arial,10,-1,5,50,0,0,0,0,0"/>
+    <FontColor red="0" green="0" blue="0" alpha="255"/>
+  </LayoutItem>
+
+  <LayoutItem type="65641" position="250,28" size="120,6" uuid="{cns}"
+              halign="2" valign="128" visibility="1">
+    <LabelText>[%'Coordonnées C.N.S. ' || coalesce(@cns_feuille, '')%]</LabelText>
+    <LabelFont style="" description="Arial,10,-1,5,50,0,0,0,0,0"/>
+    <FontColor red="0" green="0" blue="0" alpha="255"/>
+  </LayoutItem>
+
+  <LayoutItem type="65641" position="250,34" size="120,6" uuid="{coordonnees}"
+              halign="2" valign="128" visibility="1">
+    <LabelText>[%'E : ' || format_number(coalesce(@coord_e, 0), 0, ',', '''') || '  N : ' || format_number(coalesce(@coord_n, 0), 0, ',', '''')%]</LabelText>
+    <LabelFont style="" description="Arial,10,-1,5,50,0,0,0,0,0"/>
+    <FontColor red="0" green="0" blue="0" alpha="255"/>
+  </LayoutItem>
+
+  <!-- Encadré type de servitude -->
+  <LayoutItem type="65643" position="120,42" size="180,10" uuid="{servitude-cadre}"
+              frame="true" frameJoinStyle="miter" outlineWidthM="0.5,mm"
+              visibility="1">
+    <FrameColor red="0" green="0" blue="0" alpha="255"/>
+    <BackgroundColor red="255" green="255" blue="255" alpha="255"/>
+  </LayoutItem>
+
+  <!-- Ligne colorée servitude (à gauche du texte) -->
+  <LayoutItem type="65645" position="122,47" uuid="{servitude-ligne}"
+              visibility="1">
+    <nodes>
+      <node x="0" y="0"/>
+      <node x="15" y="0"/>
+    </nodes>
+    <symbol type="line" clip_to_extent="1">
+      <layer class="SimpleLine" pass="0">
+        <prop k="line_color" v="[%coalesce(@servitude_couleur, '0,170,0,255')%]"/>
+        <prop k="line_width" v="2"/>
+      </layer>
+    </symbol>
+  </LayoutItem>
+
+  <LayoutItem type="65641" position="140,43" size="155,8" uuid="{servitude-type}"
+              halign="1" valign="128" visibility="1">
+    <LabelText>[%coalesce(@servitude_type, 'Type de servitude')%]</LabelText>
+    <LabelFont style="" description="Arial,10,-1,5,50,0,0,0,0,0"/>
+    <FontColor red="0" green="0" blue="0" alpha="255"/>
+  </LayoutItem>
+
+  <!-- ========================================
+       ZONE CARTE PRINCIPALE
+       ======================================== -->
+  <LayoutItem type="65639" position="10,55" size="400,195" uuid="{carte-principale}"
+              frame="true" frameJoinStyle="miter" outlineWidthM="0.3,mm"
+              visibility="1" keepLayerSet="false" drawCanvasItems="true"
+              followPreset="false" followPresetName="" mapRotation="0">
+    <FrameColor red="0" green="0" blue="0" alpha="255"/>
+    <BackgroundColor red="255" green="255" blue="255" alpha="255"/>
+    <Extent xmin="0" ymin="0" xmax="1000" ymax="1000"/>
+    <LayerSet/>
+    <AtlasMap scalingMode="2" margin="0.1" atlasDriven="0"/>
+    <labelBlockingItems/>
+    <grid enabled="1" style="3" intervalX="100" intervalY="100"
+          offsetX="0" offsetY="0" crossLength="3"
+          blendMode="0" frameSideFlags="15" frameStyle="1"
+          annotationEnabled="1" annotationFormat="0" annotationExpression=""
+          annotationFrameDistance="1" annotationPrecision="0">
+      <lineStyle>
+        <symbol type="line"><layer class="SimpleLine"><prop k="line_color" v="0,0,0,255"/><prop k="line_width" v="0.2"/></layer></symbol>
+      </lineStyle>
+      <markerStyle>
+        <symbol type="marker"><layer class="SimpleMarker"><prop k="color" v="0,0,0,255"/><prop k="size" v="2"/></layer></symbol>
+      </markerStyle>
+      <annotationFont description="Arial,8,-1,5,50,0,0,0,0,0"/>
+      <annotationFontColor red="0" green="0" blue="0" alpha="255"/>
+    </grid>
+  </LayoutItem>
+
+  <!-- ========================================
+       ROSE DES VENTS
+       ======================================== -->
+  <LayoutItem type="65640" position="375,60" size="30,30" uuid="{rose-vents}"
+              visibility="1" mapUuid="{carte-principale}"
+              svgPath=":/images/north_arrows/NorthArrow_04.svg">
+  </LayoutItem>
+
+  <!-- ========================================
+       PIED DE PAGE
+       ======================================== -->
+
+  <!-- Date et copyright (gauche) -->
+  <LayoutItem type="65641" position="10,252" size="100,6" uuid="{date}"
+              halign="1" valign="128" visibility="1">
+    <LabelText>[%'Bussigny, le ' || format_date(coalesce(@date_plan, now()), 'd MMMM yyyy')%]</LabelText>
+    <LabelFont style="" description="Arial,9,-1,5,50,0,0,0,0,0"/>
+    <FontColor red="0" green="0" blue="0" alpha="255"/>
+  </LayoutItem>
+
+  <LayoutItem type="65641" position="10,258" size="150,5" uuid="{copyright}"
+              halign="1" valign="128" visibility="1">
+    <LabelText>"Géodonnée © Etat de Vaud"</LabelText>
+    <LabelFont style="Italic" description="Arial,8,-1,5,50,2,0,0,0,0"/>
+    <FontColor red="100" green="100" blue="100" alpha="255"/>
+  </LayoutItem>
+
+  <!-- Responsable SIT (centre) -->
+  <LayoutItem type="65641" position="150,252" size="140,6" uuid="{responsable}"
+              halign="4" valign="128" visibility="1">
+    <LabelText>Marc Zermatten, Responsable SIT</LabelText>
+    <LabelFont style="" description="Arial,9,-1,5,50,0,0,0,0,0"/>
+    <FontColor red="0" green="0" blue="0" alpha="255"/>
+  </LayoutItem>
+
+  <!-- ========================================
+       CARTOUCHE BUSSIGNY
+       ======================================== -->
+
+  <!-- Cadre cartouche -->
+  <LayoutItem type="65643" position="10,265" size="400,25" uuid="{cartouche-cadre}"
+              frame="true" frameJoinStyle="miter" outlineWidthM="0.5,mm"
+              visibility="1">
+    <FrameColor red="0" green="0" blue="0" alpha="255"/>
+    <BackgroundColor red="255" green="255" blue="255" alpha="255"/>
+  </LayoutItem>
+
+  <!-- Séparateurs verticaux -->
+  <LayoutItem type="65645" position="80,265" uuid="{sep1}" visibility="1">
+    <nodes><node x="0" y="0"/><node x="0" y="25"/></nodes>
+    <symbol type="line"><layer class="SimpleLine"><prop k="line_color" v="0,0,0,255"/><prop k="line_width" v="0.3"/></layer></symbol>
+  </LayoutItem>
+  <LayoutItem type="65645" position="260,265" uuid="{sep2}" visibility="1">
+    <nodes><node x="0" y="0"/><node x="0" y="25"/></nodes>
+    <symbol type="line"><layer class="SimpleLine"><prop k="line_color" v="0,0,0,255"/><prop k="line_width" v="0.3"/></layer></symbol>
+  </LayoutItem>
+  <LayoutItem type="65645" position="330,265" uuid="{sep3}" visibility="1">
+    <nodes><node x="0" y="0"/><node x="0" y="25"/></nodes>
+    <symbol type="line"><layer class="SimpleLine"><prop k="line_color" v="0,0,0,255"/><prop k="line_width" v="0.3"/></layer></symbol>
+  </LayoutItem>
+
+  <!-- Logo Bussigny -->
+  <LayoutItem type="65642" position="12,267" size="65,21" uuid="{logo-bussigny}"
+              visibility="1" pictureWidth="65" pictureHeight="21"
+              mode="0" anchorPoint="0" svgFillColor="0,0,0,255"
+              file="resources/logo_bussigny_pos.png"
+              resizeMode="0" ratioLock="1">
+  </LayoutItem>
+
+  <!-- Bloc commune -->
+  <LayoutItem type="65641" position="85,267" size="170,7" uuid="{cartouche-commune}"
+              halign="1" valign="128" visibility="1">
+    <LabelText>Commune de Bussigny</LabelText>
+    <LabelFont style="Bold" description="Arial,10,-1,5,75,0,0,0,0,0"/>
+    <FontColor red="54" green="96" blue="146" alpha="255"/>
+  </LayoutItem>
+
+  <LayoutItem type="65641" position="85,274" size="170,5" uuid="{cartouche-service}"
+              halign="1" valign="128" visibility="1">
+    <LabelText>Service des Infrastructures</LabelText>
+    <LabelFont style="" description="Arial,8,-1,5,50,0,0,0,0,0"/>
+    <FontColor red="0" green="0" blue="0" alpha="255"/>
+  </LayoutItem>
+
+  <LayoutItem type="65641" position="85,279" size="170,5" uuid="{cartouche-sit}"
+              halign="1" valign="128" visibility="1">
+    <LabelText>Système d'Information du Territoire</LabelText>
+    <LabelFont style="Italic" description="Arial,8,-1,5,50,2,0,0,0,0"/>
+    <FontColor red="80" green="80" blue="80" alpha="255"/>
+  </LayoutItem>
+
+  <LayoutItem type="65641" position="85,284" size="170,5" uuid="{cartouche-contact}"
+              halign="1" valign="128" visibility="1">
+    <LabelText>Chemin de Budron A 2  |  1052 Le Mont-sur-Lausanne  |  sit@bussigny.ch</LabelText>
+    <LabelFont style="" description="Arial,7,-1,5,50,0,0,0,0,0"/>
+    <FontColor red="100" green="100" blue="100" alpha="255"/>
+  </LayoutItem>
+
+  <!-- Bloc dossier -->
+  <LayoutItem type="65641" position="265,268" size="60,5" uuid="{dossier-label}"
+              halign="1" valign="128" visibility="1">
+    <LabelText>Dossier technique :</LabelText>
+    <LabelFont style="" description="Arial,7,-1,5,50,0,0,0,0,0"/>
+    <FontColor red="80" green="80" blue="80" alpha="255"/>
+  </LayoutItem>
+
+  <LayoutItem type="65641" position="265,273" size="60,6" uuid="{dossier-valeur}"
+              halign="1" valign="128" visibility="1">
+    <LabelText>[%coalesce(@dossier_ref, '')%]</LabelText>
+    <LabelFont style="Bold" description="Arial,9,-1,5,75,0,0,0,0,0"/>
+    <FontColor red="0" green="0" blue="0" alpha="255"/>
+  </LayoutItem>
+
+  <!-- Bloc fichier -->
+  <LayoutItem type="65641" position="335,268" size="70,5" uuid="{fichier-label}"
+              halign="1" valign="128" visibility="1">
+    <LabelText>Fichier :</LabelText>
+    <LabelFont style="" description="Arial,7,-1,5,50,0,0,0,0,0"/>
+    <FontColor red="80" green="80" blue="80" alpha="255"/>
+  </LayoutItem>
+
+  <LayoutItem type="65641" position="335,273" size="70,15" uuid="{fichier-valeur}"
+              halign="1" valign="32" visibility="1">
+    <LabelText>[%@project_path%]</LabelText>
+    <LabelFont style="" description="Arial,6,-1,5,50,0,0,0,0,0"/>
+    <FontColor red="100" green="100" blue="100" alpha="255"/>
+  </LayoutItem>
+
+</Layout>

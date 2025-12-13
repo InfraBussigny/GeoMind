@@ -329,7 +329,57 @@ Affichage permanent en bas de l'interface :
 - BG Ingénieurs-Conseils : projets hydrauliques
 
 ## Notes techniques
-[Spécificités, configurations particulières]
+
+### Module CAD / DXF (GeoMind App)
+
+**Emplacement** : `geomind-app/src/lib/components/CAD/CADModule.svelte`
+
+**État actuel** :
+- Lecture DXF via `dxf-parser` (v1.1.2) ✅
+- Rendu canvas avec Fabric.js (v6.9.0) ✅
+- Géoréférencement avec transformation Helmert (4 param: tx, ty, scale, rotation) ✅
+- Support PostGIS pour chargement couches géospatiales ✅
+- Système de calques avec visibilité, couleur, opacité, strokeWidth ✅
+- Outils mesure (distance, surface) ✅
+- Support projection Swiss MN95 (EPSG:2056) via proj4 ✅
+
+**Guide d'implémentation** : `docs/cad-implementation-guide.md`
+
+**Améliorations planifiées** :
+1. **Géoréférencement** : Passer de Helmert (4 param) à transformation affine complète (6 param)
+   - Meilleur support des distorsions/inclinaisons
+   - Calcul RMS error et résidus par point
+   - Export worldfile (.pgw/.tfw)
+   - Bibliothèque : ml-matrix pour résolution moindres carrés
+
+2. **Outils d'édition CAD** :
+   - Dessin : lignes, polylignes, rectangles, cercles
+   - Snapping : grille + accrochage objets (extrémités, milieux, centres)
+   - Move, rotate, scale avec transformations
+   - Undo/Redo avec stack d'états JSON
+
+3. **Export DXF** :
+   - Bibliothèque recommandée : @tarikjabiri/dxf (TypeScript, moderne)
+   - Alternative : dxf-writer (simple mais plus ancienne)
+   - Conversion Fabric.js objects → DXF entities
+   - Export en coordonnées géoréférencées MN95 si calé
+
+4. **Styles dynamiques de calques** :
+   - Modification strokeWidth, couleur, opacité en temps réel
+   - Fonction updateLayerStyle() pour appliquer à tous objets du calque
+   - Workaround opacité : gérer RGBA pour fill tout en gardant stroke opaque
+
+**Packages NPM recommandés** :
+```bash
+npm install ml-matrix           # Calculs matriciels affine transform
+npm install @tarikjabiri/dxf    # Export DXF moderne
+npm install @turf/turf          # (Optionnel) Validation géométries
+```
+
+**Références** :
+- Swisstopo transformations : https://www.swisstopo.admin.ch/fr/transformations-3d-planimetrie
+- Fabric.js docs : https://fabricjs.com/docs/
+- DXF writer : https://dxf.vercel.app/
 
 ## Ressources graphiques
 

@@ -33,11 +33,9 @@
   async function loadConnections() {
     try {
       const result = await getConnections();
-      if (result.success && result.rows) {
-        connections = result.filter((c: { type: string }) => c.type === 'postgresql');
-        if (connections.length > 0 && !selectedConnection) {
-          selectedConnection = connections[0].id;
-        }
+      connections = result.filter((c: { type: string }) => c.type === 'postgresql');
+      if (connections.length > 0 && !selectedConnection) {
+        selectedConnection = connections[0].id;
       }
     } catch (e) {
       console.error('Failed to load connections:', e);

@@ -7,12 +7,12 @@
     "port": 5432,
     "database": "Prod",
     "username": "postgres",
-    "password": "U2FsdGVkX19OrrnIQKPUFmZGO25sQjw4B4XQoiwGdLc=",
+    "password": "U2FsdGVkX1/4ZtCL/hb8LQKXBX/5kmqK9j8ya73Pzi4=",
     "privateKey": null,
     "ssl": false,
     "createdAt": "2025-12-10T12:48:23.626Z",
-    "lastUsed": "2025-12-11T14:47:17.188Z",
-    "updatedAt": "2025-12-10T12:50:09.113Z"
+    "lastUsed": "2025-12-13T19:51:52.938Z",
+    "updatedAt": "2025-12-12T09:37:47.759Z"
   },
   {
     "id": "conn_1765371090394",
@@ -22,11 +22,12 @@
     "port": 5432,
     "database": "Test",
     "username": "postgres",
-    "password": "U2FsdGVkX18V4WD663Mm56QTUV1/FASi+WuD1U3mz/g=",
+    "password": "U2FsdGVkX1/PFwHM2PA10JDXCMwPaFfMzacuoxEkW4g=",
     "privateKey": null,
     "ssl": false,
     "createdAt": "2025-12-10T12:51:30.395Z",
-    "lastUsed": "2025-12-10T12:58:04.224Z"
+    "lastUsed": "2025-12-12T14:43:49.028Z",
+    "updatedAt": "2025-12-12T09:38:28.751Z"
   },
   {
     "id": "conn_1765371109585",
@@ -63,5 +64,20 @@
     "ssl": false,
     "createdAt": "2025-12-10T12:52:33.719Z",
     "lastUsed": null
+  },
+  {
+    "id": "conn_1765545658866",
+    "name": "SDOL PostgreSQL",
+    "type": "postgresql",
+    "host": "postgres.hkd-geomatique.com",
+    "port": 5432,
+    "database": "sdol",
+    "username": "by_lgr",
+    "password": "U2FsdGVkX1/+0ozsgkNLpU7WzK5mRAelE4sl5ZqKnEI=",
+    "privateKey": null,
+    "ssl": false,
+    "createdAt": "2025-12-12T13:20:58.868Z",
+    "lastUsed": null,
+    "updatedAt": "2025-12-12T14:43:35.873Z"
   }
 ]

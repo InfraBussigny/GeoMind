@@ -1,7 +1,7 @@
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 
-export type ModuleType = 'chat' | 'canvas' | 'editor' | 'docgen' | 'connections' | 'settings' | 'comm' | 'databases' | 'timepro' | 'wip' | 'cad' | 'converter' | 'wakelock';
+export type ModuleType = 'chat' | 'canvas' | 'editor' | 'docgen' | 'connections' | 'settings' | 'comm' | 'databases' | 'timepro' | 'wip' | 'cad' | 'converter' | 'wakelock' | 'vpn' | 'kdrive';
 
 export const currentModule = writable<ModuleType>('chat');
 export const sidebarCollapsed = writable(false);
@@ -242,14 +242,15 @@ export const ALL_MODULES: { id: ModuleType; label: string; description: string; 
   { id: 'connections', label: 'Connexions', description: 'Serveurs DB' },
   { id: 'settings', label: 'Parametres', description: 'Configuration', alwaysVisible: true },
   { id: 'wip', label: 'WIP', description: 'En developpement' },
-  { id: 'cad', label: 'CAD', description: 'Viewer DXF/DWG' }
+  { id: 'cad', label: 'CAD', description: 'Viewer DXF/DWG' },
+  { id: 'vpn', label: 'VPN', description: 'FortiClient VPN' }
 ];
 
 // Modules par défaut pour chaque mode (excluant standard qui est fixe)
 const DEFAULT_MODULE_CONFIG: Record<string, ModuleType[]> = {
-  expert: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'comm', 'docgen', 'connections', 'settings', 'cad'],
-  god: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'comm', 'docgen', 'connections', 'settings', 'wip', 'cad'],
-  bfsa: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'comm', 'docgen', 'connections', 'settings', 'cad']
+  expert: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'comm', 'docgen', 'connections', 'settings', 'cad', 'vpn'],
+  god: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'comm', 'docgen', 'connections', 'settings', 'wip', 'cad', 'vpn'],
+  bfsa: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'comm', 'docgen', 'connections', 'settings', 'cad', 'vpn']
 };
 
 // Modules fixes pour le mode standard (non modifiable)
@@ -321,14 +322,24 @@ export const moduleConfig = createModuleConfigStore();
 
 // Ordre par défaut des modules
 const DEFAULT_MODULE_ORDER: ModuleType[] = [
-  'chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock',
-  'timepro', 'comm', 'docgen', 'connections', 'settings', 'wip', 'cad'
+  'chat', 'canvas', 'cad', 'editor', 'databases', 'converter',
+  'vpn', 'wakelock', 'timepro', 'comm', 'docgen', 'connections',
+  'settings', 'wip'
 ];
 
 // Store pour l'ordre personnalisé des modules
 function createModuleOrderStore() {
   const stored = browser ? localStorage.getItem('geomind-module-order') : null;
-  const initial: ModuleType[] = stored ? JSON.parse(stored) : [...DEFAULT_MODULE_ORDER];
+  let initial: ModuleType[] = stored ? JSON.parse(stored) : [...DEFAULT_MODULE_ORDER];
+
+  // Ajouter les modules manquants (nouveaux modules ajoutés au code)
+  const missingModules = DEFAULT_MODULE_ORDER.filter(m => !initial.includes(m));
+  if (missingModules.length > 0) {
+    initial = [...initial, ...missingModules];
+    if (browser) {
+      localStorage.setItem('geomind-module-order', JSON.stringify(initial));
+    }
+  }
 
   const { subscribe, set, update } = writable<ModuleType[]>(initial);
 
@@ -839,3 +850,169 @@ export const shouldShowGlitch = derived(
     return $glitch.unlockedByEasterEgg && $glitch.enabled;
   }
 );
+
+// ============================================
+// GLOBAL WAKELOCK STORE
+// ============================================
+// Persiste entre les changements de module
+
+export interface WakeLockState {
+  isActive: boolean;
+  activeTime: number;
+  useSimulation: boolean;
+  isSupported: boolean;
+}
+
+const defaultWakeLockState: WakeLockState = {
+  isActive: false,
+  activeTime: 0,
+  useSimulation: false,
+  isSupported: false
+};
+
+function createWakeLockStore() {
+  let wakeLockRef: WakeLockSentinel | null = null;
+  let timerInterval: ReturnType<typeof setInterval> | null = null;
+  let simulationInterval: ReturnType<typeof setInterval> | null = null;
+
+  const initial: WakeLockState = {
+    ...defaultWakeLockState,
+    useSimulation: loadPreference('geomind_wakelock_simulation', false)
+  };
+
+  const { subscribe, set, update } = writable<WakeLockState>(initial);
+
+  // Initialize support check
+  if (browser) {
+    update(s => ({ ...s, isSupported: 'wakeLock' in navigator }));
+
+    // Re-acquire on visibility change
+    document.addEventListener('visibilitychange', async () => {
+      let state: WakeLockState = defaultWakeLockState;
+      const unsub = subscribe(s => state = s);
+      unsub();
+
+      if (document.visibilityState === 'visible' && state.isActive && !wakeLockRef && !state.useSimulation) {
+        try {
+          wakeLockRef = await navigator.wakeLock.request('screen');
+        } catch {}
+      }
+    });
+  }
+
+  function startTimer() {
+    if (timerInterval) return;
+    timerInterval = setInterval(() => {
+      update(s => ({ ...s, activeTime: s.activeTime + 1 }));
+    }, 1000);
+  }
+
+  function stopTimer() {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+  }
+
+  function startSimulation() {
+    if (simulationInterval) return;
+    simulationInterval = setInterval(() => {
+      if (browser) {
+        const event = new MouseEvent('mousemove', {
+          bubbles: true, cancelable: true,
+          clientX: Math.random() * window.innerWidth,
+          clientY: Math.random() * window.innerHeight
+        });
+        document.dispatchEvent(event);
+      }
+    }, 30000);
+  }
+
+  function stopSimulation() {
+    if (simulationInterval) {
+      clearInterval(simulationInterval);
+      simulationInterval = null;
+    }
+  }
+
+  return {
+    subscribe,
+    activate: async () => {
+      let state: WakeLockState = defaultWakeLockState;
+      const unsub = subscribe(s => state = s);
+      unsub();
+
+      if (state.isSupported && !state.useSimulation) {
+        try {
+          wakeLockRef = await navigator.wakeLock.request('screen');
+          wakeLockRef.addEventListener('release', () => {
+            // Will be re-acquired on visibility change if needed
+          });
+          update(s => ({ ...s, isActive: true }));
+          startTimer();
+        } catch {
+          // Fallback to simulation
+          update(s => ({ ...s, useSimulation: true }));
+          savePreference('geomind_wakelock_simulation', true);
+          startSimulation();
+          update(s => ({ ...s, isActive: true }));
+          startTimer();
+        }
+      } else {
+        startSimulation();
+        update(s => ({ ...s, isActive: true }));
+        startTimer();
+      }
+    },
+    deactivate: () => {
+      if (wakeLockRef) {
+        wakeLockRef.release();
+        wakeLockRef = null;
+      }
+      stopSimulation();
+      stopTimer();
+      update(s => ({ ...s, isActive: false, activeTime: 0 }));
+    },
+    toggle: async () => {
+      let state: WakeLockState = defaultWakeLockState;
+      const unsub = subscribe(s => state = s);
+      unsub();
+
+      if (state.isActive) {
+        if (wakeLockRef) {
+          wakeLockRef.release();
+          wakeLockRef = null;
+        }
+        stopSimulation();
+        stopTimer();
+        set({ ...state, isActive: false, activeTime: 0 });
+      } else {
+        if (state.isSupported && !state.useSimulation) {
+          try {
+            wakeLockRef = await navigator.wakeLock.request('screen');
+            set({ ...state, isActive: true });
+            startTimer();
+          } catch {
+            startSimulation();
+            set({ ...state, isActive: true, useSimulation: true });
+            savePreference('geomind_wakelock_simulation', true);
+            startTimer();
+          }
+        } else {
+          startSimulation();
+          set({ ...state, isActive: true });
+          startTimer();
+        }
+      }
+    },
+    toggleSimulation: () => {
+      update(s => {
+        const newUseSimulation = !s.useSimulation;
+        savePreference('geomind_wakelock_simulation', newUseSimulation);
+        return { ...s, useSimulation: newUseSimulation };
+      });
+    }
+  };
+}
+
+export const wakeLockStore = createWakeLockStore();

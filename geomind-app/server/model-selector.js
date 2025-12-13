@@ -13,6 +13,11 @@ export const MODELS = {
     haiku: 'claude-3-5-haiku-20241022',
     sonnet: 'claude-sonnet-4-20250514',
     opus: 'claude-opus-4-20250514'
+  },
+  groq: {
+    fast: 'llama-3.3-70b-versatile',      // Rapide et polyvalent
+    default: 'llama-3.3-70b-versatile',   // Par défaut
+    mixtral: 'mixtral-8x7b-32768'         // Alternative
   }
 };
 
@@ -163,11 +168,11 @@ function selectModel(provider, message, conversationHistory = [], options = {}) 
     };
   }
 
-  // Pour l'instant, seul Claude est supporté
-  if (provider !== 'claude') {
+  // Support des différents providers
+  if (!MODELS[provider]) {
     return {
       model: null,
-      reason: 'Provider non supporté pour la sélection auto',
+      reason: `Provider ${provider} non supporté pour la sélection auto`,
       taskType: 'unknown',
       complexity: null
     };
@@ -183,28 +188,37 @@ function selectModel(provider, message, conversationHistory = [], options = {}) 
     adjustedTaskType = 'complex'; // Conversations longues nécessitent plus de contexte
   }
 
-  // Sélectionner le modèle
+  // Sélectionner le modèle selon le provider
   let model, reason;
+  const providerModels = MODELS[provider];
 
-  switch (adjustedTaskType) {
-    case 'simple':
-      model = MODELS.claude.haiku;
-      reason = 'Tâche simple détectée - utilisation de Haiku (rapide et économique)';
-      break;
+  if (provider === 'claude') {
+    switch (adjustedTaskType) {
+      case 'simple':
+        model = providerModels.haiku;
+        reason = 'Tâche simple détectée - utilisation de Haiku (rapide et économique)';
+        break;
 
-    case 'critical':
-      // Pour l'instant, on utilise Sonnet même pour critical (Opus coûte cher)
-      // Tu peux activer Opus en décommentant la ligne ci-dessous
-      // model = MODELS.claude.opus;
-      model = MODELS.claude.sonnet;
-      reason = 'Tâche critique détectée - utilisation de Sonnet (puissant)';
-      break;
+      case 'critical':
+        // Pour l'instant, on utilise Sonnet même pour critical (Opus coûte cher)
+        model = providerModels.sonnet;
+        reason = 'Tâche critique détectée - utilisation de Sonnet (puissant)';
+        break;
 
-    case 'complex':
-    default:
-      model = MODELS.claude.sonnet;
-      reason = 'Tâche complexe détectée - utilisation de Sonnet (équilibré)';
-      break;
+      case 'complex':
+      default:
+        model = providerModels.sonnet;
+        reason = 'Tâche complexe détectée - utilisation de Sonnet (équilibré)';
+        break;
+    }
+  } else if (provider === 'groq') {
+    // Groq n'a qu'un seul modèle principal, on l'utilise toujours
+    model = providerModels.default;
+    reason = 'Groq - utilisation de Llama 3.3 70B';
+  } else {
+    // Fallback pour autres providers
+    model = providerModels.default || Object.values(providerModels)[0];
+    reason = `Modèle par défaut pour ${provider}`;
   }
 
   return {

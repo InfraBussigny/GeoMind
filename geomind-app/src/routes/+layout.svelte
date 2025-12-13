@@ -22,24 +22,36 @@
     }
   });
 
-  // Synchronisation automatique : chaque mode a son thème associé
-  // standard → light, expert → dark, god → god, bfsa → bfsa
+  // Synchronisation du thème avec le mode app
+  // - god et bfsa ont des thèmes fixes (god, bfsa)
+  // - standard et expert permettent de choisir light ou dark
+  let previousMode: string | null = null;
+
   $effect(() => {
     if (!browser) return;
 
-    const modeToTheme = {
-      standard: 'light',
-      expert: 'dark',
-      god: 'god',
-      bfsa: 'bfsa'
-    } as const;
+    const currentMode = $appMode;
 
-    const expectedTheme = modeToTheme[$appMode];
-
-    // Forcer le thème associé au mode
-    if ($theme !== expectedTheme) {
-      theme.set(expectedTheme);
+    // God et BFSA ont des thèmes fixes
+    if (currentMode === 'god' && $theme !== 'god') {
+      theme.set('god');
+    } else if (currentMode === 'bfsa' && $theme !== 'bfsa') {
+      theme.set('bfsa');
     }
+    // Pour standard et expert, on définit le thème par défaut uniquement lors du changement de mode
+    else if (previousMode !== currentMode) {
+      if (currentMode === 'standard' && $theme !== 'light' && $theme !== 'dark') {
+        theme.set('light');
+      } else if (currentMode === 'expert' && $theme !== 'light' && $theme !== 'dark') {
+        theme.set('dark');
+      }
+      // Si le thème était god ou bfsa, on le reset au thème par défaut du mode
+      if ($theme === 'god' || $theme === 'bfsa') {
+        theme.set(currentMode === 'standard' ? 'light' : 'dark');
+      }
+    }
+
+    previousMode = currentMode;
   });
 </script>
 
@@ -56,7 +68,7 @@
     <main class="main-content">
       {@render children()}
     </main>
-    <StatusBar currentProject={$appMode === 'bfsa' ? 'GeoBFSA Nyon' : 'GeoMind Bussigny'} />
+    <StatusBar currentProject={$appMode === 'bfsa' ? 'GeoBFSA Nyon' : 'GeoMind'} />
   </div>
 </div>
 

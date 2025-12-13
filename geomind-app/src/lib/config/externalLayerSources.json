@@ -1,0 +1,662 @@
+{
+  "version": "1.0.0",
+  "lastUpdate": "2025-12-13",
+  "sources": [
+    {
+      "id": "federal",
+      "name": "Confédération",
+      "icon": "🇨🇭",
+      "color": "#DC0018",
+      "description": "Géodonnées fédérales (geo.admin.ch)",
+      "baseUrl": "https://wms.geo.admin.ch/",
+      "categories": [
+        {
+          "id": "fed-basemaps",
+          "name": "Fonds de carte",
+          "layers": [
+            {
+              "id": "ch.swisstopo.pixelkarte-farbe",
+              "name": "Carte nationale couleur",
+              "type": "WMTS",
+              "url": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/2056/{TileMatrix}/{TileCol}/{TileRow}.jpeg",
+              "format": "image/jpeg",
+              "attribution": "© swisstopo",
+              "maxZoom": 28,
+              "description": "Cartes nationales 1:25'000 à 1:1'000'000"
+            },
+            {
+              "id": "ch.swisstopo.pixelkarte-grau",
+              "name": "Carte nationale grise",
+              "type": "WMTS",
+              "url": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-grau/default/current/2056/{TileMatrix}/{TileCol}/{TileRow}.jpeg",
+              "format": "image/jpeg",
+              "attribution": "© swisstopo",
+              "maxZoom": 28,
+              "description": "Version niveaux de gris"
+            },
+            {
+              "id": "ch.swisstopo.swissimage",
+              "name": "SWISSIMAGE (Orthophoto)",
+              "type": "WMTS",
+              "url": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/2056/{TileMatrix}/{TileCol}/{TileRow}.jpeg",
+              "format": "image/jpeg",
+              "attribution": "© swisstopo",
+              "maxZoom": 28,
+              "description": "Orthophotos haute résolution"
+            }
+          ]
+        },
+        {
+          "id": "fed-cadastre",
+          "name": "Cadastre & Bâtiments",
+          "layers": [
+            {
+              "id": "ch.swisstopo.amtliches-strassenverzeichnis",
+              "name": "Répertoire officiel des rues",
+              "type": "WMS",
+              "url": "https://wms.geo.admin.ch/",
+              "layers": "ch.swisstopo.amtliches-strassenverzeichnis",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© swisstopo"
+            },
+            {
+              "id": "ch.bfs.gebaeude_wohnungs_register",
+              "name": "Registre bâtiments/logements (RegBL)",
+              "type": "WMS",
+              "url": "https://wms.geo.admin.ch/",
+              "layers": "ch.bfs.gebaeude_wohnungs_register",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© OFS"
+            },
+            {
+              "id": "ch.swisstopo-vd.official-survey",
+              "name": "Mensuration officielle",
+              "type": "WMS",
+              "url": "https://wms.geo.admin.ch/",
+              "layers": "ch.swisstopo-vd.official-survey",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© swisstopo"
+            }
+          ]
+        },
+        {
+          "id": "fed-rdppf",
+          "name": "RDPPF",
+          "layers": [
+            {
+              "id": "ch.astra.baulinien-nationalstrassen",
+              "name": "Lignes de construction routes nat.",
+              "type": "WMS",
+              "url": "https://wms.geo.admin.ch/",
+              "layers": "ch.astra.baulinien-nationalstrassen",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© OFROU"
+            },
+            {
+              "id": "ch.bav.projektierungszonen-eisenbahnanlagen",
+              "name": "Zones réservées chemins de fer",
+              "type": "WMS",
+              "url": "https://wms.geo.admin.ch/",
+              "layers": "ch.bav.projektierungszonen-eisenbahnanlagen",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© OFT"
+            }
+          ]
+        },
+        {
+          "id": "fed-environment",
+          "name": "Environnement",
+          "layers": [
+            {
+              "id": "ch.bafu.bundesinventare-flachmoore",
+              "name": "Bas-marais d'importance nat.",
+              "type": "WMS",
+              "url": "https://wms.geo.admin.ch/",
+              "layers": "ch.bafu.bundesinventare-flachmoore",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© OFEV"
+            },
+            {
+              "id": "ch.bafu.bundesinventare-hochmoore",
+              "name": "Hauts-marais d'importance nat.",
+              "type": "WMS",
+              "url": "https://wms.geo.admin.ch/",
+              "layers": "ch.bafu.bundesinventare-hochmoore",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© OFEV"
+            },
+            {
+              "id": "ch.bafu.schutzgebiete-aulav_uebrige",
+              "name": "Zones alluviales",
+              "type": "WMS",
+              "url": "https://wms.geo.admin.ch/",
+              "layers": "ch.bafu.schutzgebiete-aulav_uebrige",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© OFEV"
+            },
+            {
+              "id": "ch.bafu.laerm-strassenlaerm_tag",
+              "name": "Bruit routier (jour)",
+              "type": "WMS",
+              "url": "https://wms.geo.admin.ch/",
+              "layers": "ch.bafu.laerm-strassenlaerm_tag",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© OFEV"
+            },
+            {
+              "id": "ch.bafu.laerm-bahnlaerm_tag",
+              "name": "Bruit ferroviaire (jour)",
+              "type": "WMS",
+              "url": "https://wms.geo.admin.ch/",
+              "layers": "ch.bafu.laerm-bahnlaerm_tag",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© OFEV"
+            }
+          ]
+        },
+        {
+          "id": "fed-dangers",
+          "name": "Dangers naturels",
+          "layers": [
+            {
+              "id": "ch.bafu.gefahren-gefaehrdung_wasser",
+              "name": "Dangers crues",
+              "type": "WMS",
+              "url": "https://wms.geo.admin.ch/",
+              "layers": "ch.bafu.gefahren-gefaehrdung_wasser",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© OFEV"
+            },
+            {
+              "id": "ch.bafu.gefahren-gefaehrdung_rutschung",
+              "name": "Dangers glissements",
+              "type": "WMS",
+              "url": "https://wms.geo.admin.ch/",
+              "layers": "ch.bafu.gefahren-gefaehrdung_rutschung",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© OFEV"
+            },
+            {
+              "id": "ch.bafu.gefahren-gefaehrdung_sturz",
+              "name": "Dangers chutes pierres",
+              "type": "WMS",
+              "url": "https://wms.geo.admin.ch/",
+              "layers": "ch.bafu.gefahren-gefaehrdung_sturz",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© OFEV"
+            }
+          ]
+        },
+        {
+          "id": "fed-transport",
+          "name": "Transport",
+          "layers": [
+            {
+              "id": "ch.bav.haltestellen-oev",
+              "name": "Arrêts transports publics",
+              "type": "WMS",
+              "url": "https://wms.geo.admin.ch/",
+              "layers": "ch.bav.haltestellen-oev",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© OFT"
+            },
+            {
+              "id": "ch.astra.wanderland-sperrungen_umleitungen",
+              "name": "Itinéraires pédestres",
+              "type": "WMS",
+              "url": "https://wms.geo.admin.ch/",
+              "layers": "ch.astra.wanderland",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© SuisseMobile"
+            },
+            {
+              "id": "ch.astra.veloland",
+              "name": "Itinéraires cyclables",
+              "type": "WMS",
+              "url": "https://wms.geo.admin.ch/",
+              "layers": "ch.astra.veloland",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© SuisseMobile"
+            }
+          ]
+        },
+        {
+          "id": "fed-heritage",
+          "name": "Patrimoine",
+          "layers": [
+            {
+              "id": "ch.bak.bundesinventar-schuetzenswerte-ortsbilder",
+              "name": "ISOS (sites construits)",
+              "type": "WMS",
+              "url": "https://wms.geo.admin.ch/",
+              "layers": "ch.bak.bundesinventar-schuetzenswerte-ortsbilder",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© OFC"
+            },
+            {
+              "id": "ch.bak.bundesinventar-historische-verkehrswege",
+              "name": "IVS (voies historiques)",
+              "type": "WMS",
+              "url": "https://wms.geo.admin.ch/",
+              "layers": "ch.astra.ivs-nat",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© OFROU"
+            }
+          ]
+        },
+        {
+          "id": "fed-energy",
+          "name": "Énergie",
+          "layers": [
+            {
+              "id": "ch.bfe.solarenergie-eignung-daecher",
+              "name": "Potentiel solaire toitures",
+              "type": "WMS",
+              "url": "https://wms.geo.admin.ch/",
+              "layers": "ch.bfe.solarenergie-eignung-daecher",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© OFEN"
+            },
+            {
+              "id": "ch.bfe.thermische-netze",
+              "name": "Réseaux thermiques",
+              "type": "WMS",
+              "url": "https://wms.geo.admin.ch/",
+              "layers": "ch.bfe.thermische-netze",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© OFEN"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cantonal",
+      "name": "Canton de Vaud",
+      "icon": "🏔️",
+      "color": "#009F4D",
+      "description": "Géodonnées cantonales vaudoises",
+      "baseUrl": "https://www.geo.vd.ch/",
+      "categories": [
+        {
+          "id": "vd-amenagement",
+          "name": "Aménagement du territoire",
+          "layers": [
+            {
+              "id": "vd.afc.zones_affectation",
+              "name": "Zones d'affectation",
+              "type": "WMS",
+              "url": "https://ows.geo.vd.ch/wms",
+              "layers": "vd_cadastre_rdppf_pac_zonage",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© Canton de Vaud"
+            },
+            {
+              "id": "vd.afc.perimetres_speciaux",
+              "name": "Périmètres spéciaux",
+              "type": "WMS",
+              "url": "https://ows.geo.vd.ch/wms",
+              "layers": "vd_cadastre_rdppf_pac_perimetres_speciaux",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© Canton de Vaud"
+            },
+            {
+              "id": "vd.pdr.plans_directeurs",
+              "name": "Plans directeurs régionaux",
+              "type": "WMS",
+              "url": "https://ows.geo.vd.ch/wms",
+              "layers": "vd_amenagement_pdr",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© Canton de Vaud"
+            }
+          ]
+        },
+        {
+          "id": "vd-cadastre",
+          "name": "Cadastre",
+          "layers": [
+            {
+              "id": "vd.rf.parcelles",
+              "name": "Parcelles cadastrales",
+              "type": "WMS",
+              "url": "https://ows.geo.vd.ch/wms",
+              "layers": "vd_mo_cadastre_parcelle",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© Canton de Vaud"
+            },
+            {
+              "id": "vd.rf.batiments",
+              "name": "Bâtiments MO",
+              "type": "WMS",
+              "url": "https://ows.geo.vd.ch/wms",
+              "layers": "vd_mo_cadastre_batiment",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© Canton de Vaud"
+            },
+            {
+              "id": "vd.rf.adresses",
+              "name": "Adresses officielles",
+              "type": "WMS",
+              "url": "https://ows.geo.vd.ch/wms",
+              "layers": "vd_mo_cadastre_adresse",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© Canton de Vaud"
+            },
+            {
+              "id": "vd.rf.points_fixes",
+              "name": "Points fixes de la MO",
+              "type": "WMS",
+              "url": "https://ows.geo.vd.ch/wms",
+              "layers": "vd_mo_cadastre_point_fixe",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© Canton de Vaud"
+            }
+          ]
+        },
+        {
+          "id": "vd-environnement",
+          "name": "Environnement",
+          "layers": [
+            {
+              "id": "vd.dge.forets",
+              "name": "Forêts cantonales",
+              "type": "WMS",
+              "url": "https://ows.geo.vd.ch/wms",
+              "layers": "vd_foret_limites",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© Canton de Vaud"
+            },
+            {
+              "id": "vd.dge.cours_eau",
+              "name": "Cours d'eau",
+              "type": "WMS",
+              "url": "https://ows.geo.vd.ch/wms",
+              "layers": "vd_eau_cours_eau",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© Canton de Vaud"
+            },
+            {
+              "id": "vd.dge.zones_protection_eau",
+              "name": "Zones protection eaux",
+              "type": "WMS",
+              "url": "https://ows.geo.vd.ch/wms",
+              "layers": "vd_eau_protection_zones",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© Canton de Vaud"
+            },
+            {
+              "id": "vd.dge.sites_pollues",
+              "name": "Sites pollués",
+              "type": "WMS",
+              "url": "https://ows.geo.vd.ch/wms",
+              "layers": "vd_cadastre_sites_pollues",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© Canton de Vaud"
+            }
+          ]
+        },
+        {
+          "id": "vd-dangers",
+          "name": "Dangers naturels",
+          "layers": [
+            {
+              "id": "vd.dangers.inondation",
+              "name": "Danger d'inondation",
+              "type": "WMS",
+              "url": "https://ows.geo.vd.ch/wms",
+              "layers": "vd_dangers_inondation",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© Canton de Vaud"
+            },
+            {
+              "id": "vd.dangers.glissement",
+              "name": "Danger de glissement",
+              "type": "WMS",
+              "url": "https://ows.geo.vd.ch/wms",
+              "layers": "vd_dangers_glissement",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© Canton de Vaud"
+            }
+          ]
+        },
+        {
+          "id": "vd-transport",
+          "name": "Transport",
+          "layers": [
+            {
+              "id": "vd.dgmr.routes",
+              "name": "Routes cantonales",
+              "type": "WMS",
+              "url": "https://ows.geo.vd.ch/wms",
+              "layers": "vd_transport_routes_cantonales",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© Canton de Vaud"
+            },
+            {
+              "id": "vd.dgmr.cycles",
+              "name": "Réseau cyclable cantonal",
+              "type": "WMS",
+              "url": "https://ows.geo.vd.ch/wms",
+              "layers": "vd_transport_reseau_cyclable",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© Canton de Vaud"
+            },
+            {
+              "id": "vd.tl.lignes",
+              "name": "Transports publics TL",
+              "type": "WMS",
+              "url": "https://ows.geo.vd.ch/wms",
+              "layers": "vd_transport_tl_lignes",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© TL"
+            }
+          ]
+        },
+        {
+          "id": "vd-patrimoine",
+          "name": "Patrimoine",
+          "layers": [
+            {
+              "id": "vd.imns.monuments",
+              "name": "Monuments historiques",
+              "type": "WMS",
+              "url": "https://ows.geo.vd.ch/wms",
+              "layers": "vd_patrimoine_monuments",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© Canton de Vaud"
+            },
+            {
+              "id": "vd.imns.sites_archeologiques",
+              "name": "Sites archéologiques",
+              "type": "WMS",
+              "url": "https://ows.geo.vd.ch/wms",
+              "layers": "vd_patrimoine_archeologie",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© Canton de Vaud"
+            }
+          ]
+        },
+        {
+          "id": "vd-energie",
+          "name": "Énergie",
+          "layers": [
+            {
+              "id": "vd.diren.zones_thermiques",
+              "name": "Zones thermiques",
+              "type": "WMS",
+              "url": "https://ows.geo.vd.ch/wms",
+              "layers": "vd_energie_zones_thermiques",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© Canton de Vaud"
+            },
+            {
+              "id": "vd.diren.geothermie",
+              "name": "Potentiel géothermique",
+              "type": "WMS",
+              "url": "https://ows.geo.vd.ch/wms",
+              "layers": "vd_energie_geothermie",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© Canton de Vaud"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "asit",
+      "name": "ASIT-VD",
+      "icon": "📐",
+      "color": "#0066B3",
+      "description": "Association pour le SIT vaudois",
+      "baseUrl": "https://www.asitvd.ch/",
+      "categories": [
+        {
+          "id": "asit-fonds",
+          "name": "Fonds de plan",
+          "layers": [
+            {
+              "id": "asit.fond_cadastral",
+              "name": "Fond cadastral ASIT",
+              "type": "WMTS",
+              "url": "https://wmts.asit-asso.ch/wmts/1.0.0/asitvd.fond_cadastral/default/2056/{TileMatrix}/{TileCol}/{TileRow}.png",
+              "format": "image/png",
+              "attribution": "© ASIT-VD",
+              "maxZoom": 20
+            },
+            {
+              "id": "asit.ortho_2020",
+              "name": "Orthophoto VD 2020",
+              "type": "WMTS",
+              "url": "https://wmts.asit-asso.ch/wmts/1.0.0/asitvd.ortho_2020/default/2056/{TileMatrix}/{TileCol}/{TileRow}.jpeg",
+              "format": "image/jpeg",
+              "attribution": "© ASIT-VD",
+              "maxZoom": 20
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "regional",
+      "name": "Ouest lausannois",
+      "icon": "🏘️",
+      "color": "#8B4513",
+      "description": "Données régionales SDOL/PALM",
+      "baseUrl": "https://demo-sdol.geocommunes.ch/",
+      "categories": [
+        {
+          "id": "sdol-urbanisme",
+          "name": "Urbanisme",
+          "layers": [
+            {
+              "id": "sdol.palm_projets",
+              "name": "Projets PALM",
+              "type": "WMS",
+              "url": "https://wms.geocommunes.ch/sdol",
+              "layers": "palm_projets",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© SDOL"
+            },
+            {
+              "id": "sdol.quartiers_durables",
+              "name": "Quartiers durables",
+              "type": "WMS",
+              "url": "https://wms.geocommunes.ch/sdol",
+              "layers": "quartiers_durables",
+              "format": "image/png",
+              "transparent": true,
+              "attribution": "© SDOL"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "opendata",
+      "name": "OpenData",
+      "icon": "🌐",
+      "color": "#6B7280",
+      "description": "Données ouvertes diverses",
+      "baseUrl": "",
+      "categories": [
+        {
+          "id": "osm-base",
+          "name": "OpenStreetMap",
+          "layers": [
+            {
+              "id": "osm.standard",
+              "name": "OSM Standard",
+              "type": "XYZ",
+              "url": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+              "attribution": "© OpenStreetMap contributors",
+              "maxZoom": 19,
+              "subdomains": ["a", "b", "c"]
+            },
+            {
+              "id": "osm.topo",
+              "name": "OpenTopoMap",
+              "type": "XYZ",
+              "url": "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+              "attribution": "© OpenTopoMap",
+              "maxZoom": 17,
+              "subdomains": ["a", "b", "c"]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "defaultCenter": {
+    "lat": 46.5525,
+    "lng": 6.5515,
+    "zoom": 14,
+    "crs": "EPSG:2056"
+  },
+  "defaultBbox": {
+    "minX": 2530500,
+    "minY": 1153000,
+    "maxX": 2534000,
+    "maxY": 1156000
+  }
+}

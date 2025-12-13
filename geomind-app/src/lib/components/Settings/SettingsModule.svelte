@@ -4,6 +4,17 @@
   import { getProviders, saveProviderConfig } from '$lib/services/api';
   import ThemeToggle from '../ThemeToggle.svelte';
 
+  // Système d'onglets pour organiser les paramètres
+  type SettingsTab = 'general' | 'ia' | 'connections' | 'advanced';
+  let activeTab = $state<SettingsTab>('general');
+
+  const tabs: { id: SettingsTab; label: string; icon: string }[] = [
+    { id: 'general', label: 'Général', icon: '⚙️' },
+    { id: 'ia', label: 'Intelligence Artificielle', icon: '🤖' },
+    { id: 'connections', label: 'Connexions', icon: '🔌' },
+    { id: 'advanced', label: 'Avancé', icon: '🔧' }
+  ];
+
   // Types
   interface Connection {
     id: string;
@@ -219,7 +230,8 @@
       openai: '#10A37F',
       mistral: '#FF6B35',
       deepseek: '#0066FF',
-      perplexity: '#6366F1'
+      perplexity: '#6366F1',
+      groq: '#F55036'
     };
     return colors[providerId] || '#666';
   }
@@ -230,7 +242,8 @@
       openai: 'O',
       mistral: 'M',
       deepseek: 'D',
-      perplexity: 'P'
+      perplexity: 'P',
+      groq: 'G'
     };
     return icons[providerId] || '?';
   }
@@ -418,7 +431,25 @@
     <p>Configuration de GeoMind</p>
   </header>
 
+  <!-- Barre d'onglets -->
+  <div class="settings-tabs">
+    {#each tabs as tab}
+      <button
+        class="tab-btn"
+        class:active={activeTab === tab.id}
+        onclick={() => activeTab = tab.id}
+      >
+        <span class="tab-icon">{tab.icon}</span>
+        <span class="tab-label">{tab.label}</span>
+      </button>
+    {/each}
+  </div>
+
   <div class="settings-content">
+    <!-- ================================================ -->
+    <!-- ONGLET GÉNÉRAL -->
+    <!-- ================================================ -->
+    {#if activeTab === 'general'}
     <!-- A Propos Section - Always visible -->
     <section class="settings-section about-section">
       <h2>A propos</h2>
@@ -431,8 +462,7 @@
           <p class="about-subtitle">Spatial Intelligence</p>
           <p class="about-version">Version 1.0.0</p>
           <p class="about-description">
-            Assistant IA specialise en geodonnees et systemes d'information du territoire (SIT)
-            pour la commune de Bussigny.
+            Assistant IA specialise en geodonnees et systemes d'information du territoire (SIT).
           </p>
           <p class="about-mode">
             Mode actuel : <span class="mode-badge {$appMode}">{$appMode}</span>
@@ -454,66 +484,13 @@
         </div>
       </div>
     </section>
-
-    <!-- Module Visibility Configuration - Expert/God/BFSA only -->
-    {#if $appMode !== 'standard'}
-      <section class="settings-section modules-config-section">
-        <h2>Modules visibles par mode</h2>
-        <p class="section-description">
-          Configurez quels modules sont disponibles dans chaque mode d'utilisation.
-          Le mode Standard (professionnel) a des modules fixes et ne peut pas etre modifie.
-        </p>
-
-        <div class="mode-selector">
-          <button
-            class="mode-btn"
-            class:active={configMode === 'expert'}
-            onclick={() => configMode = 'expert'}
-          >Expert</button>
-          <button
-            class="mode-btn"
-            class:active={configMode === 'god'}
-            onclick={() => configMode = 'god'}
-          >God</button>
-          <button
-            class="mode-btn"
-            class:active={configMode === 'bfsa'}
-            onclick={() => configMode = 'bfsa'}
-          >BFSA</button>
-        </div>
-
-        <div class="modules-grid">
-          {#each ALL_MODULES as mod}
-            <label class="module-toggle" class:disabled={mod.alwaysVisible}>
-              <input
-                type="checkbox"
-                checked={$moduleConfig[configMode]?.includes(mod.id) || mod.alwaysVisible}
-                disabled={mod.alwaysVisible}
-                onchange={() => moduleConfig.toggleModule(configMode, mod.id)}
-              />
-              <span class="module-info">
-                <span class="module-label">{mod.label}</span>
-                <span class="module-desc">{mod.description}</span>
-              </span>
-              {#if mod.alwaysVisible}
-                <span class="always-visible-badge">obligatoire</span>
-              {/if}
-            </label>
-          {/each}
-        </div>
-
-        <div class="config-actions">
-          <button class="btn-reset-config" onclick={() => moduleConfig.reset(configMode)}>
-            Reinitialiser {configMode}
-          </button>
-          <button class="btn-reset-all" onclick={() => moduleConfig.reset()}>
-            Tout reinitialiser
-          </button>
-        </div>
-      </section>
     {/if}
 
-    <!-- Ollama Models Section - Always visible -->
+    <!-- ================================================ -->
+    <!-- ONGLET IA -->
+    <!-- ================================================ -->
+    {#if activeTab === 'ia'}
+    <!-- Ollama Models Section -->
     <section class="settings-section ollama-section">
       <h2>Modele IA Local</h2>
       <p class="section-description">
@@ -534,7 +511,90 @@
       </div>
     </section>
 
-    <!-- Connections Status - Always visible (read-only in standard mode) -->
+    <!-- API Keys Section -->
+    <section class="settings-section">
+      <h2>Cles API Providers</h2>
+      <p class="section-description">
+        Configurez vos cles API pour chaque provider cloud. Les cles sont stockees localement de maniere securisee.
+      </p>
+
+      <div class="providers-list">
+        {#each $providers as provider}
+          <div class="provider-card" class:configured={provider.isConfigured}>
+            <div class="provider-header">
+              <span class="provider-badge" style="background: {getProviderColor(provider.id)}">
+                {getProviderIcon(provider.id)}
+              </span>
+              <div class="provider-info">
+                <h3>{provider.name}</h3>
+                {#if provider.isConfigured}
+                  <span class="status-badge configured">{provider.authMethod}</span>
+                {:else}
+                  <span class="status-badge">Non configure</span>
+                {/if}
+              </div>
+            </div>
+
+            {#if provider.authType === 'apikey'}
+              <div class="api-key-form">
+                <input
+                  type="password"
+                  placeholder="sk-..."
+                  bind:value={apiKeys[provider.id]}
+                  class="api-key-input"
+                />
+                <button
+                  class="btn-primary"
+                  onclick={() => saveApiKey(provider.id)}
+                  disabled={saving[provider.id] || !apiKeys[provider.id]?.trim()}
+                >
+                  {#if saving[provider.id]}
+                    Enregistrement...
+                  {:else if saved[provider.id]}
+                    Enregistre !
+                  {:else}
+                    Enregistrer
+                  {/if}
+                </button>
+              </div>
+              <p class="provider-help">
+                {#if provider.id === 'claude'}
+                  Obtenez votre cle sur <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>
+                {:else if provider.id === 'openai'}
+                  Obtenez votre cle sur <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a>
+                {:else if provider.id === 'mistral'}
+                  Obtenez votre cle sur <a href="https://console.mistral.ai" target="_blank">console.mistral.ai</a>
+                {:else if provider.id === 'deepseek'}
+                  Obtenez votre cle sur <a href="https://platform.deepseek.com" target="_blank">platform.deepseek.com</a>
+                {:else if provider.id === 'perplexity'}
+                  Obtenez votre cle sur <a href="https://www.perplexity.ai/settings/api" target="_blank">perplexity.ai/settings/api</a>
+                {:else if provider.id === 'groq'}
+                  <strong>GRATUIT!</strong> Obtenez votre cle sur <a href="https://console.groq.com/keys" target="_blank">console.groq.com</a> - Inference ultra-rapide avec tool use
+                {/if}
+              </p>
+            {:else}
+              <p class="provider-help oauth-note">
+                Ce provider utilise l'authentification OAuth. Lancez <code>claude login</code> dans le terminal.
+              </p>
+            {/if}
+
+            <div class="provider-models">
+              <span class="models-label">Modeles disponibles :</span>
+              {#each provider.models as model}
+                <span class="model-tag" class:default={model.default}>{model.name}</span>
+              {/each}
+            </div>
+          </div>
+        {/each}
+      </div>
+    </section>
+    {/if}
+
+    <!-- ================================================ -->
+    <!-- ONGLET CONNEXIONS -->
+    <!-- ================================================ -->
+    {#if activeTab === 'connections'}
+    <!-- Connections Status -->
     <section class="settings-section connections-status-section">
       <h2>Etat des connexions</h2>
       <p class="section-description">
@@ -620,78 +680,11 @@
       </section>
     {/if}
 
-    <!-- Glitch Effects Section - God mode or Easter Egg unlocked -->
-    {#if $appMode === 'god' || $glitchSettings.unlockedByEasterEgg}
-      <section class="settings-section glitch-section">
-        <div class="section-header">
-          <h2>Effets Visuels</h2>
-          <button
-            class="btn-toggle"
-            class:active={$glitchSettings.enabled}
-            onclick={() => glitchSettings.toggle()}
-          >
-            {$glitchSettings.enabled ? 'Actif' : 'Inactif'}
-          </button>
-        </div>
-
-        <p class="section-description">
-          Controle des effets glitch de l'interface. Ces effets ajoutent une atmosphere cyberpunk.
-          {#if $glitchSettings.unlockedByEasterEgg && $appMode !== 'god'}
-            <span class="easter-egg-badge">Easter egg</span>
-          {/if}
-        </p>
-
-        <div class="glitch-controls" class:disabled={!$glitchSettings.enabled}>
-          <div class="glitch-control">
-            <label>
-              <span class="control-label">Frequence</span>
-              <span class="control-value">{$glitchSettings.frequency}/10</span>
-            </label>
-            <input
-              type="range"
-              min="1"
-              max="10"
-              value={$glitchSettings.frequency}
-              oninput={(e) => glitchSettings.setFrequency(parseInt(e.currentTarget.value))}
-              disabled={!$glitchSettings.enabled}
-            />
-            <div class="control-hints">
-              <span>Rare</span>
-              <span>Frequent</span>
-            </div>
-          </div>
-
-          <div class="glitch-control">
-            <label>
-              <span class="control-label">Intensite</span>
-              <span class="control-value">{$glitchSettings.intensity}/10</span>
-            </label>
-            <input
-              type="range"
-              min="1"
-              max="10"
-              value={$glitchSettings.intensity}
-              oninput={(e) => glitchSettings.setIntensity(parseInt(e.currentTarget.value))}
-              disabled={!$glitchSettings.enabled}
-            />
-            <div class="control-hints">
-              <span>Subtil</span>
-              <span>Intense</span>
-            </div>
-          </div>
-        </div>
-
-        <button class="btn-reset" onclick={() => glitchSettings.reset()}>
-          Reinitialiser
-        </button>
-      </section>
-    {/if}
-
-    <!-- Connections Section - Expert/God only -->
+    <!-- Connections Management Section - Expert/God only -->
     {#if $appMode !== 'standard'}
       <section class="settings-section connections-section">
         <div class="section-header">
-          <h2>Connexions serveurs</h2>
+          <h2>Gestion des connexions</h2>
           <button class="btn-primary" onclick={openNewConnectionForm}>
             + Nouvelle
           </button>
@@ -760,8 +753,188 @@
         {/if}
       </section>
     {/if}
+    {/if}
 
-    <!-- Connection Form Modal -->
+    <!-- ================================================ -->
+    <!-- ONGLET AVANCÉ -->
+    <!-- ================================================ -->
+    {#if activeTab === 'advanced'}
+    <!-- Module Visibility Configuration - Expert/God/BFSA only -->
+    {#if $appMode !== 'standard'}
+      <section class="settings-section modules-config-section">
+        <h2>Modules visibles par mode</h2>
+        <p class="section-description">
+          Configurez quels modules sont disponibles dans chaque mode d'utilisation.
+          Le mode Standard (professionnel) a des modules fixes et ne peut pas etre modifie.
+        </p>
+
+        <div class="mode-selector">
+          <button
+            class="mode-btn"
+            class:active={configMode === 'expert'}
+            onclick={() => configMode = 'expert'}
+          >Expert</button>
+          <button
+            class="mode-btn"
+            class:active={configMode === 'god'}
+            onclick={() => configMode = 'god'}
+          >God</button>
+          <button
+            class="mode-btn"
+            class:active={configMode === 'bfsa'}
+            onclick={() => configMode = 'bfsa'}
+          >BFSA</button>
+        </div>
+
+        <div class="modules-grid">
+          {#each ALL_MODULES as mod}
+            <label class="module-toggle" class:disabled={mod.alwaysVisible}>
+              <input
+                type="checkbox"
+                checked={$moduleConfig[configMode]?.includes(mod.id) || mod.alwaysVisible}
+                disabled={mod.alwaysVisible}
+                onchange={() => moduleConfig.toggleModule(configMode, mod.id)}
+              />
+              <span class="module-info">
+                <span class="module-label">{mod.label}</span>
+                <span class="module-desc">{mod.description}</span>
+              </span>
+              {#if mod.alwaysVisible}
+                <span class="always-visible-badge">obligatoire</span>
+              {/if}
+            </label>
+          {/each}
+        </div>
+
+        <div class="config-actions">
+          <button class="btn-reset-config" onclick={() => moduleConfig.reset(configMode)}>
+            Reinitialiser {configMode}
+          </button>
+          <button class="btn-reset-all" onclick={() => moduleConfig.reset()}>
+            Tout reinitialiser
+          </button>
+        </div>
+      </section>
+    {/if}
+
+    <!-- Glitch Effects Section - God mode or Easter Egg unlocked -->
+    {#if $appMode === 'god' || $glitchSettings.unlockedByEasterEgg}
+      <section class="settings-section glitch-section">
+        <div class="section-header">
+          <h2>Effets Visuels</h2>
+          <button
+            class="btn-toggle"
+            class:active={$glitchSettings.enabled}
+            onclick={() => glitchSettings.toggle()}
+          >
+            {$glitchSettings.enabled ? 'Actif' : 'Inactif'}
+          </button>
+        </div>
+
+        <p class="section-description">
+          Controle des effets glitch de l'interface. Ces effets ajoutent une atmosphere cyberpunk.
+          {#if $glitchSettings.unlockedByEasterEgg && $appMode !== 'god'}
+            <span class="easter-egg-badge">Easter egg</span>
+          {/if}
+        </p>
+
+        <div class="glitch-controls" class:disabled={!$glitchSettings.enabled}>
+          <div class="glitch-control">
+            <label>
+              <span class="control-label">Frequence</span>
+              <span class="control-value">{$glitchSettings.frequency}/10</span>
+            </label>
+            <input
+              type="range"
+              min="1"
+              max="10"
+              value={$glitchSettings.frequency}
+              oninput={(e) => glitchSettings.setFrequency(parseInt(e.currentTarget.value))}
+              disabled={!$glitchSettings.enabled}
+            />
+            <div class="control-hints">
+              <span>Rare</span>
+              <span>Frequent</span>
+            </div>
+          </div>
+
+          <div class="glitch-control">
+            <label>
+              <span class="control-label">Intensite</span>
+              <span class="control-value">{$glitchSettings.intensity}/10</span>
+            </label>
+            <input
+              type="range"
+              min="1"
+              max="10"
+              value={$glitchSettings.intensity}
+              oninput={(e) => glitchSettings.setIntensity(parseInt(e.currentTarget.value))}
+              disabled={!$glitchSettings.enabled}
+            />
+            <div class="control-hints">
+              <span>Subtil</span>
+              <span>Intense</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-reset" onclick={() => glitchSettings.reset()}>
+          Reinitialiser
+        </button>
+      </section>
+    {/if}
+
+    <!-- Memory Section -->
+    <section class="settings-section">
+      <div class="section-header">
+        <h2>Memoire GeoMind</h2>
+        <button class="btn-secondary" onclick={reloadMemory}>Recharger</button>
+      </div>
+
+      {#if memorySummary}
+        <div class="memory-info">
+          <div class="memory-stat">
+            <span class="stat-label">Derniere mise a jour</span>
+            <span class="stat-value">{new Date(memorySummary.lastUpdate).toLocaleString('fr-CH')}</span>
+          </div>
+          <div class="memory-stat">
+            <span class="stat-label">Fichiers charges</span>
+            <span class="stat-value">{memorySummary.files?.join(', ') || 'Aucun'}</span>
+          </div>
+          <div class="memory-stat">
+            <span class="stat-label">Mots-cles indexes</span>
+            <span class="stat-value keywords">{memorySummary.keywords?.slice(0, 10).join(', ')}{memorySummary.keywords?.length > 10 ? '...' : ''}</span>
+          </div>
+        </div>
+        <p class="memory-path">
+          Dossier memoire : <code>C:\Users\zema\GeoMind\memory\</code>
+        </p>
+      {:else}
+        <p class="text-muted">Chargement de la memoire...</p>
+      {/if}
+    </section>
+
+    <!-- Storage Location -->
+    <section class="settings-section">
+      <h2>Stockage</h2>
+      <div class="storage-info">
+        <div class="storage-item">
+          <span class="storage-label">Configuration GeoMind</span>
+          <code>~/.geomind/config.json</code>
+        </div>
+        <div class="storage-item">
+          <span class="storage-label">Memoire et contexte</span>
+          <code>C:\Users\zema\GeoMind\memory\</code>
+        </div>
+        <div class="storage-item">
+          <span class="storage-label">Credentials Claude Code</span>
+          <code>~/.claude/.credentials.json</code>
+        </div>
+      </div>
+    </section>
+    {/if}
+
+    <!-- Connection Form Modal (outside tabs) -->
     {#if showConnectionForm}
       <div class="modal-overlay" onclick={closeConnectionForm} onkeydown={(e) => e.key === 'Escape' && closeConnectionForm()} role="button" tabindex="-1">
         <div class="modal-content" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()} role="dialog" aria-modal="true" tabindex="-1">
@@ -922,131 +1095,6 @@
         </div>
       </div>
     {/if}
-
-    <!-- Memory Section -->
-    <section class="settings-section">
-      <div class="section-header">
-        <h2>Memoire GeoMind</h2>
-        <button class="btn-secondary" onclick={reloadMemory}>Recharger</button>
-      </div>
-
-      {#if memorySummary}
-        <div class="memory-info">
-          <div class="memory-stat">
-            <span class="stat-label">Derniere mise a jour</span>
-            <span class="stat-value">{new Date(memorySummary.lastUpdate).toLocaleString('fr-CH')}</span>
-          </div>
-          <div class="memory-stat">
-            <span class="stat-label">Fichiers charges</span>
-            <span class="stat-value">{memorySummary.files?.join(', ') || 'Aucun'}</span>
-          </div>
-          <div class="memory-stat">
-            <span class="stat-label">Mots-cles indexes</span>
-            <span class="stat-value keywords">{memorySummary.keywords?.slice(0, 10).join(', ')}{memorySummary.keywords?.length > 10 ? '...' : ''}</span>
-          </div>
-        </div>
-        <p class="memory-path">
-          Dossier memoire : <code>C:\Users\zema\GeoMind\memory\</code>
-        </p>
-      {:else}
-        <p class="text-muted">Chargement de la memoire...</p>
-      {/if}
-    </section>
-
-    <!-- API Keys Section -->
-    <section class="settings-section">
-      <h2>Cles API</h2>
-      <p class="section-description">
-        Configurez vos cles API pour chaque provider. Les cles sont stockees localement de maniere securisee.
-      </p>
-
-      <div class="providers-list">
-        {#each $providers as provider}
-          <div class="provider-card" class:configured={provider.isConfigured}>
-            <div class="provider-header">
-              <span class="provider-badge" style="background: {getProviderColor(provider.id)}">
-                {getProviderIcon(provider.id)}
-              </span>
-              <div class="provider-info">
-                <h3>{provider.name}</h3>
-                {#if provider.isConfigured}
-                  <span class="status-badge configured">{provider.authMethod}</span>
-                {:else}
-                  <span class="status-badge">Non configure</span>
-                {/if}
-              </div>
-            </div>
-
-            {#if provider.authType === 'apikey'}
-              <div class="api-key-form">
-                <input
-                  type="password"
-                  placeholder="sk-..."
-                  bind:value={apiKeys[provider.id]}
-                  class="api-key-input"
-                />
-                <button
-                  class="btn-primary"
-                  onclick={() => saveApiKey(provider.id)}
-                  disabled={saving[provider.id] || !apiKeys[provider.id]?.trim()}
-                >
-                  {#if saving[provider.id]}
-                    Enregistrement...
-                  {:else if saved[provider.id]}
-                    Enregistre !
-                  {:else}
-                    Enregistrer
-                  {/if}
-                </button>
-              </div>
-              <p class="provider-help">
-                {#if provider.id === 'claude'}
-                  Obtenez votre cle sur <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>
-                {:else if provider.id === 'openai'}
-                  Obtenez votre cle sur <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a>
-                {:else if provider.id === 'mistral'}
-                  Obtenez votre cle sur <a href="https://console.mistral.ai" target="_blank">console.mistral.ai</a>
-                {:else if provider.id === 'deepseek'}
-                  Obtenez votre cle sur <a href="https://platform.deepseek.com" target="_blank">platform.deepseek.com</a>
-                {:else if provider.id === 'perplexity'}
-                  Obtenez votre cle sur <a href="https://www.perplexity.ai/settings/api" target="_blank">perplexity.ai/settings/api</a>
-                {/if}
-              </p>
-            {:else}
-              <p class="provider-help oauth-note">
-                Ce provider utilise l'authentification OAuth. Lancez <code>claude login</code> dans le terminal.
-              </p>
-            {/if}
-
-            <div class="provider-models">
-              <span class="models-label">Modeles disponibles :</span>
-              {#each provider.models as model}
-                <span class="model-tag" class:default={model.default}>{model.name}</span>
-              {/each}
-            </div>
-          </div>
-        {/each}
-      </div>
-    </section>
-
-    <!-- Storage Location -->
-    <section class="settings-section">
-      <h2>Stockage</h2>
-      <div class="storage-info">
-        <div class="storage-item">
-          <span class="storage-label">Configuration GeoMind</span>
-          <code>~/.geomind/config.json</code>
-        </div>
-        <div class="storage-item">
-          <span class="storage-label">Memoire et contexte</span>
-          <code>C:\Users\zema\GeoMind\memory\</code>
-        </div>
-        <div class="storage-item">
-          <span class="storage-label">Credentials Claude Code</span>
-          <code>~/.claude/.credentials.json</code>
-        </div>
-      </div>
-    </section>
   </div>
 </div>
 
@@ -1062,7 +1110,7 @@
   .settings-header {
     padding: var(--spacing-lg);
     background: var(--noir-surface);
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: none;
   }
 
   .settings-header h1 {
@@ -1078,12 +1126,58 @@
     font-family: var(--font-mono);
   }
 
+  /* === TABS === */
+  .settings-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 0 var(--spacing-lg);
+    background: var(--noir-surface);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    margin-bottom: -1px;
+  }
+
+  .tab-btn:hover {
+    color: var(--text-primary);
+    background: rgba(0, 255, 136, 0.05);
+  }
+
+  .tab-btn.active {
+    color: var(--cyber-green);
+    border-bottom-color: var(--cyber-green);
+    background: rgba(0, 255, 136, 0.08);
+  }
+
+  .tab-icon {
+    font-size: 16px;
+  }
+
+  .tab-label {
+    font-weight: 500;
+  }
+
   .settings-content {
     padding: var(--spacing-lg);
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xl);
     max-width: 900px;
+    overflow-y: auto;
+    flex: 1;
   }
 
   .settings-section {

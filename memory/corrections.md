@@ -10,6 +10,28 @@
 - [ ] **NE JAMAIS utiliser** `taskkill /F /IM node.exe` sans filtrage - TUE CLAUDE CODE AUSSI
 - [ ] **TOUJOURS utiliser** la méthode ciblée par PID : `netstat -ano | findstr :<PORT>` puis `taskkill /F /PID <pid>`
 
+## CHECKLIST - Ajout d'un nouveau module
+> **OBLIGATOIRE** : Suivre TOUTES ces étapes lors de la création d'un nouveau module
+
+1. **Créer le composant** : `src/lib/components/[NomModule]/[NomModule]Module.svelte`
+2. **app.ts** - Ajouter le module :
+   - `ModuleType` : ajouter `'nommodule'` au type union (ligne ~4)
+   - `ALL_MODULES` : ajouter `{ id: 'nommodule', label: 'Label', description: 'Desc' }` (ligne ~232)
+   - `DEFAULT_MODULE_CONFIG` : ajouter aux modes expert/god/bfsa (ligne ~249)
+3. **+page.svelte** - Ajouter le rendu :
+   - Import : `import NomModuleModule from '$lib/components/[NomModule]/[NomModule]Module.svelte';`
+   - Condition : `{:else if $currentModule === 'nommodule'}<NomModuleModule />`
+4. **Sidebar.svelte** - Ajouter l'icône :
+   - `allModules` : ajouter `{ id: 'nommodule', label: 'Label', description: 'Desc' }` (ligne ~6)
+   - Template : ajouter `{:else if module.id === 'nommodule'}` avec l'icône SVG (ligne ~280+)
+5. **Backend** (si nécessaire) : Ajouter les endpoints API dans `server/index.js`
+
+**Fichiers à modifier (résumé) :**
+- `src/lib/stores/app.ts` (3 endroits)
+- `src/routes/+page.svelte` (2 endroits)
+- `src/lib/components/Sidebar.svelte` (2 endroits)
+- `server/index.js` (si API backend)
+
 ## À TOUJOURS FAIRE (prévention crashs)
 > Actions obligatoires AVANT toute opération risquée
 

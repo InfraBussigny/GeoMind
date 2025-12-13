@@ -97,7 +97,7 @@ export const MODE_PERMISSIONS = {
     canQueryDB: true,
     canModifyDB: false,
     canDeleteFiles: false,
-    allowedTools: ['read_file', 'list_directory', 'write_file', 'web_search', 'web_fetch', 'sql_query']
+    allowedTools: ['read_file', 'list_directory', 'write_file', 'web_search', 'web_fetch', 'sql_query', 'list_db_connections', 'list_db_tables']
   },
   expert: {
     canRead: true,
@@ -108,7 +108,7 @@ export const MODE_PERMISSIONS = {
     canQueryDB: true,
     canModifyDB: true,
     canDeleteFiles: true,
-    allowedTools: ['read_file', 'list_directory', 'write_file', 'create_directory', 'execute_command', 'web_search', 'web_fetch', 'sql_query', 'sql_execute']
+    allowedTools: ['read_file', 'list_directory', 'write_file', 'create_directory', 'execute_command', 'web_search', 'web_fetch', 'sql_query', 'list_db_connections', 'list_db_tables', 'sql_execute']
   },
   god: {
     canRead: true,

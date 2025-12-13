@@ -68,7 +68,7 @@
     },
     {
       id: 'geoportail',
-      name: 'Geoportail Bussigny',
+      name: 'Géoportail Bussigny',
       url: 'https://geo.bussigny.ch',
       icon: 'globe',
       hasLogin: true
@@ -220,6 +220,11 @@
               <ellipse cx="12" cy="5" rx="9" ry="3"/>
               <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
               <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+            {:else if map.icon === 'layers-ext'}
+              <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+              <polyline points="2 17 12 22 22 17"/>
+              <polyline points="2 12 12 17 22 12"/>
+              <circle cx="19" cy="5" r="3" fill="currentColor"/>
             {/if}
           </svg>
           <span class="tab-label">{map.name}</span>
@@ -286,7 +291,7 @@
   {/if}
 
   <!-- Main content area with map and assistant -->
-  <div class="content-area">
+  <div class="content-area" class:with-assistant={showAssistant}>
     <!-- Iframe/Map container -->
     <div class="iframe-container">
       {#each maps as map}
@@ -311,7 +316,9 @@
             </div>
           {:else if map.isComponent}
             <div class="component-container">
-              <PostGISViewer bind:this={postGISViewerRef} />
+              {#if map.id === 'postgis'}
+                <PostGISViewer bind:this={postGISViewerRef} />
+              {/if}
             </div>
           {:else}
             {#key iframeKeys[map.id]}

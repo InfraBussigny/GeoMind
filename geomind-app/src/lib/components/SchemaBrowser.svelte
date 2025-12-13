@@ -40,9 +40,7 @@
   onMount(async () => {
     try {
       const result = await getConnections();
-      if (result.success && result.rows) {
-        connections = result.filter((c: { type: string }) => c.type === 'postgresql');
-      }
+      connections = result.filter((c: { type: string }) => c.type === 'postgresql');
     } catch (e) {
       console.error('Failed to load connections:', e);
     }

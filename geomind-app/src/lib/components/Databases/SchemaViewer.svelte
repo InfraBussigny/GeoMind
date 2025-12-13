@@ -93,10 +93,11 @@
       }
       schema = await res.json();
       if (schema?.availableSchemas && schema.availableSchemas.length > 0 && selectedSchemas.length === 0) {
+        const availableSchemas = schema.availableSchemas;
         // Try to load saved default schemas first
         const savedDefaults = getDefaultSchemas(connectionId);
         if (savedDefaults && savedDefaults.length > 0) {
-          selectedSchemas = savedDefaults.filter(s => schema.availableSchemas.includes(s));
+          selectedSchemas = savedDefaults.filter(s => availableSchemas.includes(s));
         }
         // If no saved defaults or none valid, use 'bdco' as default, then 'public', then first schema
         if (selectedSchemas.length === 0) {

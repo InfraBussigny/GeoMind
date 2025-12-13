@@ -262,7 +262,7 @@ const DEFAULT_SNIPPETS: Snippet[] = [
 
 // Commandes chat fréquentes
 const CHAT_COMMANDS = [
-  { text: 'Montre-moi les parcelles de Bussigny', category: 'command' as const },
+  { text: 'Montre-moi les parcelles du secteur', category: 'command' as const },
   { text: 'Quelle est la surface totale des zones à bâtir ?', category: 'command' as const },
   { text: 'Liste les schémas disponibles dans la base', category: 'command' as const },
   { text: 'Affiche la structure de la table ', category: 'command' as const },

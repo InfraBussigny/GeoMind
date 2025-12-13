@@ -200,10 +200,10 @@ ORDER BY
       } else if (currentLanguage === 'python') {
         const { executeCommand } = await import('$lib/services/api');
         const result = await executeCommand(`python -c "${editorValue.replace(/"/g, '\\"').replace(/\n/g, ';')}"`);
-        if (result.success) {
-          consoleOutput = [...consoleOutput, result.output || '[OK] Script execute'];
+        if (result.stderr) {
+          consoleOutput = [...consoleOutput, `[ERREUR] ${result.stderr}`];
         } else {
-          consoleOutput = [...consoleOutput, `[ERREUR] ${result.error}`];
+          consoleOutput = [...consoleOutput, result.stdout || '[OK] Script execute'];
         }
       } else if (currentLanguage === 'javascript') {
         // Exécute JS dans le navigateur (sandbox)
@@ -566,7 +566,7 @@ Ecrivez votre contenu ici...`,
       title="Assistant IA"
     >
       <EditorChat
-        currentFile={currentFilePath}
+        currentFile={currentFilePath ?? undefined}
         currentLanguage={currentLanguage}
         selectedCode={selectedCode}
         onInsertCode={handleInsertCode}

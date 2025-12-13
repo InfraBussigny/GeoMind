@@ -217,7 +217,8 @@
   // Get tunnels for selected connection
   let connectionTunnels = $derived(() => {
     if (!selectedConnection) return [];
-    return tunnels.filter(t => t.connectionId === selectedConnection.id);
+    const connId = selectedConnection.id;
+    return tunnels.filter(t => t.connectionId === connId);
   });
 
   // Add tunnel

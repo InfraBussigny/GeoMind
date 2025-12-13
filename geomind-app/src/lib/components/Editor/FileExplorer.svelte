@@ -165,9 +165,9 @@
     selectedPath = node.path;
 
     try {
-      const result = await readFile(node.path);
-      if (result.success && result.content !== undefined) {
-        onFileSelect?.(node.path, result.content);
+      const content = await readFile(node.path);
+      if (content !== undefined) {
+        onFileSelect?.(node.path, content);
       }
     } catch (e) {
       console.error('Error reading file:', e);

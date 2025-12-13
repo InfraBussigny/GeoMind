@@ -822,7 +822,7 @@ export function formatWhatsAppNumber(phone: string): string {
 
 export interface Notification {
   id: string;
-  type: 'email' | 'call' | 'calendar' | 'whatsapp' | 'system';
+  type: 'email' | 'call' | 'calendar' | 'whatsapp' | 'system' | 'timepro';
   title: string;
   message: string;
   timestamp: Date;

@@ -2,7 +2,7 @@
   import { onMount, onDestroy } from 'svelte';
 
   // OpenLayers imports
-  import Map from 'ol/Map';
+  import OLMap from 'ol/Map';
   import View from 'ol/View';
   import TileLayer from 'ol/layer/Tile';
   import VectorTileLayer from 'ol/layer/VectorTile';
@@ -19,6 +19,10 @@
   import Overlay from 'ol/Overlay';
   import proj4 from 'proj4';
   import 'ol/ol.css';
+  import TileWMS from 'ol/source/TileWMS';
+
+  // Import external layer sources config
+  import externalLayerSourcesConfig from '$lib/config/externalLayerSources.json';
 
   // Enregistrer la projection suisse EPSG:2056 (MN95)
   proj4.defs('EPSG:2056', '+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs +type=crs');
@@ -54,6 +58,39 @@
     preview?: string;
   }
 
+  // External layer types
+  interface ExternalLayer {
+    id: string;
+    name: string;
+    type: 'WMS' | 'WMTS' | 'XYZ';
+    url: string;
+    layers?: string;
+    format?: string;
+    transparent?: boolean;
+    attribution: string;
+    maxZoom?: number;
+    description?: string;
+  }
+
+  interface ExternalCategory {
+    id: string;
+    name: string;
+    layers: ExternalLayer[];
+  }
+
+  interface ExternalSource {
+    id: string;
+    name: string;
+    icon: string;
+    color: string;
+    description: string;
+    baseUrl: string;
+    categories: ExternalCategory[];
+  }
+
+  // External layer sources from config
+  const externalSources: ExternalSource[] = externalLayerSourcesConfig.sources as ExternalSource[];
+
   // Props
   interface Props {
     initialConnectionId?: string;
@@ -64,7 +101,7 @@
   // State
   let mapContainer: HTMLDivElement;
   let popupContainer: HTMLDivElement;
-  let map: Map | null = null;
+  let map: OLMap | null = null;
   let mapLoaded = $state(false);
   let connections = $state<DBConnection[]>([]);
   let selectedConnectionId = $state(initialConnectionId);
@@ -74,7 +111,7 @@
   let loading = $state(false);
   let error = $state<string | null>(null);
   let currentZoom = $state(12);
-  let currentCenter = $state<[number, number]>([2533500, 1152000]); // Bussigny en MN95
+  let currentCenter = $state<[number, number]>([2533500, 1152000]); // Centre par défaut (MN95)
   let sidebarCollapsed = $state(false);
   let popupContent = $state<string>('');
   let overlay: Overlay | null = null;
@@ -82,7 +119,14 @@
   // Sidebar UI state
   let layerSearch = $state('');
   let expandedSchemas = $state<Set<string>>(new Set());
-  let activeTab = $state<'layers' | 'basemaps'>('layers');
+  let activeTab = $state<'layers' | 'basemaps' | 'externes'>('layers');
+
+  // External layers state
+  let activeExternalLayers = $state<Set<string>>(new Set());
+  let expandedExternalSources = $state<Set<string>>(new Set());
+  let expandedExternalCategories = $state<Set<string>>(new Set());
+  let externalLayerMap = new Map<string, TileLayer>();
+  let externalLayerSearch = $state('');
 
   // Basemaps - ASIT-VD (2056) + Swisstopo
   const basemaps: BasemapConfig[] = [
@@ -141,6 +185,154 @@
     layerMap.forEach((layer) => map!.removeLayer(layer));
     layerMap.clear();
     activeLayers = new Set();
+  }
+
+  // ============================================
+  // External layers functions
+  // ============================================
+
+  function toggleExternalSource(sourceId: string) {
+    const newSet = new Set(expandedExternalSources);
+    if (newSet.has(sourceId)) {
+      newSet.delete(sourceId);
+    } else {
+      newSet.add(sourceId);
+    }
+    expandedExternalSources = newSet;
+  }
+
+  function toggleExternalCategory(categoryId: string) {
+    const newSet = new Set(expandedExternalCategories);
+    if (newSet.has(categoryId)) {
+      newSet.delete(categoryId);
+    } else {
+      newSet.add(categoryId);
+    }
+    expandedExternalCategories = newSet;
+  }
+
+  function toggleExternalLayer(layer: ExternalLayer) {
+    if (!map) return;
+
+    if (activeExternalLayers.has(layer.id)) {
+      // Remove layer
+      const olLayer = externalLayerMap.get(layer.id);
+      if (olLayer) {
+        map.removeLayer(olLayer);
+        externalLayerMap.delete(layer.id);
+      }
+      const newSet = new Set(activeExternalLayers);
+      newSet.delete(layer.id);
+      activeExternalLayers = newSet;
+    } else {
+      // Add layer
+      const olLayer = createExternalTileLayer(layer);
+      if (olLayer) {
+        // Set z-index above basemap but below vector layers
+        olLayer.setZIndex(10 + externalLayerMap.size);
+        map.addLayer(olLayer);
+        externalLayerMap.set(layer.id, olLayer);
+        const newSet = new Set(activeExternalLayers);
+        newSet.add(layer.id);
+        activeExternalLayers = newSet;
+      }
+    }
+  }
+
+  function createExternalTileLayer(layer: ExternalLayer): TileLayer | null {
+    const projection = getProjection('EPSG:2056')!;
+    const projectionExtent = projection.getExtent() || swissExtent;
+
+    try {
+      let source;
+
+      switch (layer.type) {
+        case 'WMS':
+          source = new TileWMS({
+            url: layer.url,
+            params: {
+              'LAYERS': layer.layers || layer.id,
+              'FORMAT': layer.format || 'image/png',
+              'TRANSPARENT': layer.transparent !== false ? 'true' : 'false'
+            },
+            projection: 'EPSG:2056',
+            serverType: 'geoserver'
+          });
+          break;
+
+        case 'WMTS':
+          // Swisstopo-style WMTS URLs with {TileMatrix}/{TileCol}/{TileRow}
+          source = new XYZ({
+            url: layer.url.replace('{TileMatrix}', '{z}').replace('{TileCol}', '{x}').replace('{TileRow}', '{y}'),
+            projection: 'EPSG:2056',
+            tileGrid: new WMTSTileGrid({
+              origin: getTopLeft(projectionExtent),
+              resolutions: swissResolutions,
+              matrixIds: asitMatrixIds,
+            }),
+          });
+          break;
+
+        case 'XYZ':
+          source = new XYZ({
+            url: layer.url,
+            projection: 'EPSG:2056',
+            maxZoom: layer.maxZoom || 19,
+          });
+          break;
+
+        default:
+          console.warn(`Unsupported layer type: ${layer.type}`);
+          return null;
+      }
+
+      return new TileLayer({
+        source,
+        opacity: 0.8
+      });
+    } catch (err) {
+      console.error(`Error creating layer ${layer.id}:`, err);
+      return null;
+    }
+  }
+
+  function countActiveExternalInSource(sourceId: string): number {
+    const source = externalSources.find(s => s.id === sourceId);
+    if (!source) return 0;
+    let count = 0;
+    for (const cat of source.categories) {
+      for (const layer of cat.layers) {
+        if (activeExternalLayers.has(layer.id)) count++;
+      }
+    }
+    return count;
+  }
+
+  function countActiveExternalInCategory(source: ExternalSource, categoryId: string): number {
+    const cat = source.categories.find(c => c.id === categoryId);
+    if (!cat) return 0;
+    return cat.layers.filter(l => activeExternalLayers.has(l.id)).length;
+  }
+
+  function clearAllExternalLayers() {
+    if (!map) return;
+    externalLayerMap.forEach((layer) => map!.removeLayer(layer));
+    externalLayerMap.clear();
+    activeExternalLayers = new Set();
+  }
+
+  function filterExternalLayers(source: ExternalSource, search: string): ExternalCategory[] {
+    if (!search) return source.categories;
+    const term = search.toLowerCase();
+    return source.categories
+      .map(cat => ({
+        ...cat,
+        layers: cat.layers.filter(l =>
+          l.name.toLowerCase().includes(term) ||
+          l.description?.toLowerCase().includes(term)
+        )
+      }))
+      .filter(cat => cat.layers.length > 0);
   }
 
   // Couleurs pour les couches
@@ -266,7 +458,7 @@
 
     const projection = getProjection('EPSG:2056')!;
 
-    map = new Map({
+    map = new OLMap({
       target: mapContainer,
       layers: [basemapLayer],
       view: new View({
@@ -635,6 +827,7 @@
             class="tab"
             class:active={activeTab === 'layers'}
             onclick={() => activeTab = 'layers'}
+            title="Couches PostGIS"
           >
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
@@ -648,12 +841,28 @@
             class="tab"
             class:active={activeTab === 'basemaps'}
             onclick={() => activeTab = 'basemaps'}
+            title="Fonds de carte"
           >
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="3" width="18" height="18" rx="2"/>
               <path d="M3 9h18M9 21V9"/>
             </svg>
             Fonds
+          </button>
+          <button
+            class="tab"
+            class:active={activeTab === 'externes'}
+            onclick={() => activeTab = 'externes'}
+            title="Couches externes WMS/WMTS"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+            Ext
+            {#if activeExternalLayers.size > 0}
+              <span class="badge">{activeExternalLayers.size}</span>
+            {/if}
           </button>
         </div>
 
@@ -742,15 +951,37 @@
           <div class="tab-content basemaps-content">
             <!-- ASIT-VD -->
             <div class="basemap-category">
-              <div class="category-label">ASIT-VD</div>
+              <div class="category-label">ASIT-VD (Vaud)</div>
               <div class="basemap-grid">
                 {#each basemaps.filter(b => b.category === 'asit') as basemap}
                   <button
                     class="basemap-card"
                     class:selected={selectedBasemap === basemap.id}
                     onclick={() => changeBasemap(basemap.id)}
+                    title={basemap.name}
                   >
-                    <div class="basemap-preview" data-type={basemap.id}></div>
+                    <div class="basemap-preview" data-type={basemap.id}>
+                      {#if basemap.id === 'asit-couleur'}
+                        <svg viewBox="0 0 32 32" class="basemap-icon">
+                          <circle cx="16" cy="10" r="6" fill="#f4a460"/>
+                          <path d="M4 28 Q16 18 28 28" fill="#4a7c59"/>
+                          <path d="M8 28 Q16 22 24 28" fill="#6b8e5a"/>
+                        </svg>
+                      {:else if basemap.id === 'asit-gris'}
+                        <svg viewBox="0 0 32 32" class="basemap-icon">
+                          <circle cx="16" cy="10" r="6" fill="#888"/>
+                          <path d="M4 28 Q16 18 28 28" fill="#555"/>
+                          <path d="M8 28 Q16 22 24 28" fill="#666"/>
+                        </svg>
+                      {:else if basemap.id === 'asit-cadastral'}
+                        <svg viewBox="0 0 32 32" class="basemap-icon">
+                          <rect x="4" y="4" width="10" height="8" fill="none" stroke="#666" stroke-width="1.5"/>
+                          <rect x="18" y="4" width="10" height="12" fill="none" stroke="#666" stroke-width="1.5"/>
+                          <rect x="4" y="16" width="14" height="12" fill="none" stroke="#666" stroke-width="1.5"/>
+                          <rect x="22" y="20" width="6" height="8" fill="none" stroke="#666" stroke-width="1.5"/>
+                        </svg>
+                      {/if}
+                    </div>
                     <span class="basemap-name">{basemap.name}</span>
                   </button>
                 {/each}
@@ -759,15 +990,36 @@
 
             <!-- Swisstopo -->
             <div class="basemap-category">
-              <div class="category-label">Swisstopo</div>
+              <div class="category-label">Swisstopo (Suisse)</div>
               <div class="basemap-grid">
                 {#each basemaps.filter(b => b.category === 'swisstopo') as basemap}
                   <button
                     class="basemap-card"
                     class:selected={selectedBasemap === basemap.id}
                     onclick={() => changeBasemap(basemap.id)}
+                    title={basemap.name}
                   >
-                    <div class="basemap-preview" data-type={basemap.id}></div>
+                    <div class="basemap-preview" data-type={basemap.id}>
+                      {#if basemap.id === 'swisstopo'}
+                        <svg viewBox="0 0 32 32" class="basemap-icon">
+                          <path d="M6 24 L12 14 L18 20 L26 8" fill="none" stroke="#8b4513" stroke-width="2"/>
+                          <circle cx="12" cy="14" r="2" fill="#8b4513"/>
+                          <circle cx="26" cy="8" r="2" fill="#8b4513"/>
+                        </svg>
+                      {:else if basemap.id === 'swisstopo-grey'}
+                        <svg viewBox="0 0 32 32" class="basemap-icon">
+                          <path d="M6 24 L12 14 L18 20 L26 8" fill="none" stroke="#666" stroke-width="2"/>
+                          <circle cx="12" cy="14" r="2" fill="#666"/>
+                          <circle cx="26" cy="8" r="2" fill="#666"/>
+                        </svg>
+                      {:else if basemap.id === 'ortho'}
+                        <svg viewBox="0 0 32 32" class="basemap-icon">
+                          <rect x="6" y="8" width="20" height="16" rx="2" fill="none" stroke="#2d5a27" stroke-width="1.5"/>
+                          <circle cx="12" cy="14" r="3" fill="#2d5a27"/>
+                          <path d="M8 20 L14 16 L18 18 L24 12" fill="none" stroke="#2d5a27" stroke-width="1.5"/>
+                        </svg>
+                      {/if}
+                    </div>
                     <span class="basemap-name">{basemap.name}</span>
                   </button>
                 {/each}
@@ -775,25 +1027,117 @@
             </div>
           </div>
         {/if}
+
+        <!-- Tab Content: Couches externes WMS/WMTS -->
+        {#if activeTab === 'externes'}
+          <div class="tab-content">
+            <!-- Recherche -->
+            <div class="search-bar">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+              <input
+                type="text"
+                placeholder="Rechercher couche..."
+                bind:value={externalLayerSearch}
+              />
+              {#if activeExternalLayers.size > 0}
+                <button class="clear-btn" onclick={clearAllExternalLayers} title="Tout désélectionner">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                  </svg>
+                </button>
+              {/if}
+            </div>
+
+            <!-- Liste des sources -->
+            <div class="layers-panel external-layers">
+              {#each externalSources as source}
+                <div class="source-group">
+                  <button
+                    class="source-header"
+                    class:expanded={expandedExternalSources.has(source.id)}
+                    onclick={() => toggleExternalSource(source.id)}
+                    style="--source-color: {source.color}"
+                  >
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d={expandedExternalSources.has(source.id) ? 'M19 9l-7 7-7-7' : 'M9 5l7 7-7 7'}/>
+                    </svg>
+                    <span class="source-icon">{source.icon}</span>
+                    <span class="source-name">{source.name}</span>
+                    {#if countActiveExternalInSource(source.id) > 0}
+                      <span class="active-badge">{countActiveExternalInSource(source.id)}</span>
+                    {/if}
+                  </button>
+
+                  {#if expandedExternalSources.has(source.id)}
+                    <div class="source-content">
+                      {#each filterExternalLayers(source, externalLayerSearch) as category}
+                        <div class="ext-category">
+                          <button
+                            class="category-header"
+                            class:expanded={expandedExternalCategories.has(category.id)}
+                            onclick={() => toggleExternalCategory(category.id)}
+                          >
+                            <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d={expandedExternalCategories.has(category.id) ? 'M19 9l-7 7-7-7' : 'M9 5l7 7-7 7'}/>
+                            </svg>
+                            <span>{category.name}</span>
+                            {#if countActiveExternalInCategory(source, category.id) > 0}
+                              <span class="cat-count">{countActiveExternalInCategory(source, category.id)}/{category.layers.length}</span>
+                            {:else}
+                              <span class="cat-count">{category.layers.length}</span>
+                            {/if}
+                          </button>
+
+                          {#if expandedExternalCategories.has(category.id)}
+                            <div class="ext-layers-list">
+                              {#each category.layers as layer}
+                                <label
+                                  class="ext-layer-row"
+                                  class:active={activeExternalLayers.has(layer.id)}
+                                  title={layer.description || layer.name}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={activeExternalLayers.has(layer.id)}
+                                    onchange={() => toggleExternalLayer(layer)}
+                                  />
+                                  <span class="layer-type-badge" data-type={layer.type}>{layer.type}</span>
+                                  <span class="ext-layer-name">{layer.name}</span>
+                                </label>
+                              {/each}
+                            </div>
+                          {/if}
+                        </div>
+                      {/each}
+                    </div>
+                  {/if}
+                </div>
+              {/each}
+            </div>
+          </div>
+        {/if}
       </div>
     {/if}
   </aside>
 
-  <!-- Map container -->
-  <div class="map-wrapper">
-    <div class="map-container" bind:this={mapContainer}></div>
+  <!-- Map container + status bar wrapper -->
+  <div class="map-status-wrapper">
+    <div class="map-wrapper">
+      <div class="map-container" bind:this={mapContainer}></div>
 
-    <!-- Popup -->
-    <div class="ol-popup" bind:this={popupContainer}>
-      <button class="ol-popup-closer" onclick={closePopup}>×</button>
-      <div class="popup-content">
-        {@html popupContent}
+      <!-- Popup -->
+      <div class="ol-popup" bind:this={popupContainer}>
+        <button class="ol-popup-closer" onclick={closePopup}>×</button>
+        <div class="popup-content">
+          {@html popupContent}
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Status bar -->
-  <div class="status-bar">
+    <!-- Status bar at bottom -->
+    <div class="status-bar">
     <span class="status-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
         <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
@@ -813,6 +1157,7 @@
       {activeLayers.size} couche{activeLayers.size !== 1 ? 's' : ''}
     </span>
     <span class="status-item projection">EPSG:2056</span>
+    </div>
   </div>
 </div>
 
@@ -1209,30 +1554,38 @@
   .basemap-preview {
     width: 100%;
     aspect-ratio: 1;
-    border-radius: 4px;
-    background-size: cover;
-    background-position: center;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .basemap-icon {
+    width: 70%;
+    height: 70%;
   }
 
   /* Preview backgrounds */
   .basemap-preview[data-type="asit-couleur"] {
-    background: linear-gradient(135deg, #f5e6d3 0%, #e8d4c0 50%, #d4c4a8 100%);
+    background: linear-gradient(180deg, #87ceeb 0%, #e8d4c0 40%, #90b87a 100%);
   }
   .basemap-preview[data-type="asit-gris"] {
-    background: linear-gradient(135deg, #888 0%, #666 50%, #555 100%);
+    background: linear-gradient(180deg, #a0a0a0 0%, #808080 40%, #606060 100%);
   }
   .basemap-preview[data-type="asit-cadastral"] {
-    background: linear-gradient(135deg, #fff 0%, #f0f0f0 50%, #e0e0e0 100%);
-    border: 1px solid #ccc;
+    background: #f8f8f8;
+    border: 1px solid #ddd;
   }
   .basemap-preview[data-type="swisstopo"] {
-    background: linear-gradient(135deg, #e8d4a8 0%, #c9b896 50%, #a89870 100%);
+    background: linear-gradient(180deg, #87ceeb 0%, #d4c4a8 40%, #8fbc8f 100%);
   }
   .basemap-preview[data-type="swisstopo-grey"] {
-    background: linear-gradient(135deg, #999 0%, #777 50%, #666 100%);
+    background: linear-gradient(180deg, #909090 0%, #707070 40%, #505050 100%);
   }
   .basemap-preview[data-type="ortho"] {
-    background: linear-gradient(135deg, #3a5f3a 0%, #2d4a2d 50%, #1f3a1f 100%);
+    background: linear-gradient(135deg, #2d5a27 0%, #3d6a37 50%, #4d7a47 100%);
   }
 
   .basemap-name {
@@ -1246,11 +1599,20 @@
     font-weight: 600;
   }
 
+  .map-status-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+  }
+
   .map-wrapper {
     flex: 1;
     position: relative;
     display: flex;
     flex-direction: column;
+    min-height: 0;
   }
 
   .map-container {
@@ -1371,5 +1733,165 @@
 
   :global(.ol-attribution a) {
     color: var(--cyber-green, #00ff88) !important;
+  }
+
+  /* External layers styles */
+  .external-layers {
+    padding-top: 4px;
+  }
+
+  .source-group {
+    margin-bottom: 4px;
+  }
+
+  .source-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--noir-card, #1e1e2e);
+    border: none;
+    border-left: 3px solid var(--source-color);
+    border-radius: 4px;
+    color: var(--text-primary, #e0e0e0);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+  }
+
+  .source-header:hover {
+    background: var(--bg-hover, #2a2a3a);
+  }
+
+  .source-header.expanded {
+    border-radius: 4px 4px 0 0;
+  }
+
+  .source-icon {
+    font-size: 1rem;
+  }
+
+  .source-name {
+    flex: 1;
+    font-weight: 500;
+    font-size: 0.85rem;
+  }
+
+  .active-badge {
+    background: var(--cyber-green, #00ff88);
+    color: var(--noir-profond, #0d0d12);
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 0.65rem;
+    font-weight: 700;
+  }
+
+  .source-content {
+    padding: 4px 0 4px 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-left: 3px solid var(--source-color, #666);
+    margin-left: 0;
+  }
+
+  .ext-category {
+    margin-bottom: 4px;
+  }
+
+  .category-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: var(--text-secondary, #aaa);
+    cursor: pointer;
+    text-align: left;
+    font-size: 0.75rem;
+    transition: all 0.15s;
+  }
+
+  .category-header:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary, #e0e0e0);
+  }
+
+  .category-header.expanded {
+    color: var(--text-primary, #e0e0e0);
+  }
+
+  .cat-count {
+    margin-left: auto;
+    font-size: 0.65rem;
+    color: var(--text-muted, #666);
+  }
+
+  .ext-layers-list {
+    padding-left: 16px;
+  }
+
+  .ext-layer-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 0.75rem;
+  }
+
+  .ext-layer-row:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .ext-layer-row.active {
+    background: rgba(0, 255, 136, 0.1);
+  }
+
+  .ext-layer-row input[type="checkbox"] {
+    width: 12px;
+    height: 12px;
+    accent-color: var(--cyber-green, #00ff88);
+  }
+
+  .layer-type-badge {
+    font-size: 0.55rem;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-weight: 600;
+    text-transform: uppercase;
+    background: rgba(100, 100, 100, 0.3);
+    color: var(--text-muted, #888);
+  }
+
+  .layer-type-badge[data-type="WMS"] {
+    background: rgba(0, 150, 255, 0.2);
+    color: #00aaff;
+  }
+
+  .layer-type-badge[data-type="WMTS"] {
+    background: rgba(255, 150, 0, 0.2);
+    color: #ffaa00;
+  }
+
+  .layer-type-badge[data-type="XYZ"] {
+    background: rgba(150, 0, 255, 0.2);
+    color: #aa66ff;
+  }
+
+  .ext-layer-name {
+    flex: 1;
+    color: var(--text-secondary, #aaa);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ext-layer-row.active .ext-layer-name {
+    color: var(--cyber-green, #00ff88);
   }
 </style>

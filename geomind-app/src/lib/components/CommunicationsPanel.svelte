@@ -93,7 +93,7 @@
   // Time Pro state
   let timeProWebWindow: Window | null = null;
   let timeProWebOpen = $state(false);
-  const timeProUrl = 'https://timepro.bussigny.ch/employee/dashboard';
+  const timeProUrl = 'https://timepro.example.ch/employee/dashboard'; // TODO: Configure URL
 
   // Auto-pointage state
   interface AutoPointageConfig {

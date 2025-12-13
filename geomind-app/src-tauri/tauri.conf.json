@@ -23,7 +23,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.anthropic.com https://*.tiles.mapbox.com https://*.openstreetmap.org"
+      "csp": "default-src 'self' https://web.whatsapp.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://web.whatsapp.com; style-src 'self' 'unsafe-inline' https://web.whatsapp.com; connect-src 'self' https://api.anthropic.com https://*.tiles.mapbox.com https://*.openstreetmap.org https://web.whatsapp.com https://*.whatsapp.net wss://*.whatsapp.net; img-src 'self' data: blob: https://*.whatsapp.net https://web.whatsapp.com; media-src 'self' blob: https://*.whatsapp.net; frame-src https://web.whatsapp.com"
     }
   },
   "bundle": {

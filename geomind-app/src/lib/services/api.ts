@@ -123,11 +123,18 @@ export async function streamMessage(
   onModelSelected?: (event: ModelSelectedEvent) => void,
   onAgentsActivated?: (event: AgentsActivatedEvent) => void
 ): Promise<StreamController> {
-  // Utiliser l'endpoint agent pour Claude uniquement si des outils sont fournis
-  // Sinon utiliser le stream simple (plus rapide, moins de overhead)
-  const endpoint = (provider === 'claude' && tools && tools.length > 0)
-    ? `${API_BASE}/chat/agent`
-    : `${API_BASE}/chat/stream`;
+  // Routage selon le provider
+  // - Claude, Groq: agent avec tool use
+  // - Ollama: endpoint dédié avec SQL Assistant
+  // - Autres: stream simple
+  let endpoint: string;
+  if (['claude', 'groq'].includes(provider)) {
+    endpoint = `${API_BASE}/chat/agent`;
+  } else if (provider === 'ollama') {
+    endpoint = `${API_BASE}/ai/ollama/chat`;
+  } else {
+    endpoint = `${API_BASE}/chat/stream`;
+  }
 
   const abortController = new AbortController();
   let isAborted = false;
@@ -143,13 +150,25 @@ export async function streamMessage(
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ provider, model, messages, tools }),
+      body: JSON.stringify({ provider, model, messages, tools, useSQLAssistant: true }),
       signal: abortController.signal
     });
 
     if (!response.ok) {
       const error = await response.json();
       onError?.(error.error || 'Stream request failed');
+      return controller;
+    }
+
+    // Ollama endpoint returns JSON directly, not SSE
+    if (provider === 'ollama') {
+      const data = await response.json();
+      if (data.success) {
+        onChunk?.(data.content || '');
+        onDone?.();
+      } else {
+        onError?.(data.error || 'Ollama request failed');
+      }
       return controller;
     }
 
