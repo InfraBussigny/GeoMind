@@ -1,3 +1,260 @@
+## Session 24 - 13 decembre 2025 (nuit)
+**Theme** : Unification des chats (store partage)
+
+### Travail effectue
+
+#### 1. Crash Claude Code documente
+- Cause : `taskkill /F /IM node.exe` lance en background pour redemarrer le serveur
+- Solution rappellee : utiliser `netstat -ano | findstr :<PORT>` puis `taskkill /F /PID <pid>`
+- Ajoute dans corrections.md
+
+#### 2. Systeme de chat unifie
+- **app.ts** : Nouveau systeme ChatContext
+  - Types : `assistant`, `editor`, `map`, `sql`, `databases`
+  - Store `chatContext` pour le contexte actif
+  - System prompts par type (CHAT_SYSTEM_PROMPTS)
+  - Fonction `getSystemPromptWithContext()` pour enrichir le prompt
+  - Helpers `addMessage()`, `clearMessages()`, `setChatContext()`
+
+#### 3. Composant UnifiedChat.svelte (nouveau)
+- Composant reutilisable pour tous les modules
+- Props : compact, showHeader, showClearButton, context, placeholder, onCodeBlock
+- Utilise le store global `messages`
+- Streaming, stop, auto-scroll
+- Badge "partage" pour indiquer l'historique commun
+
+#### 4. EditorChat adapte
+- Utilise maintenant le store `messages` global
+- Garde ses fonctionnalites specifiques (quick actions, insert code)
+- Met a jour le contexte via `setChatContext({ type: 'editor', editorContext: {...} })`
+- Badge "partage" ajoute
+
+#### 5. MapAssistant adapte
+- Utilise maintenant le store `messages` global
+- Garde la logique des actions cartographiques (boutons pour executer)
+- Parse les actions depuis le contenu des messages assistant
+- Badge "partage" ajoute
+
+#### 6. SqlAssistant conserve tel quel
+- N'est pas un chat conversationnel mais un generateur text-to-SQL
+- Son historique local (requetes SQL) reste separe
+- Fonctionnalite differente : generation + execution SQL
+
+### Fichiers crees/modifies
+- `src/lib/stores/app.ts` (ChatContext, system prompts, helpers)
+- `src/lib/components/Chat/UnifiedChat.svelte` (nouveau)
+- `src/lib/components/Editor/EditorChat.svelte` (refait - store partage)
+- `src/lib/components/Canvas/MapAssistant.svelte` (refait - store partage)
+- `memory/corrections.md` (crash documente)
+
+### Resultat
+- **Historique de chat partage** entre tous les modules (Assistant, Editeur, Cartes)
+- **System prompt adaptatif** selon le contexte actif
+- **UI coherente** avec badge "partage" visible
+- **SqlAssistant** reste independant (usage different)
+
+---
+
+## Session 23 - 13 decembre 2025 (soir)
+**Theme** : Module Databases - Implementation des onglets
+
+### Travail effectue
+
+#### 1. Module Convertisseur
+- Cree `ConverterModule.svelte` avec interface drag & drop
+- Enrichi `converter.ts` avec formats GML, GPX, KML, XML
+- Bug fix `alwaysVisible` : modules marques alwaysVisible maintenant toujours visibles (documente dans corrections.md)
+- Interface 3 colonnes : Source | Format cible | Resultat
+
+#### 2. Module Cartes - Nettoyage
+- Supprime onglet "Couches externes" (integre dans PostGIS)
+- Ameliore icones fonds de plan avec SVG symboliques (ASIT couleur, cadastral, ortho, gris)
+
+#### 3. Module Databases - Onglets fonctionnels
+- **SchemaViewer** : Etait deja fonctionnel (ERD + liste)
+- **SqlAssistant** : Etait deja fonctionnel (text-to-SQL via API)
+- **MockDataGenerator** : IMPLEMENTE
+  - Selection table depuis schema API
+  - Configuration colonnes (inclure/exclure)
+  - Generation donnees suisses realistes (noms, NPA, villes, rues)
+  - Support PostGIS (geometries dans perimetre Bussigny MN95)
+  - Detection intelligente types (email, phone, date, etc.)
+  - Interface 3 colonnes : Tables | Colonnes | Generation
+  - Export SQL ou execution directe
+- **DocGenerator** : IMPLEMENTE
+  - Generation HTML avec theme sombre
+  - Generation Markdown
+  - Selection schemas, options (types, commentaires, relations)
+  - Preview integre (iframe HTML ou code Markdown)
+  - Download et copie presse-papier
+- **TestEnvironment** : AMELIORE
+  - Verification disponibilite Docker via API
+  - Alternative export SQL (pg_dump) toujours disponible
+  - Instructions manuelles pour creation env test
+
+### Fichiers modifies
+- `src/lib/components/Databases/MockDataGenerator.svelte` (refait complet)
+- `src/lib/components/Databases/DocGenerator.svelte` (refait complet)
+- `src/lib/components/Databases/TestEnvironment.svelte` (ameliore)
+- `src/lib/components/Canvas/CanvasModule.svelte` (retire onglet externes)
+- `src/lib/components/Canvas/PostGISViewer.svelte` (icones basemaps)
+- `src/lib/stores/app.ts` (fix visibleModules alwaysVisible)
+- `memory/corrections.md` (documente bug alwaysVisible)
+
+### Prochaines taches
+- [ ] CAD: Charger couches depuis PostGIS/sources
+- [ ] CAD: Import image/PDF + georef Helmert
+
+---
+
+## Session 22 - 13 decembre 2025 (apres-midi)
+**Theme** : Module WIP ameliore + PostGIS enrichi (couches externes)
+
+### Travail effectue
+
+#### 1. Module WIP - Ecrans de couverture realistes
+- **8 ecrans** disponibles : Windows Update, BSOD, Terminal Dev, CHKDSK, BIOS, Antivirus, **SFC /scannow**, **DISM RestoreHealth**
+- **SFC** : Simulation complete sfc /scannow avec progression et message final
+- **DISM** : 5 etapes (Analyse, Verification integrite, Reparabilite, Analyse, Restauration) avec barre progression
+- Interface fenetre cmd admin realiste
+- Tous les ecrans ont des progressions variables et non-lineaires pour plus de realisme
+
+#### 2. PostGIS enrichi - Couches externes WMS/WMTS/XYZ
+- **externalLayers.ts** : Service complet de gestion des couches Leaflet
+  - Support WMS, WMTS, XYZ
+  - Gestion opacite, visibilite, z-index
+  - Stores Svelte reactifs
+- **externalLayerSources.json** : ~50 couches suisses configurees
+  - geo.admin.ch (Confederation)
+  - geo.vd.ch (Canton VD)
+  - ASIT-VD
+  - OpenStreetMap
+- **ExternalLayersPanel.svelte** : Interface complete
+  - Carte Leaflet avec fond OSM
+  - Sidebar avec catalogue sources/categories/couches
+  - Panneau couches actives avec drag & drop
+  - Recherche, toggle visibilite, slider opacite
+- **Integration CanvasModule** : Nouvel onglet "Couches externes" dans le module Cartes
+
+### Fichiers crees/modifies
+- `src/lib/components/WIPModule.svelte` (ameliore - SFC, DISM)
+- `src/lib/services/externalLayers.ts` (service couches)
+- `src/lib/config/externalLayerSources.json` (config ~50 couches)
+- `src/lib/components/Canvas/ExternalLayersPanel.svelte` (nouveau)
+- `src/lib/components/Canvas/CanvasModule.svelte` (integration onglet)
+
+#### 3. Module CAD - Phase 1 (Fondations)
+- **CadModule.svelte** : Composant complet avec Fabric.js
+  - Chargement fichiers DXF via dxf-parser
+  - Rendu entites : LINE, POLYLINE, LWPOLYLINE, CIRCLE, ARC, TEXT, MTEXT, POINT, ELLIPSE
+  - Navigation : Pan (molette milieu), Zoom (molette), Zoom etendue
+  - Panneau calques : Toggle visibilite, couleurs ACI
+  - Barre d'outils avec Selection, Pan, Zoom+/-
+  - Barre de statut : Coordonnees, Zoom, toggles SNAP/GRID/ORTHO, EPSG:2056
+  - Mode Expert/God : Outils de dessin (ligne, polyligne, cercle)
+  - Mode God : Placeholder sync PostGIS
+- **Integration** : Nouveau module 'cad' dans app.ts, Sidebar, +page.svelte
+
+### Prochaines taches
+- [ ] Module CAD Phase 2 : Mode Standard complet (mesures, export PNG/PDF)
+- [ ] Module CAD Phase 3 : Mode Expert (dessin, modification, snapping)
+
+---
+
+## Session - 2025-12-13
+
+### Travaux effectués
+- [02:53] Chat stream ollama/qwen2.5:14b: "tu peux me dire combien il y a de parcelles à buss..."
+- [02:52] Chat stream ollama/qwen2.5:14b: "yo..."
+- [02:08] Chat stream ollama/qwen2.5:14b: "combien de parcelle à bussigny?..."
+- [01:50] Chat stream claude/claude-3-5-haiku-20241022: "Claude 3.5 Haiku
+01:50
+Pour répondre précisément à..."
+- [01:50] Chat stream claude/claude-3-5-haiku-20241022: "combien de parcelle a bussigny?..."
+- [01:47] Chat stream claude/claude-3-5-haiku-20241022: "fais la requete toi meme..."
+- [01:47] Chat stream claude/claude-3-5-haiku-20241022: "verifie sur la base..."
+- [01:47] Chat stream claude/claude-3-5-haiku-20241022: "et mtn..."
+- [01:41] Chat stream claude/claude-3-5-haiku-20241022: "cmb de parcelle a bussigny?..."
+- [01:41] Chat stream claude/claude-3-5-haiku-20241022: "combien de parcelles a bussigny?..."
+- [01:35] Chat stream claude/claude-3-5-haiku-20241022: "va chercher toi meme dans la base bussigy..."
+- [01:34] Chat stream claude/claude-3-5-haiku-20241022: "skibidi, combien y a t il de parcelle a bussigny?..."
+- [01:29] Chat stream ollama/qwen2.5:14b: "combien de parcelles a bussigny?..."
+- [01:28] Chat stream ollama/llama3.2:latest: "combien de parcelles a bussigny?..."
+- [01:27] Chat stream ollama/llama3.2:latest: "coucou..."
+
+---
+
+## Session 21 - 13 décembre 2025 (nuit) - MISE À JOUR 02:30
+**Thème** : Build Tauri + UX Refactor + Multi-Provider Agent
+
+### Travail effectué (suite)
+
+#### 5. Refonte UX Settings
+- Module **Multi-IA supprimé** de la navigation (redondant)
+- **Settings réorganisé** avec 4 onglets : Général, IA, Connexions, Avancé
+- Code plus compact et navigable
+
+#### 6. Améliorations Chat
+- **Chat vidé** au retour en mode standard (plus de message de confirmation)
+- **Bandeau backend supprimé** du header (redondant avec footer)
+
+#### 7. PostGIS Viewer
+- **Status bar déplacée en bas** (était à droite, prenait trop de place)
+- Nouveau wrapper `.map-status-wrapper` avec flex-direction: column
+
+#### 8. Agent Multi-Provider
+- **Bug corrigé** : `claudeMessages` → `agentMessages` (erreur 500)
+- **Groq ajouté** comme provider avec tool use complet
+- Frontend mis à jour pour utiliser `/api/chat/agent` avec Groq
+
+#### 9. Modèles Ollama
+- **llama3.1:8b installé** (~5 GB)
+- En cours : mistral, qwen2.5-coder, deepseek-coder, phi3
+
+### À FAIRE
+- [ ] Redémarrer backend (appliquer fix agent)
+- [ ] Tester Groq avec tool use
+- [ ] Finir installation modèles Ollama
+- [ ] **Module WIP** (fake loading screens - demande Marc)
+- [ ] **Backend sur srv-fme** (toujours en ligne)
+
+---
+
+## Session 21 - 13 décembre 2025 (nuit) - ORIGINAL
+**Thème** : Build Tauri + Documentation + GitHub
+
+### Travail effectué
+
+#### 1. Configuration MSVC linker
+- Création `~/.cargo/config.toml` avec chemin explicite vers link.exe MSVC
+- Résolution conflit Git link.exe vs MSVC link.exe
+
+#### 2. Fix erreurs Vite/SvelteKit
+- highlight.js SSR : ajout à `ssr.noExternal`
+- Monaco Editor workers : exclusion de optimizeDeps + worker format 'es'
+- Config vite.config.ts fonctionnelle documentée
+
+#### 3. GitHub
+- Repo renommé : **InfraBussigny/GeoMind** (public)
+- Invitation envoyée à **MarcZermatten** (droits push)
+
+#### 4. Windows Defender
+- Build Rust bloqué par Defender (Accès refusé sur build scripts)
+- Compte admin limité : impossible d'ajouter exclusion
+- Documenté dans corrections.md
+
+### Blocage actuel
+- Compilation Tauri impossible sur ce poste (Defender)
+- Options : autre poste avec admin / GitHub Actions / demande IT
+
+### À FAIRE (futur)
+- [ ] **Déployer le backend sur srv-fme** pour qu'il soit toujours en ligne
+  - Modifier API_BASE dynamique (configurable dans Settings)
+  - Ajouter contrôle restart depuis l'app
+  - Vérifier si Node.js dispo sur srv-fme
+
+---
+
 ## Session 20 - 13 décembre 2025
 **Thème** : Compilation Tauri + Fixes divers
 

@@ -1,12 +1,17 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { streamMessage } from '$lib/services/api';
-  import { currentProvider, currentModel } from '$lib/stores/app';
-
-  interface Message {
-    role: 'user' | 'assistant';
-    content: string;
-    isStreaming?: boolean;
-  }
+  import {
+    currentProvider,
+    currentModel,
+    messages,
+    isLoading,
+    addMessage,
+    clearMessages,
+    setChatContext,
+    getSystemPromptWithContext,
+    type Message
+  } from '$lib/stores/app';
 
   interface Props {
     currentFile?: string;
@@ -22,11 +27,10 @@
     onInsertCode
   }: Props = $props();
 
-  let messages = $state<Message[]>([]);
   let inputValue = $state('');
-  let isLoading = $state(false);
   let messagesContainer: HTMLDivElement;
   let streamController: any = null;
+  let streamingContent = $state('');
 
   // Quick actions
   const quickActions = [
@@ -36,62 +40,60 @@
     { label: 'Commenter', prompt: 'Ajoute des commentaires explicatifs a ce code:', icon: '#' },
   ];
 
-  function buildSystemPrompt(): string {
-    let prompt = `Tu es l'assistant de code GeoMind, specialise en:
-- SQL spatial (PostGIS, Oracle Spatial)
-- Python/PyQGIS pour les scripts de geotraitement
-- FME workbenches
-- GeoJSON/JSON manipulation
-- Scripts shell et automatisation
-
-Tu reponds en francais. Tu fournis du code fonctionnel, bien commente et optimise.`;
-
-    if (currentFile) {
-      prompt += `\n\nFichier actuel: ${currentFile}`;
-    }
-    if (currentLanguage && currentLanguage !== 'plaintext') {
-      prompt += `\nLangage: ${currentLanguage}`;
-    }
-
-    return prompt;
-  }
+  // Mettre a jour le contexte quand les props changent
+  $effect(() => {
+    setChatContext({
+      type: 'editor',
+      editorContext: {
+        currentFile: currentFile,
+        language: currentLanguage,
+        selectedCode: selectedCode
+      }
+    });
+  });
 
   function buildUserPrompt(basePrompt: string): string {
     let prompt = basePrompt;
-
     if (selectedCode) {
       prompt += `\n\nCode selectionne:\n\`\`\`${currentLanguage}\n${selectedCode}\n\`\`\``;
     }
-
     return prompt;
   }
 
   async function sendMessage(prompt?: string) {
     const messageText = prompt || inputValue.trim();
-    if (!messageText || isLoading) return;
+    if (!messageText || $isLoading) return;
 
     const userPrompt = buildUserPrompt(messageText);
-
-    // Add user message
-    messages = [...messages, { role: 'user', content: messageText }];
     inputValue = '';
-    isLoading = true;
+    isLoading.set(true);
 
-    // Add empty assistant message for streaming
-    const assistantMessage: Message = { role: 'assistant', content: '', isStreaming: true };
-    messages = [...messages, assistantMessage];
+    // Ajouter le message utilisateur
+    addMessage({
+      role: 'user',
+      content: messageText,
+      provider: $currentProvider,
+      model: $currentModel
+    });
 
-    // Scroll to bottom
     setTimeout(() => scrollToBottom(), 50);
 
-    try {
-      // Build messages array with system prompt
-      const apiMessages = [
-        { role: 'system' as const, content: buildSystemPrompt() },
-        ...messages.slice(0, -1).map(m => ({ role: m.role, content: m.content })),
-        { role: 'user' as const, content: userPrompt }
-      ];
+    // Preparer les messages pour l'API
+    const context = {
+      type: 'editor' as const,
+      editorContext: { currentFile, language: currentLanguage, selectedCode }
+    };
+    const systemPrompt = getSystemPromptWithContext(context);
 
+    const apiMessages = [
+      { role: 'system' as const, content: systemPrompt },
+      ...$messages.map(m => ({ role: m.role, content: m.content }))
+    ];
+
+    streamingContent = '';
+    let fullResponse = '';
+
+    try {
       streamController = await streamMessage(
         $currentProvider,
         $currentModel,
@@ -99,38 +101,39 @@ Tu reponds en francais. Tu fournis du code fonctionnel, bien commente et optimis
         undefined,
         // onChunk
         (chunk: string) => {
-          const lastMsg = messages[messages.length - 1];
-          if (lastMsg && lastMsg.role === 'assistant') {
-            lastMsg.content += chunk;
-            messages = [...messages];
-            scrollToBottom();
-          }
+          streamingContent += chunk;
+          fullResponse += chunk;
+          scrollToBottom();
         },
         // onDone
         () => {
-          const lastMsg = messages[messages.length - 1];
-          if (lastMsg) {
-            lastMsg.isStreaming = false;
-          }
-          messages = [...messages];
-          isLoading = false;
+          addMessage({
+            role: 'assistant',
+            content: fullResponse,
+            provider: $currentProvider,
+            model: $currentModel
+          });
+          streamingContent = '';
+          isLoading.set(false);
           streamController = null;
+          scrollToBottom();
         },
         // onError
         (error: string) => {
-          const lastMsg = messages[messages.length - 1];
-          if (lastMsg && lastMsg.role === 'assistant') {
-            lastMsg.content = `Erreur: ${error}`;
-            lastMsg.isStreaming = false;
-          }
-          messages = [...messages];
-          isLoading = false;
+          addMessage({
+            role: 'assistant',
+            content: `Erreur: ${error}`,
+            provider: $currentProvider,
+            model: $currentModel
+          });
+          streamingContent = '';
+          isLoading.set(false);
           streamController = null;
         }
       );
     } catch (e) {
       console.error('Error sending message:', e);
-      isLoading = false;
+      isLoading.set(false);
     }
   }
 
@@ -139,12 +142,16 @@ Tu reponds en francais. Tu fournis du code fonctionnel, bien commente et optimis
       streamController.abort();
       streamController = null;
     }
-    isLoading = false;
-    const lastMsg = messages[messages.length - 1];
-    if (lastMsg) {
-      lastMsg.isStreaming = false;
-      messages = [...messages];
+    if (streamingContent) {
+      addMessage({
+        role: 'assistant',
+        content: streamingContent + '\n\n*(Generation interrompue)*',
+        provider: $currentProvider,
+        model: $currentModel
+      });
     }
+    streamingContent = '';
+    isLoading.set(false);
   }
 
   function executeQuickAction(action: typeof quickActions[0]) {
@@ -169,10 +176,6 @@ Tu reponds en francais. Tu fournis du code fonctionnel, bien commente et optimis
     onInsertCode?.(code);
   }
 
-  function clearChat() {
-    messages = [];
-  }
-
   function scrollToBottom() {
     if (messagesContainer) {
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -185,13 +188,38 @@ Tu reponds en francais. Tu fournis du code fonctionnel, bien commente et optimis
       sendMessage();
     }
   }
+
+  function formatTime(date: Date): string {
+    return new Date(date).toLocaleTimeString('fr-CH', { hour: '2-digit', minute: '2-digit' });
+  }
+</script>
+
+<script module lang="ts">
+  // Simple markdown-like formatting
+  function formatMessage(content: string): string {
+    let formatted = content
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    formatted = formatted.replace(
+      /```(\w*)\n([\s\S]*?)```/g,
+      '<pre class="code-block"><code>$2</code></pre>'
+    );
+    formatted = formatted.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
+    formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    formatted = formatted.replace(/\n/g, '<br>');
+
+    return formatted;
+  }
 </script>
 
 <div class="editor-chat">
   <!-- Header -->
   <div class="chat-header">
     <span class="header-title">Assistant IA</span>
-    <button class="clear-btn" onclick={clearChat} title="Effacer">
+    <span class="shared-badge" title="Historique partage avec tous les modules">partage</span>
+    <button class="clear-btn" onclick={() => clearMessages()} title="Effacer tout l'historique">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="3 6 5 6 21 6"/>
         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -213,19 +241,20 @@ Tu reponds en francais. Tu fournis du code fonctionnel, bien commente et optimis
 
   <!-- Messages -->
   <div class="messages" bind:this={messagesContainer}>
-    {#if messages.length === 0}
+    {#if $messages.length === 0 && !streamingContent}
       <div class="empty-state">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>
         <p>Posez une question sur votre code</p>
-        <span class="hint">Selectionnez du code pour des actions rapides</span>
+        <span class="hint">L'historique est partage entre tous les modules</span>
       </div>
     {:else}
-      {#each messages as message, i}
+      {#each $messages as message (message.id)}
         <div class="message {message.role}">
           <div class="message-header">
             <span class="role-badge">{message.role === 'user' ? 'Vous' : 'IA'}</span>
+            <span class="time">{formatTime(message.timestamp)}</span>
           </div>
           <div class="message-content">
             {#if message.role === 'assistant'}
@@ -243,13 +272,21 @@ Tu reponds en francais. Tu fournis du code fonctionnel, bien commente et optimis
             {:else}
               {message.content}
             {/if}
-
-            {#if message.isStreaming}
-              <span class="cursor-blink">|</span>
-            {/if}
           </div>
         </div>
       {/each}
+
+      {#if streamingContent}
+        <div class="message assistant streaming">
+          <div class="message-header">
+            <span class="role-badge">IA</span>
+          </div>
+          <div class="message-content">
+            {@html formatMessage(streamingContent)}
+            <span class="cursor-blink">|</span>
+          </div>
+        </div>
+      {/if}
     {/if}
   </div>
 
@@ -260,10 +297,10 @@ Tu reponds en francais. Tu fournis du code fonctionnel, bien commente et optimis
       onkeydown={handleKeydown}
       placeholder="Posez une question..."
       rows="2"
-      disabled={isLoading}
+      disabled={$isLoading}
     ></textarea>
     <div class="input-actions">
-      {#if isLoading}
+      {#if $isLoading}
         <button class="stop-btn" onclick={stopGeneration}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
             <rect x="6" y="6" width="12" height="12" rx="2"/>
@@ -283,34 +320,6 @@ Tu reponds en francais. Tu fournis du code fonctionnel, bien commente et optimis
   </div>
 </div>
 
-<script module lang="ts">
-  // Simple markdown-like formatting
-  function formatMessage(content: string): string {
-    // Escape HTML first
-    let formatted = content
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-
-    // Code blocks
-    formatted = formatted.replace(
-      /```(\w*)\n([\s\S]*?)```/g,
-      '<pre class="code-block"><code>$2</code></pre>'
-    );
-
-    // Inline code
-    formatted = formatted.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
-
-    // Bold
-    formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-
-    // Line breaks
-    formatted = formatted.replace(/\n/g, '<br>');
-
-    return formatted;
-  }
-</script>
-
 <style>
   .editor-chat {
     display: flex;
@@ -322,7 +331,7 @@ Tu reponds en francais. Tu fournis du code fonctionnel, bien commente et optimis
   .chat-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 8px;
     padding: 8px 12px;
     border-bottom: 1px solid var(--border-color);
     background: var(--noir-card);
@@ -335,6 +344,17 @@ Tu reponds en francais. Tu fournis du code fonctionnel, bien commente et optimis
     color: var(--cyber-green);
   }
 
+  .shared-badge {
+    font-size: 9px;
+    padding: 2px 6px;
+    background: rgba(0, 200, 255, 0.15);
+    color: var(--cyber-cyan, #00c8ff);
+    border-radius: 3px;
+    border: 1px solid rgba(0, 200, 255, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
   .clear-btn {
     display: flex;
     align-items: center;
@@ -342,6 +362,7 @@ Tu reponds en francais. Tu fournis du code fonctionnel, bien commente et optimis
     width: 24px;
     height: 24px;
     padding: 0;
+    margin-left: auto;
     border: none;
     background: transparent;
     color: var(--text-muted);
@@ -446,6 +467,8 @@ Tu reponds en francais. Tu fournis du code fonctionnel, bien commente et optimis
   }
 
   .message-header {
+    display: flex;
+    justify-content: space-between;
     margin-bottom: 4px;
   }
 
@@ -458,6 +481,12 @@ Tu reponds en francais. Tu fournis du code fonctionnel, bien commente et optimis
 
   .message.user .role-badge {
     color: var(--cyber-green);
+  }
+
+  .time {
+    font-size: 9px;
+    color: var(--text-muted);
+    opacity: 0.7;
   }
 
   .message-content {

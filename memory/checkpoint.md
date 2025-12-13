@@ -1,5 +1,16 @@
 # GeoBrain Checkpoints
 
+## CP-20251213-0230
+```
+S:21|P:UX-REFACTOR+GROQ|T:Settings-tabs+Agent-multiProvider
+F:SettingsModule.svelte,Sidebar.svelte,app.ts,+page.svelte,api.ts,index.js,aiRouter.ts,PostGISViewer.svelte,ChatModule.svelte
+W:Module Multi-IA supprimé|Settings avec onglets(4)|Chat vide retour standard|Header backend status supprimé|PostGIS status-bar en bas|Bug agent(claudeMessages→agentMessages)|Groq provider+tool-use|Ollama llama3.1:8b installé
+N:Redémarrer backend|Tester agent Groq|Finir install Ollama(mistral,qwen2.5-coder,deepseek-coder,phi3)|Module WIP(fake loading screens)
+X:GitHub repo renommé InfraBussigny/GeoMind(public)|MarcZermatten invité|Shell Claude Code bloqué temporairement
+```
+
+---
+
 ## CP-20251213-0010
 ```
 S:20|P:BUILD-TAURI|T:Compilation-exe

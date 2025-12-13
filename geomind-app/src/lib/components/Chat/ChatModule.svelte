@@ -161,29 +161,10 @@ Les accès sensibles ont été révoqués. Tu conserves les outils avancés.
       case 'deactivate_to_standard':
       default:
         appMode.deactivateToStandard();
-        const is22 = originalMessage.trim() === '22' || originalMessage.toLowerCase().includes('22');
-        responseContent = is22
-          ? `**22 !** 🚔
-
-Interface professionnelle activée.
-
-• Lecture de fichiers ✓
-• Génération de code ✓
-• Recherche web ✓
-
-*Rien à voir ici.*`
-          : `**Mode standard activé**
-
-Interface simplifiée.
-
-**Fonctionnalités disponibles :**
-• Lecture de fichiers
-• Génération de code
-• Recherche web
-• Écriture dans le sandbox
-
-L'assistant t'accompagne dans tes tâches quotidiennes.`;
-        break;
+        // Vider le chat complètement pour le mode professionnel
+        messages.set([]);
+        // Pas de message de confirmation - chat vierge comme à l'ouverture
+        return;
     }
 
     const assistantMessage: Message = {
@@ -684,11 +665,6 @@ L'assistant t'accompagne dans tes tâches quotidiennes.`;
     <header class="chat-header">
       <div class="header-left">
         <h1>Assistant GeoMind</h1>
-        {#if $backendConnected}
-          <span class="status connected">Backend connecte</span>
-        {:else}
-          <span class="status disconnected">Backend non disponible</span>
-        {/if}
       </div>
       <div class="header-right">
         {#if artifactHistory.length > 0}
@@ -718,7 +694,7 @@ L'assistant t'accompagne dans tes tâches quotidiennes.`;
           </div>
           <h2>Bienvenue dans GeoMind</h2>
           <p class="welcome-subtitle">Spatial Intelligence</p>
-          <p>Assistant IA pour les geodonnees et le SIT de Bussigny</p>
+          <p>Assistant IA pour les géodonnées et les SIT</p>
 
           {#if !$backendConnected}
             <div class="backend-warning">
@@ -731,8 +707,8 @@ L'assistant t'accompagne dans tes tâches quotidiennes.`;
               <button class="suggestion" onclick={() => { inputValue = 'Aide-moi a ecrire une requete SQL spatiale pour trouver les parcelles dans un rayon de 500m'; }}>
                 Requete SQL spatiale
               </button>
-              <button class="suggestion" onclick={() => { inputValue = 'Comment fonctionne le geoportail de Bussigny ?'; }}>
-                Geoportail Bussigny
+              <button class="suggestion" onclick={() => { inputValue = 'Comment configurer un géoportail web ?'; }}>
+                Géoportail web
               </button>
               <button class="suggestion" onclick={() => { inputValue = 'Ecris un script PyQGIS pour exporter les batiments en GeoJSON'; }}>
                 Script PyQGIS

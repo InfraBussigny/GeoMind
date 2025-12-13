@@ -1,7 +1,7 @@
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 
-export type ModuleType = 'chat' | 'canvas' | 'editor' | 'docgen' | 'connections' | 'settings' | 'comm' | 'ai' | 'databases' | 'timepro';
+export type ModuleType = 'chat' | 'canvas' | 'editor' | 'docgen' | 'connections' | 'settings' | 'comm' | 'databases' | 'timepro' | 'wip' | 'cad' | 'converter' | 'wakelock';
 
 export const currentModule = writable<ModuleType>('chat');
 export const sidebarCollapsed = writable(false);
@@ -234,23 +234,26 @@ export const ALL_MODULES: { id: ModuleType; label: string; description: string; 
   { id: 'canvas', label: 'Cartes', description: 'Visualisation carto' },
   { id: 'editor', label: 'Editeur', description: 'SQL & Python' },
   { id: 'databases', label: 'Databases', description: 'Schema & ERD' },
+  { id: 'converter', label: 'Convertisseur', description: 'Conversion fichiers', alwaysVisible: true },
+  { id: 'wakelock', label: 'Anti-veille', description: 'Empeche la veille' },
   { id: 'timepro', label: 'TimePro', description: 'Pointage & Timer' },
   { id: 'comm', label: 'Comms', description: 'Outlook & 3CX' },
-  { id: 'ai', label: 'IA Settings', description: 'Config modeles' },
   { id: 'docgen', label: 'DocGen', description: 'Generation docs' },
   { id: 'connections', label: 'Connexions', description: 'Serveurs DB' },
-  { id: 'settings', label: 'Parametres', description: 'Configuration', alwaysVisible: true }
+  { id: 'settings', label: 'Parametres', description: 'Configuration', alwaysVisible: true },
+  { id: 'wip', label: 'WIP', description: 'En developpement' },
+  { id: 'cad', label: 'CAD', description: 'Viewer DXF/DWG' }
 ];
 
 // Modules par défaut pour chaque mode (excluant standard qui est fixe)
 const DEFAULT_MODULE_CONFIG: Record<string, ModuleType[]> = {
-  expert: ['chat', 'canvas', 'editor', 'databases', 'timepro', 'comm', 'ai', 'docgen', 'connections', 'settings'],
-  god: ['chat', 'canvas', 'editor', 'databases', 'timepro', 'comm', 'ai', 'docgen', 'connections', 'settings'],
-  bfsa: ['chat', 'canvas', 'editor', 'databases', 'timepro', 'comm', 'ai', 'docgen', 'connections', 'settings']
+  expert: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'comm', 'docgen', 'connections', 'settings', 'cad'],
+  god: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'comm', 'docgen', 'connections', 'settings', 'wip', 'cad'],
+  bfsa: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'comm', 'docgen', 'connections', 'settings', 'cad']
 };
 
 // Modules fixes pour le mode standard (non modifiable)
-const STANDARD_MODULES: ModuleType[] = ['chat', 'canvas', 'databases', 'connections', 'settings'];
+const STANDARD_MODULES: ModuleType[] = ['chat', 'canvas', 'databases', 'converter', 'wakelock', 'connections', 'settings'];
 
 // Store pour la configuration personnalisée des modules par mode
 function createModuleConfigStore() {
@@ -312,15 +315,98 @@ function createModuleConfigStore() {
 
 export const moduleConfig = createModuleConfigStore();
 
-// Derived: liste des modules visibles selon le mode et la configuration
-export const visibleModules = derived([appMode, moduleConfig], ([$mode, $config]) => {
+// ============================================
+// MODULE ORDER CONFIGURATION (Drag & Drop)
+// ============================================
+
+// Ordre par défaut des modules
+const DEFAULT_MODULE_ORDER: ModuleType[] = [
+  'chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock',
+  'timepro', 'comm', 'docgen', 'connections', 'settings', 'wip', 'cad'
+];
+
+// Store pour l'ordre personnalisé des modules
+function createModuleOrderStore() {
+  const stored = browser ? localStorage.getItem('geomind-module-order') : null;
+  const initial: ModuleType[] = stored ? JSON.parse(stored) : [...DEFAULT_MODULE_ORDER];
+
+  const { subscribe, set, update } = writable<ModuleType[]>(initial);
+
+  return {
+    subscribe,
+    set: (order: ModuleType[]) => {
+      if (browser) {
+        localStorage.setItem('geomind-module-order', JSON.stringify(order));
+      }
+      set(order);
+    },
+    reorder: (fromIndex: number, toIndex: number) => {
+      update(order => {
+        const newOrder = [...order];
+        const [moved] = newOrder.splice(fromIndex, 1);
+        newOrder.splice(toIndex, 0, moved);
+        if (browser) {
+          localStorage.setItem('geomind-module-order', JSON.stringify(newOrder));
+        }
+        return newOrder;
+      });
+    },
+    moveModule: (moduleId: ModuleType, direction: 'up' | 'down') => {
+      update(order => {
+        const index = order.indexOf(moduleId);
+        if (index === -1) return order;
+
+        const newIndex = direction === 'up' ? index - 1 : index + 1;
+        if (newIndex < 0 || newIndex >= order.length) return order;
+
+        const newOrder = [...order];
+        [newOrder[index], newOrder[newIndex]] = [newOrder[newIndex], newOrder[index]];
+
+        if (browser) {
+          localStorage.setItem('geomind-module-order', JSON.stringify(newOrder));
+        }
+        return newOrder;
+      });
+    },
+    reset: () => {
+      const defaultOrder = [...DEFAULT_MODULE_ORDER];
+      if (browser) {
+        localStorage.setItem('geomind-module-order', JSON.stringify(defaultOrder));
+      }
+      set(defaultOrder);
+    }
+  };
+}
+
+export const moduleOrder = createModuleOrderStore();
+
+// Derived: liste des modules visibles selon le mode et la configuration (sans ordre)
+const visibleModulesUnordered = derived([appMode, moduleConfig], ([$mode, $config]) => {
+  // Modules qui doivent toujours être visibles (alwaysVisible: true)
+  const alwaysVisibleModules = ALL_MODULES
+    .filter(m => m.alwaysVisible)
+    .map(m => m.id);
+
   if ($mode === 'standard') {
-    // Mode standard: modules fixes, non personnalisables
-    return STANDARD_MODULES;
+    // Mode standard: modules fixes + alwaysVisible
+    return [...new Set([...STANDARD_MODULES, ...alwaysVisibleModules])];
   }
-  // Modes expert/god/bfsa: utiliser la configuration personnalisée
-  return $config[$mode] || DEFAULT_MODULE_CONFIG[$mode] || DEFAULT_MODULE_CONFIG.expert;
+  // Modes expert/god/bfsa: utiliser la configuration personnalisée + alwaysVisible
+  const configModules = $config[$mode] || DEFAULT_MODULE_CONFIG[$mode] || DEFAULT_MODULE_CONFIG.expert;
+  return [...new Set([...configModules, ...alwaysVisibleModules])];
 });
+
+// Derived: liste des modules visibles ORDONNÉE selon les préférences utilisateur
+export const visibleModules = derived(
+  [visibleModulesUnordered, moduleOrder],
+  ([$visible, $order]) => {
+    // Trier les modules visibles selon l'ordre personnalisé
+    const orderedVisible = $order.filter(id => $visible.includes(id));
+    // Ajouter les modules visibles qui ne sont pas dans l'ordre (nouveaux modules)
+    const remaining = $visible.filter(id => !$order.includes(id));
+    return [...orderedVisible, ...remaining];
+  }
+);
 
 // Derived: mode lecture seule pour le module Databases (true en mode standard)
 export const databasesReadOnly = derived(appMode, ($mode) => {
@@ -522,10 +608,121 @@ export interface Model {
 
 export const messages = writable<Message[]>([]);
 export const isLoading = writable(false);
-export const currentProvider = writable<string>('claude');
-export const currentModel = writable<string>('claude-3-5-haiku-20241022');
+export const currentProvider = writable<string>('groq');
+export const currentModel = writable<string>('llama-3.3-70b-versatile');
 export const providers = writable<Provider[]>([]);
 export const backendConnected = writable(false);
+
+// ============================================
+// UNIFIED CHAT SYSTEM
+// ============================================
+
+export type ChatContextType = 'assistant' | 'editor' | 'map' | 'sql' | 'databases';
+
+export interface ChatContext {
+  type: ChatContextType;
+  // Contexte spécifique selon le type
+  editorContext?: {
+    currentFile: string;
+    language: string;
+    selectedCode: string;
+  };
+  mapContext?: {
+    availableLayers: string[];
+    currentExtent: { minx: number; miny: number; maxx: number; maxy: number };
+    activeLayers: string[];
+  };
+  sqlContext?: {
+    currentConnection: string;
+    schema: string;
+    availableTables: string[];
+  };
+}
+
+// Store pour le contexte de chat actif
+export const chatContext = writable<ChatContext>({ type: 'assistant' });
+
+// Helper pour mettre à jour le contexte
+export function setChatContext(context: Partial<ChatContext> & { type: ChatContextType }) {
+  chatContext.set(context as ChatContext);
+}
+
+// System prompts par type de contexte
+export const CHAT_SYSTEM_PROMPTS: Record<ChatContextType, string> = {
+  assistant: `Tu es GeoBrain, l'assistant spécialisé en géodonnées et SIT de la commune de Bussigny.
+Tu maîtrises QGIS, PostgreSQL/PostGIS, Oracle Spatial, FME, Python/PyQGIS.
+Référentiel: EPSG:2056 (MN95). Tu réponds en français, de manière technique et précise.`,
+
+  editor: `Tu es l'assistant de code GeoMind, spécialisé en:
+- SQL spatial (PostGIS, Oracle Spatial)
+- Python/PyQGIS pour les scripts de géotraitement
+- FME workbenches
+- GeoJSON/JSON manipulation
+- Scripts shell et automatisation
+Tu fournis du code fonctionnel, bien commenté et optimisé. Tu réponds en français.`,
+
+  map: `Tu es l'assistant cartographique GeoMind. Tu aides à:
+- Naviguer sur la carte (zoom, pan, extent)
+- Ajouter/retirer des couches
+- Exécuter des requêtes spatiales
+- Rechercher des adresses ou parcelles
+Tu peux contrôler la carte via des actions JSON. Tu réponds en français.`,
+
+  sql: `Tu es l'assistant SQL GeoMind, expert en:
+- PostgreSQL/PostGIS (fonctions spatiales ST_*)
+- Requêtes sur les données cadastrales (RF Vaud)
+- Optimisation de requêtes
+- Modélisation de données géospatiales
+Tu génères des requêtes SQL optimisées et commentées. Tu réponds en français.`,
+
+  databases: `Tu es l'assistant bases de données GeoMind, expert en:
+- PostgreSQL/PostGIS et Oracle Spatial
+- Modélisation de données territoriales
+- Migration et synchronisation de données
+- Documentation de schémas
+Tu aides à gérer et comprendre les bases de données géospatiales. Tu réponds en français.`
+};
+
+// Fonction pour obtenir le system prompt complet avec contexte
+export function getSystemPromptWithContext(context: ChatContext): string {
+  let basePrompt = CHAT_SYSTEM_PROMPTS[context.type];
+
+  if (context.type === 'editor' && context.editorContext) {
+    const { currentFile, language, selectedCode } = context.editorContext;
+    if (currentFile) basePrompt += `\n\nFichier actuel: ${currentFile}`;
+    if (language && language !== 'plaintext') basePrompt += `\nLangage: ${language}`;
+    if (selectedCode) basePrompt += `\n\nCode sélectionné:\n\`\`\`${language}\n${selectedCode}\n\`\`\``;
+  }
+
+  if (context.type === 'map' && context.mapContext) {
+    const { availableLayers, activeLayers } = context.mapContext;
+    basePrompt += `\n\nCouches disponibles: ${availableLayers.join(', ')}`;
+    basePrompt += `\nCouches actives: ${activeLayers.join(', ')}`;
+  }
+
+  if (context.type === 'sql' && context.sqlContext) {
+    const { currentConnection, schema, availableTables } = context.sqlContext;
+    basePrompt += `\n\nConnexion: ${currentConnection}`;
+    basePrompt += `\nSchéma: ${schema}`;
+    basePrompt += `\nTables disponibles: ${availableTables.slice(0, 20).join(', ')}${availableTables.length > 20 ? '...' : ''}`;
+  }
+
+  return basePrompt;
+}
+
+// Helper pour ajouter un message
+export function addMessage(message: Omit<Message, 'id' | 'timestamp'>) {
+  messages.update(m => [...m, {
+    ...message,
+    id: crypto.randomUUID(),
+    timestamp: new Date()
+  }]);
+}
+
+// Helper pour effacer les messages
+export function clearMessages() {
+  messages.set([]);
+}
 
 // Editor state
 export const currentFile = writable<string | null>(null);

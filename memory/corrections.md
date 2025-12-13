@@ -26,13 +26,15 @@
 
 ## Historique des corrections
 
-### 2025-12-09 | Crash Claude Code lors de Stop-Process Node
+### 2025-12-09 & 2025-12-13 | Crash Claude Code lors de Stop-Process Node
 **Problème** : Claude Code se ferme brutalement (sans message d'erreur) lors de l'exécution de commandes PowerShell pour tuer les processus Node
 **Contexte** :
 - Développement de geobrain-app (Tauri + SvelteKit)
 - Plusieurs shells en background (serveur backend port 3001, frontend Vite port 5173)
 - Commande déclencheuse : `powershell.exe -Command "Get-Process -Name node | Stop-Process -Force"`
-**Occurrences** : 2 crashs consécutifs le 09/12/2025, même pattern exact
+**Occurrences** :
+- 2 crashs consécutifs le 09/12/2025
+- 1 crash le 13/12/2025 soir : `taskkill /F /IM node.exe` lancé en background pour redémarrer le serveur après ajout de Groq dans PROVIDERS
 **Cause probable** :
 - Conflit entre PowerShell tuant les processus Node et Claude Code qui gère des shells en background utilisant Node
 - Possible timeout ou deadlock
@@ -207,6 +209,49 @@ Get-ChildItem 'C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC
 
 **Si erreur Accès refusé (Defender)** :
 → Pas de workaround, nécessite exclusion ou autre machine
+
+---
+
+### 2025-12-13 | Nouveau module non visible dans la sidebar (alwaysVisible ignoré)
+
+**Problème** : Les modules ajoutés avec `alwaysVisible: true` dans `ALL_MODULES` ne s'affichent pas dans la sidebar pour les utilisateurs existants
+
+**Cause** :
+- Le store `moduleConfig` charge les modules visibles depuis `localStorage` (`geomind-module-config`)
+- Pour les utilisateurs existants, cette configuration en cache ne contient pas les nouveaux modules
+- Le derived store `visibleModules` utilisait directement cette config sans vérifier `alwaysVisible`
+- Conséquence: même si un module est marqué `alwaysVisible: true`, il était ignoré si pas dans le localStorage
+
+**Fichiers concernés** :
+- `src/lib/stores/app.ts` - store `visibleModules`
+
+**Solution** :
+Modifier le derived store `visibleModules` pour toujours inclure les modules avec `alwaysVisible: true` :
+
+```typescript
+export const visibleModules = derived([appMode, moduleConfig], ([$mode, $config]) => {
+  // Modules qui doivent toujours être visibles (alwaysVisible: true)
+  const alwaysVisibleModules = ALL_MODULES
+    .filter(m => m.alwaysVisible)
+    .map(m => m.id);
+
+  if ($mode === 'standard') {
+    return [...new Set([...STANDARD_MODULES, ...alwaysVisibleModules])];
+  }
+  const configModules = $config[$mode] || DEFAULT_MODULE_CONFIG[$mode] || DEFAULT_MODULE_CONFIG.expert;
+  return [...new Set([...configModules, ...alwaysVisibleModules])];
+});
+```
+
+**Impact** :
+- Tous les modules avec `alwaysVisible: true` sont maintenant garantis d'apparaître
+- Pas besoin de clear le localStorage des utilisateurs
+- Les futures ajouts de modules alwaysVisible fonctionneront automatiquement
+
+**Modules actuellement alwaysVisible** :
+- `chat` (Assistant)
+- `settings` (Parametres)
+- `converter` (Convertisseur)
 
 ---
 

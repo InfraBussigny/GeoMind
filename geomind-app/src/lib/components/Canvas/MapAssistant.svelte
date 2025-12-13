@@ -3,22 +3,25 @@
   import { browser } from '$app/environment';
   import { get } from 'svelte/store';
   import {
-    mapContextStore,
-    assistantMessagesStore,
-    assistantLoadingStore,
-    addAssistantMessage,
-    clearAssistantMessages,
     parseActionsFromResponse,
     executeMapAction,
-    getMapAssistantSystemPrompt,
     searchAddress,
     QUICK_ACTIONS,
     type MapAction,
-    type AssistantMessage,
     type MapContext
   } from '$lib/services/mapAssistant';
   import { streamMessage } from '$lib/services/api';
-  import { currentProvider, currentModel } from '$lib/stores/app';
+  import {
+    currentProvider,
+    currentModel,
+    messages,
+    isLoading,
+    addMessage,
+    clearMessages,
+    setChatContext,
+    getSystemPromptWithContext,
+    type Message
+  } from '$lib/stores/app';
 
   const dispatch = createEventDispatcher();
 
@@ -31,27 +34,25 @@
 
   // State
   let inputValue = $state('');
-  let messages = $state<AssistantMessage[]>([]);
-  let isLoading = $state(false);
   let messagesContainer: HTMLDivElement;
   let inputRef: HTMLInputElement;
   let showQuickActions = $state(true);
+  let streamingContent = $state('');
+  let lastActions = $state<MapAction[]>([]);
 
-  // Subscribe to stores on mount (not in $effect to avoid loops)
-  onMount(() => {
-    const unsub1 = assistantMessagesStore.subscribe(m => messages = m);
-    const unsub2 = assistantLoadingStore.subscribe(l => isLoading = l);
-
-    // Set initial context
-    mapContextStore.set(context);
-
-    return () => {
-      unsub1();
-      unsub2();
-    };
+  // Mettre a jour le contexte global quand les props changent
+  $effect(() => {
+    setChatContext({
+      type: 'map',
+      mapContext: {
+        availableLayers: context.availableTables || [],
+        currentExtent: { minx: 0, miny: 0, maxx: 0, maxy: 0 },
+        activeLayers: context.activeLayers || []
+      }
+    });
   });
 
-  // Auto-scroll function (called manually)
+  // Auto-scroll function
   function scrollToBottom() {
     if (messagesContainer) {
       setTimeout(() => {
@@ -60,105 +61,126 @@
     }
   }
 
+  // Build system prompt for map assistant
+  function buildMapSystemPrompt(): string {
+    return `Tu es l'assistant cartographique GeoMind. Tu aides a:
+- Naviguer sur la carte (zoom, pan, extent)
+- Ajouter/retirer des couches
+- Executer des requetes spatiales
+- Rechercher des adresses ou parcelles
+
+Tu peux controler la carte via des actions JSON. Quand tu proposes une action, utilise ce format:
+[ACTION: {"type": "zoom_to_address", "params": {"address": "..."}}]
+[ACTION: {"type": "toggle_layer", "params": {"layer": "...", "visible": true}}]
+[ACTION: {"type": "execute_sql", "params": {"query": "..."}}]
+
+Contexte actuel:
+- Onglet: ${context.activeTab}
+- Couches actives: ${context.activeLayers?.join(', ') || 'aucune'}
+- Tables disponibles: ${context.availableTables?.slice(0, 10).join(', ') || 'aucune'}
+
+Tu reponds en francais, de maniere concise et technique.`;
+  }
+
   // Send message to AI
   async function sendMessage(userMessage?: string) {
     const message = userMessage || inputValue.trim();
-    if (!message || isLoading) return;
+    if (!message || $isLoading) return;
 
     inputValue = '';
     showQuickActions = false;
-    assistantLoadingStore.set(true);
+    isLoading.set(true);
+    lastActions = [];
 
     // Add user message
-    addAssistantMessage('user', message);
+    addMessage({
+      role: 'user',
+      content: message,
+      provider: $currentProvider,
+      model: $currentModel
+    });
     scrollToBottom();
 
-    // Build system prompt with context
-    const systemPrompt = getMapAssistantSystemPrompt(context);
-
-    // Build conversation history for API
-    // Include system prompt + previous messages + new user message
-    const apiMessages: Array<{role: 'user' | 'assistant' | 'system', content: string}> = [
-      { role: 'system', content: systemPrompt },
-      ...messages.filter(m => m.role !== 'system').map(m => ({
-        role: m.role as 'user' | 'assistant',
-        content: m.content
-      })),
-      { role: 'user', content: message }
+    // Build API messages
+    const systemPrompt = buildMapSystemPrompt();
+    const apiMessages = [
+      { role: 'system' as const, content: systemPrompt },
+      ...$messages.map(m => ({ role: m.role, content: m.content }))
     ];
 
-    let assistantResponse = '';
+    streamingContent = '';
+    let fullResponse = '';
 
     try {
       const provider = get(currentProvider);
       const model = get(currentModel);
 
-      console.log('[MapAssistant] Sending message:', { provider, model, messagesCount: apiMessages.length });
-
       await streamMessage(
         provider,
         model,
         apiMessages,
-        undefined, // no tools
+        undefined,
         (chunk: string) => {
-          console.log('[MapAssistant] Chunk received:', chunk.substring(0, 50));
-          assistantResponse += chunk;
-          // Update last message in real-time
-          assistantMessagesStore.update(msgs => {
-            const last = msgs[msgs.length - 1];
-            if (last && last.role === 'assistant') {
-              return [...msgs.slice(0, -1), { ...last, content: assistantResponse }];
-            } else {
-              return [...msgs, {
-                id: `msg_${Date.now()}`,
-                role: 'assistant' as const,
-                content: assistantResponse,
-                timestamp: new Date()
-              }];
-            }
-          });
+          streamingContent += chunk;
+          fullResponse += chunk;
           scrollToBottom();
         },
         () => {
           // On complete - parse actions
-          const actions = parseActionsFromResponse(assistantResponse);
-          if (actions.length > 0) {
-            assistantMessagesStore.update(msgs => {
-              const last = msgs[msgs.length - 1];
-              if (last && last.role === 'assistant') {
-                return [...msgs.slice(0, -1), { ...last, actions }];
-              }
-              return msgs;
-            });
-          }
-          assistantLoadingStore.set(false);
+          const actions = parseActionsFromResponse(fullResponse);
+          lastActions = actions;
+
+          addMessage({
+            role: 'assistant',
+            content: fullResponse,
+            provider: $currentProvider,
+            model: $currentModel
+          });
+
+          streamingContent = '';
+          isLoading.set(false);
+          scrollToBottom();
         },
         (error: string) => {
-          console.error('[MapAssistant] Error callback:', error);
-          addAssistantMessage('assistant', `Erreur: ${error}`);
-          assistantLoadingStore.set(false);
+          addMessage({
+            role: 'assistant',
+            content: `Erreur: ${error}`,
+            provider: $currentProvider,
+            model: $currentModel
+          });
+          streamingContent = '';
+          isLoading.set(false);
         }
       );
     } catch (error) {
-      console.error('[MapAssistant] Catch error:', error);
-      addAssistantMessage('assistant', `Erreur de connexion: ${error}`);
-      assistantLoadingStore.set(false);
+      console.error('[MapAssistant] Error:', error);
+      addMessage({
+        role: 'assistant',
+        content: `Erreur de connexion: ${error}`,
+        provider: $currentProvider,
+        model: $currentModel
+      });
+      streamingContent = '';
+      isLoading.set(false);
     }
   }
 
   // Execute an action
   async function handleExecuteAction(action: MapAction) {
-    assistantLoadingStore.set(true);
+    isLoading.set(true);
     const result = await executeMapAction(action);
 
+    addMessage({
+      role: 'system',
+      content: result.success ? `Action executee: ${result.message}` : `Erreur: ${result.message}`,
+      provider: 'system'
+    });
+
     if (result.success) {
-      addAssistantMessage('system', `✓ ${result.message}`);
       dispatch('action', { action, result });
-    } else {
-      addAssistantMessage('system', `✗ ${result.message}`);
     }
     scrollToBottom();
-    assistantLoadingStore.set(false);
+    isLoading.set(false);
   }
 
   // Quick action click
@@ -181,8 +203,9 @@
 
   // Clear chat
   function handleClear() {
-    clearAssistantMessages();
+    clearMessages();
     showQuickActions = true;
+    lastActions = [];
   }
 
   // Format action type for display
@@ -200,6 +223,16 @@
     };
     return labels[type] || type;
   }
+
+  // Format timestamp
+  function formatTime(date: Date): string {
+    return new Date(date).toLocaleTimeString('fr-CH', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  // Parse actions from message content
+  function getActionsFromMessage(content: string): MapAction[] {
+    return parseActionsFromResponse(content);
+  }
 </script>
 
 <aside class="map-assistant" class:open={isOpen}>
@@ -212,6 +245,7 @@
       </svg>
       <span>Assistant Carto</span>
     </div>
+    <span class="shared-badge" title="Historique partage">partage</span>
     <div class="header-actions">
       <button class="icon-btn" onclick={handleClear} title="Effacer">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -230,13 +264,13 @@
 
   <div class="assistant-context">
     <span class="context-badge">{context.activeTab}</span>
-    {#if context.activeLayers.length > 0}
+    {#if context.activeLayers && context.activeLayers.length > 0}
       <span class="context-layers">{context.activeLayers.length} couches</span>
     {/if}
   </div>
 
   <div class="messages-container" bind:this={messagesContainer}>
-    {#if messages.length === 0 && showQuickActions}
+    {#if $messages.length === 0 && !streamingContent && showQuickActions}
       <div class="welcome-section">
         <div class="welcome-icon">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -245,7 +279,7 @@
           </svg>
         </div>
         <h3>Assistant Cartographique</h3>
-        <p>Posez vos questions sur les cartes, recherchez des lieux, gérez vos couches ou exécutez des requêtes spatiales.</p>
+        <p>Posez vos questions sur les cartes. L'historique est partage entre tous les modules.</p>
 
         <div class="quick-actions">
           {#each QUICK_ACTIONS as action}
@@ -287,7 +321,7 @@
         </div>
       </div>
     {:else}
-      {#each messages as msg (msg.id)}
+      {#each $messages as msg (msg.id)}
         <div class="message {msg.role}">
           {#if msg.role === 'user'}
             <div class="message-avatar user-avatar">
@@ -314,29 +348,52 @@
           {/if}
 
           <div class="message-content">
-            <div class="message-text">{msg.content}</div>
+            <div class="message-header-inline">
+              <span class="msg-time">{formatTime(msg.timestamp)}</span>
+            </div>
+            <div class="message-text">{msg.content.replace(/\[ACTION:.*?\]/g, '').trim()}</div>
 
-            {#if msg.actions && msg.actions.length > 0}
-              <div class="message-actions">
-                {#each msg.actions as action}
-                  <button
-                    class="action-btn"
-                    onclick={() => handleExecuteAction(action)}
-                    disabled={isLoading}
-                  >
-                    <span class="action-type">{formatActionType(action.type)}</span>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polygon points="5 3 19 12 5 21 5 3"/>
-                    </svg>
-                  </button>
-                {/each}
-              </div>
+            <!-- Actions pour les messages assistant -->
+            {#if msg.role === 'assistant'}
+              {@const actions = getActionsFromMessage(msg.content)}
+              {#if actions.length > 0}
+                <div class="message-actions">
+                  {#each actions as action}
+                    <button
+                      class="action-btn"
+                      onclick={() => handleExecuteAction(action)}
+                      disabled={$isLoading}
+                    >
+                      <span class="action-type">{formatActionType(action.type)}</span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"/>
+                      </svg>
+                    </button>
+                  {/each}
+                </div>
+              {/if}
             {/if}
           </div>
         </div>
       {/each}
 
-      {#if isLoading}
+      {#if streamingContent}
+        <div class="message assistant streaming">
+          <div class="message-avatar assistant-avatar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+            </svg>
+          </div>
+          <div class="message-content">
+            <div class="message-text">
+              {streamingContent.replace(/\[ACTION:.*?\]/g, '').trim()}
+              <span class="cursor-blink">|</span>
+            </div>
+          </div>
+        </div>
+      {/if}
+
+      {#if $isLoading && !streamingContent}
         <div class="message assistant">
           <div class="message-avatar assistant-avatar">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -362,12 +419,12 @@
       bind:value={inputValue}
       bind:this={inputRef}
       onkeydown={handleKeydown}
-      disabled={isLoading}
+      disabled={$isLoading}
     />
     <button
       class="send-btn"
       onclick={() => sendMessage()}
-      disabled={!inputValue.trim() || isLoading}
+      disabled={!inputValue.trim() || $isLoading}
     >
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <line x1="22" y1="2" x2="11" y2="13"/>
@@ -397,7 +454,7 @@
   .assistant-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 8px;
     padding: 12px 16px;
     border-bottom: 1px solid var(--border-color);
     background: var(--noir-card);
@@ -417,9 +474,21 @@
     color: var(--cyber-green);
   }
 
+  .shared-badge {
+    font-size: 9px;
+    padding: 2px 6px;
+    background: rgba(0, 200, 255, 0.15);
+    color: var(--cyber-cyan, #00c8ff);
+    border-radius: 3px;
+    border: 1px solid rgba(0, 200, 255, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
   .header-actions {
     display: flex;
     gap: 4px;
+    margin-left: auto;
   }
 
   .icon-btn {
@@ -587,6 +656,16 @@
     min-width: 0;
   }
 
+  .message-header-inline {
+    margin-bottom: 2px;
+  }
+
+  .msg-time {
+    font-size: 9px;
+    color: var(--text-muted);
+    opacity: 0.7;
+  }
+
   .message-text {
     font-size: 13px;
     line-height: 1.5;
@@ -635,6 +714,16 @@
 
   .action-type {
     font-weight: 600;
+  }
+
+  .cursor-blink {
+    animation: blink 1s infinite;
+    color: var(--cyber-green);
+  }
+
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
   }
 
   .typing-indicator {

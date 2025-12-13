@@ -158,7 +158,7 @@
           markdown: 'markdown',
           json: 'json'
         };
-        lang = typeMapping[artifact.type];
+        lang = typeMapping[artifact.type as ArtifactType];
       }
 
       // Si toujours pas de langage, détecter automatiquement
@@ -307,7 +307,7 @@
         content = generateMarkdown(artifact.content, artifact.title, detectedLanguage);
         break;
       default:
-        ext = extensions[artifact.type] || 'txt';
+        ext = extensions[artifact.type as ArtifactType] || 'txt';
     }
 
     const blob = new Blob([content], { type: mimeType });
@@ -399,7 +399,7 @@
   </div>
   <pre><code>${escapeHtml(content)}</code></pre>
   <div class="footer">
-    Généré par GeoMind - Commune de Bussigny
+    Généré par GeoMind
   </div>
 </body>
 </html>`;
@@ -416,7 +416,7 @@ ${content}
 \`\`\`
 
 ---
-*Généré par GeoMind - Commune de Bussigny*
+*Généré par GeoMind*
 `;
   }
 
