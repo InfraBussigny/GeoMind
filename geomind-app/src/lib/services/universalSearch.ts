@@ -197,27 +197,22 @@ export function parseQuery(query: string): ParsedQuery {
 
 /**
  * Génère les URLs de recherche pour chaque portail
+ * Note: Seuls les portails supportant la recherche par URL sont inclus
  */
 export function generateSearchUrls(parsed: ParsedQuery): PortalSearchResult[] {
   const results: PortalSearchResult[] = [];
 
-  // 1. Swisstopo (map.geo.admin.ch)
+  // 1. Swisstopo (map.geo.admin.ch) - supporte swisssearch=
   results.push(generateSwisstopoUrl(parsed));
 
-  // 2. Geoportail VD
-  results.push(generateGeoportailVDUrl(parsed));
-
-  // 3. RDPPF VD
+  // 2. RDPPF VD - supporte no_commune= et no_parcelle=
   results.push(generateRDPPFUrl(parsed));
 
-  // 4. Intercapi (Registre foncier)
-  results.push(generateIntercapiUrl(parsed));
-
-  // 5. Capitastra
-  results.push(generateCapitrastraUrl(parsed));
-
-  // 6. Géoportail Bussigny
+  // 3. Géoportail Bussigny (QWC2) - supporte st=, c=, s=
   results.push(generateGeoportailBussignyUrl(parsed));
+
+  // Note: Geoportail VD Pro, Intercapi et Capitastra ne supportent pas
+  // la recherche par URL et sont exclus des suggestions
 
   return results;
 }

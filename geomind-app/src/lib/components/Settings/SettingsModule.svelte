@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { providers, backendConnected, appMode, glitchSettings, moduleConfig, ALL_MODULES, type ModuleType } from '$lib/stores/app';
   import { portalConfig, type PortalConfig } from '$lib/stores/portalConfig';
+  import { carloConfig, isCarloModeActive } from '$lib/stores/carloMode';
   import { getProviders, saveProviderConfig } from '$lib/services/api';
   import ThemeToggle from '../ThemeToggle.svelte';
 
@@ -432,7 +433,7 @@
 <div class="settings-module">
   <header class="settings-header">
     <h1>Parametres</h1>
-    <p>Configuration de GeoMind</p>
+    <p>Configuration de {$appMode === 'bfsa' ? 'GeoBFK' : 'GeoMind'}</p>
   </header>
 
   <!-- Barre d'onglets -->
@@ -459,20 +460,103 @@
       <h2>A propos</h2>
       <div class="about-info">
         <div class="about-logo">
-          <img src="/images/Logo_GeoMind.png" alt="GeoMind" class="about-logo-img" />
+          {#if $appMode === 'bfsa'}
+            <img src="/images/BFK.png" alt="GeoBFK" class="about-logo-img bfk-logo" />
+          {:else}
+            <img src="/images/Logo_GeoMind.png" alt="GeoMind" class="about-logo-img" />
+          {/if}
         </div>
         <div class="about-details">
-          <h3>GeoMind</h3>
-          <p class="about-subtitle">Spatial Intelligence</p>
-          <p class="about-version">Version 1.0.0</p>
-          <p class="about-description">
-            Assistant IA specialise en geodonnees et systemes d'information du territoire (SIT).
-          </p>
+          {#if $appMode === 'bfsa'}
+            <h3>GeoBFK</h3>
+            <p class="about-subtitle">Perono IT Solutions</p>
+            <p class="about-version">Version 0.1-beta (comme d'hab)</p>
+            <p class="about-description">
+              Infrastructure maintenue par Carlo Perono, professionnel certifié YouTube.
+              Disponible 6 mois par an (le reste du temps en Thaïlande).
+            </p>
+          {:else}
+            <h3>GeoMind</h3>
+            <p class="about-subtitle">Spatial Intelligence</p>
+            <p class="about-version">Version 1.0.0</p>
+            <p class="about-description">
+              Assistant IA specialise en geodonnees et systemes d'information du territoire (SIT).
+            </p>
+          {/if}
           <p class="about-mode">
             Mode actuel : <span class="mode-badge {$appMode}">{$appMode}</span>
           </p>
         </div>
       </div>
+    </section>
+
+    <!-- Mode Section - Sélecteur de mode sécurisé -->
+    <section class="settings-section mode-section">
+      <h2>Mode de l'application</h2>
+      <p class="section-description">
+        Changez le niveau d'accès de l'application. Les modes supérieurs donnent plus de permissions.
+      </p>
+
+      <div class="mode-selector">
+        <div class="mode-current">
+          <span class="mode-label">Mode actuel :</span>
+          <span class="mode-badge large {$appMode}">{$appMode}</span>
+        </div>
+
+        <div class="mode-options">
+          <button
+            class="mode-option"
+            class:active={$appMode === 'standard'}
+            onclick={() => appMode.deactivateToStandard()}
+          >
+            <div class="mode-option-header">
+              <span class="mode-icon">🔒</span>
+              <span class="mode-name">Standard</span>
+            </div>
+            <p class="mode-desc">Mode sécurisé. Écriture sandbox uniquement, pas de commandes dangereuses.</p>
+          </button>
+
+          <button
+            class="mode-option"
+            class:active={$appMode === 'expert'}
+            onclick={() => appMode.activateExpert()}
+          >
+            <div class="mode-option-header">
+              <span class="mode-icon">⚡</span>
+              <span class="mode-name">Expert</span>
+            </div>
+            <p class="mode-desc">Mode professionnel. Écriture partout, confirmation pour commandes dangereuses.</p>
+          </button>
+
+          <button
+            class="mode-option"
+            class:active={$appMode === 'god'}
+            onclick={() => appMode.activateGod()}
+          >
+            <div class="mode-option-header">
+              <span class="mode-icon">👑</span>
+              <span class="mode-name">God</span>
+            </div>
+            <p class="mode-desc">Accès total. Tous les droits, accès aux secrets, pas de confirmation.</p>
+          </button>
+
+          <button
+            class="mode-option bfsa-option"
+            class:active={$appMode === 'bfsa'}
+            onclick={() => appMode.activateBfsa()}
+          >
+            <div class="mode-option-header">
+              <span class="mode-icon">🔧</span>
+              <span class="mode-name">BFK</span>
+            </div>
+            <p class="mode-desc">Mode Perono. Permissions expert + interface "maintenue par un pro YouTube".</p>
+          </button>
+        </div>
+      </div>
+
+      <p class="mode-shortcut-hint">
+        💡 Raccourci : <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>M</kbd> pour changer rapidement de mode
+      </p>
     </section>
 
     <!-- Theme Section - Always visible -->
@@ -787,7 +871,7 @@
             class="mode-btn"
             class:active={configMode === 'bfsa'}
             onclick={() => configMode = 'bfsa'}
-          >BFSA</button>
+          >BFK</button>
         </div>
 
         <div class="modules-grid">
@@ -957,6 +1041,128 @@
         <button class="btn-reset" onclick={() => glitchSettings.reset()}>
           Reinitialiser
         </button>
+      </section>
+    {/if}
+
+    <!-- Carlo Perono Section - BFK mode only -->
+    {#if $isCarloModeActive}
+      <section class="settings-section carlo-section">
+        <div class="section-header">
+          <h2>Mode Carlo Perono</h2>
+          <span class="carlo-badge">BFK Actif</span>
+        </div>
+
+        <p class="section-description carlo-description">
+          Interface "maintenue par Carlo Perono" - Informaticien officiel de BFK (Bovard, Fritsche & Kroiss).
+          Certifie YouTube. Ajustez le niveau de chaos. Max n'a pas les droits pour modifier ces parametres.
+        </p>
+
+        <div class="carlo-controls">
+          <div class="carlo-control">
+            <label>
+              <span class="control-label">Niveau de chaos</span>
+              <span class="control-value carlo-value">{$carloConfig.chaosLevel}/10</span>
+            </label>
+            <input
+              type="range"
+              min="1"
+              max="10"
+              value={$carloConfig.chaosLevel}
+              oninput={(e) => carloConfig.setChaosLevel(parseInt(e.currentTarget.value))}
+            />
+            <div class="control-hints">
+              <span>Bricolage leger</span>
+              <span>Apocalypse totale</span>
+            </div>
+          </div>
+
+          <div class="carlo-stats">
+            <div class="carlo-stat">
+              <span class="stat-label">Chance BSOD</span>
+              <span class="stat-value carlo-stat-value">{$carloConfig.bsodChance}%</span>
+            </div>
+            <div class="carlo-stat">
+              <span class="stat-label">Chance loading infini</span>
+              <span class="stat-value carlo-stat-value">{$carloConfig.infiniteLoadChance}%</span>
+            </div>
+          </div>
+
+          <div class="carlo-effects">
+            <h4>Effets visuels actifs :</h4>
+            <div class="effects-grid">
+              <label class="effect-toggle">
+                <input
+                  type="checkbox"
+                  checked={$carloConfig.visualChaos.nails}
+                  onchange={() => carloConfig.toggleVisualEffect('nails')}
+                />
+                <span>Clous</span>
+              </label>
+              <label class="effect-toggle">
+                <input
+                  type="checkbox"
+                  checked={$carloConfig.visualChaos.tape}
+                  onchange={() => carloConfig.toggleVisualEffect('tape')}
+                />
+                <span>Scotch</span>
+              </label>
+              <label class="effect-toggle">
+                <input
+                  type="checkbox"
+                  checked={$carloConfig.visualChaos.wornTextures}
+                  onchange={() => carloConfig.toggleVisualEffect('wornTextures')}
+                />
+                <span>Textures usees</span>
+              </label>
+              <label class="effect-toggle">
+                <input
+                  type="checkbox"
+                  checked={$carloConfig.visualChaos.wobblyButton}
+                  onchange={() => carloConfig.toggleVisualEffect('wobblyButton')}
+                />
+                <span>Bouton oscillant</span>
+              </label>
+              <label class="effect-toggle">
+                <input
+                  type="checkbox"
+                  checked={$carloConfig.visualChaos.hangingWires}
+                  onchange={() => carloConfig.toggleVisualEffect('hangingWires')}
+                />
+                <span>Fils qui pendent</span>
+              </label>
+              <label class="effect-toggle">
+                <input
+                  type="checkbox"
+                  checked={$carloConfig.visualChaos.sparks}
+                  onchange={() => carloConfig.toggleVisualEffect('sparks')}
+                />
+                <span>Etincelles</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="carlo-sound">
+            <label class="sound-toggle">
+              <input
+                type="checkbox"
+                checked={$carloConfig.soundEnabled}
+                onchange={() => carloConfig.toggleSound()}
+              />
+              <span>Effets sonores (Windows XP)</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="carlo-actions">
+          <button class="btn-reset carlo-reset" onclick={() => carloConfig.reset()}>
+            Reinitialiser les parametres Perono
+          </button>
+        </div>
+
+        <div class="carlo-quote">
+          <p>"La Switch branchee sur l'ecran a grille la carte mere du PC"</p>
+          <span class="quote-author">- Carlo Perono, 2024</span>
+        </div>
       </section>
     {/if}
 
@@ -2159,6 +2365,11 @@
     border-radius: var(--border-radius);
   }
 
+  .about-logo-img.bfk-logo {
+    width: 320px;
+    filter: drop-shadow(0 2px 8px rgba(227, 6, 19, 0.3));
+  }
+
   .about-details h3 {
     font-size: var(--font-size-xl);
     font-family: var(--font-mono);
@@ -2222,6 +2433,116 @@
     background: rgba(255, 170, 0, 0.15);
     color: #ffaa00;
     border: 1px solid #ffaa00;
+  }
+
+  .mode-badge.large {
+    padding: 4px 16px;
+    font-size: var(--font-size-sm);
+  }
+
+  /* Mode Selector Section */
+  .mode-section .mode-selector {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+  }
+
+  .mode-section .mode-current {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--noir-surface);
+    border-radius: var(--border-radius);
+  }
+
+  .mode-section .mode-label {
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+  }
+
+  .mode-section .mode-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+  }
+
+  .mode-section .mode-option {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    background: var(--noir-surface);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-align: left;
+  }
+
+  .mode-section .mode-option:hover {
+    border-color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .mode-section .mode-option.active {
+    border-color: var(--cyber-green);
+    background: rgba(0, 255, 136, 0.05);
+  }
+
+  .mode-section .mode-option.active .mode-name {
+    color: var(--cyber-green);
+  }
+
+  .mode-section .mode-option.bfsa-option.active {
+    border-color: #ffaa00;
+    background: rgba(255, 170, 0, 0.05);
+  }
+
+  .mode-section .mode-option.bfsa-option.active .mode-name {
+    color: #ffaa00;
+  }
+
+  .mode-section .mode-option-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+  }
+
+  .mode-section .mode-icon {
+    font-size: 20px;
+  }
+
+  .mode-section .mode-name {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-md);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .mode-section .mode-desc {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin: 0;
+  }
+
+  .mode-section .mode-shortcut-hint {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    margin-top: var(--spacing-sm);
+  }
+
+  .mode-section .mode-shortcut-hint kbd {
+    display: inline-block;
+    padding: 2px 6px;
+    background: var(--noir-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
   }
 
   /* Theme Section */
@@ -2604,5 +2925,205 @@
     background: var(--bg-hover);
     color: var(--text-bright);
     border-color: var(--text-muted);
+  }
+
+  /* === CARLO PERONO SECTION (BFSA) === */
+  .carlo-section {
+    background: linear-gradient(135deg, rgba(30, 30, 50, 0.95) 0%, rgba(40, 30, 30, 0.95) 100%);
+    border: 2px solid #ff6b6b;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .carlo-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(255, 107, 107, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(255, 193, 7, 0.08) 0%, transparent 40%);
+    pointer-events: none;
+  }
+
+  .carlo-badge {
+    background: linear-gradient(135deg, #ff6b6b, #ff9f43);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .carlo-description {
+    color: #ffa07a;
+    font-style: italic;
+  }
+
+  .carlo-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 16px;
+  }
+
+  .carlo-control label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .carlo-value {
+    color: #ff6b6b;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  .carlo-control input[type="range"] {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #2d3436, #ff6b6b);
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .carlo-control input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ff6b6b;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+  }
+
+  .carlo-stats {
+    display: flex;
+    gap: 20px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+  }
+
+  .carlo-stat {
+    flex: 1;
+    text-align: center;
+  }
+
+  .carlo-stat .stat-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+
+  .carlo-stat-value {
+    color: #ff6b6b !important;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+
+  .carlo-effects h4 {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+  }
+
+  .effects-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .effect-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .effect-toggle:hover {
+    background: rgba(255, 107, 107, 0.1);
+  }
+
+  .effect-toggle input[type="checkbox"] {
+    accent-color: #ff6b6b;
+  }
+
+  .effect-toggle span {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  .carlo-sound {
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+  }
+
+  .sound-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+  }
+
+  .sound-toggle input[type="checkbox"] {
+    accent-color: #ff6b6b;
+  }
+
+  .sound-toggle span {
+    color: var(--text-secondary);
+  }
+
+  .carlo-actions {
+    margin-top: 16px;
+  }
+
+  .carlo-reset {
+    background: rgba(255, 107, 107, 0.2);
+    border-color: #ff6b6b;
+    color: #ff6b6b;
+  }
+
+  .carlo-reset:hover {
+    background: rgba(255, 107, 107, 0.3);
+    color: white;
+  }
+
+  .carlo-quote {
+    margin-top: 20px;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.3);
+    border-left: 4px solid #ff6b6b;
+    border-radius: 0 8px 8px 0;
+    font-style: italic;
+  }
+
+  .carlo-quote p {
+    color: #ffa07a;
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .quote-author {
+    display: block;
+    text-align: right;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-top: 8px;
+    font-style: normal;
   }
 </style>

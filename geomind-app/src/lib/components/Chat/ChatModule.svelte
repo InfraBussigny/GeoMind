@@ -132,20 +132,19 @@ Interface sombre activée. On passe aux choses sérieuses.`;
 
       case 'activate_bfsa':
         appMode.activateBfsa();
-        responseContent = `**Mode BFSA activé**
+        responseContent = `**Mode BFK activé - Carlo Perono Edition**
 
-Interface Bovard & Fritsché SA.
+Interface maintenue par Carlo Perono, informaticien officiel de BFK.
 
-**Bureau d'ingénieurs géomètres**
-Route de Saint-Cergue 23, 1260 Nyon
+**Bovard, Fritsché & Kroiss**
+• Etienne Bovard - Ingénieur géomètre breveté
+• Guy Fritsché - Ingénieur génie civil
+• Daniel Kroiss - Le grand manitou (pôle assainissement)
 
-**Outils disponibles :**
-• Éditeur SQL, Python, FME
-• Génération de documents PDF
-• Connexions bases de données
-• Configuration système
+**Attention :** Max n'a pas les droits admin sur ce système.
+*"Mais ooooouuuuuii c'est normal!"*
 
-*Travaux fonciers, géométriques et génie civil.*`;
+Système certifié YouTube. Support: 6 mois/an (Perono est souvent en Thaïlande).`;
         break;
 
       case 'deactivate_to_expert':
@@ -664,7 +663,7 @@ Les accès sensibles ont été révoqués. Tu conserves les outils avancés.
   <div class="chat-module">
     <header class="chat-header">
       <div class="header-left">
-        <h1>Assistant GeoMind</h1>
+        <h1>Assistant {$appMode === 'bfsa' ? 'GeoBFK' : 'GeoMind'}</h1>
       </div>
       <div class="header-right">
         {#if artifactHistory.length > 0}
@@ -690,11 +689,21 @@ Les accès sensibles ont été révoqués. Tu conserves les outils avancés.
       {#if $messages.length === 0}
         <div class="welcome-message">
           <div class="welcome-icon">
-            <img src="/images/Logo_GeoMind.png" alt="GeoMind" class="welcome-logo" />
+            {#if $appMode === 'bfsa'}
+              <img src="/images/BFK.png" alt="GeoBFK" class="welcome-logo bfk-logo" />
+            {:else}
+              <img src="/images/Logo_GeoMind.png" alt="GeoMind" class="welcome-logo" />
+            {/if}
           </div>
-          <h2>Bienvenue dans GeoMind</h2>
-          <p class="welcome-subtitle">Spatial Intelligence</p>
-          <p>Assistant IA pour les géodonnées et les SIT</p>
+          {#if $appMode === 'bfsa'}
+            <h2>Bienvenue dans GeoBFK</h2>
+            <p class="welcome-subtitle">Perono IT Solutions</p>
+            <p>Système maintenu par un professionnel certifié YouTube</p>
+          {:else}
+            <h2>Bienvenue dans GeoMind</h2>
+            <p class="welcome-subtitle">Spatial Intelligence</p>
+            <p>Assistant IA pour les géodonnées et les SIT</p>
+          {/if}
 
           {#if !$backendConnected}
             <div class="backend-warning">
@@ -1130,6 +1139,11 @@ Les accès sensibles ont été révoqués. Tu conserves les outils avancés.
     width: 270px;
     height: auto;
     filter: drop-shadow(0 0 20px var(--cyber-green-glow));
+  }
+
+  .welcome-logo.bfk-logo {
+    width: 320px;
+    filter: drop-shadow(0 2px 10px rgba(227, 6, 19, 0.4));
   }
 
   .welcome-message h2 {

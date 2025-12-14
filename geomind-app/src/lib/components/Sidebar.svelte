@@ -1,6 +1,29 @@
 <script lang="ts">
   import { currentModule, sidebarCollapsed, visibleModules, appMode, moduleOrder, type ModuleType } from '$lib/stores/app';
+  import { carloMode, isCarloModeActive, getRandomEffect } from '$lib/stores/carloMode';
+  import { CarloBrokenButton, CarloOverlay } from './Carlo';
   import ThemeToggle from './ThemeToggle.svelte';
+
+  // Carlo mode state
+  let showCarloOverlay = $state(false);
+  let carloOverlayType: 'bsod' | 'loading' = $state('bsod');
+  let pendingModuleId: ModuleType | null = $state(null);
+
+  // Assignations FIXES des effets Carlo (plus d'aléatoire)
+  // - settings: bouton carton avec image
+  // - chat: "Mise en route prévue 14.08.2021"
+  // - converter: "HORS SERVICE"
+  // - canvas: "MàJ: 30.03.2001"
+  // - wip: bouton qui oscille (punaise)
+  // - databases, connections: scotch
+  const carloEffects = {
+    cardboard: 'settings' as ModuleType,
+    horsService: 'converter' as ModuleType,
+    wobbly: 'wip' as ModuleType,
+    taped: ['databases', 'connections'] as ModuleType[],
+    miseEnRoute: 'chat' as ModuleType,
+    oldUpdate: 'canvas' as ModuleType,
+  };
 
   // Définition complète de tous les modules
   const allModules: { id: ModuleType; label: string; description: string }[] = [
@@ -40,8 +63,28 @@
   );
 
   function selectModule(id: ModuleType) {
-    if (!editMode) {
-      currentModule.set(id);
+    if (editMode) return;
+
+    // En mode Carlo (BFSA), chance de BSOD ou loading
+    if ($isCarloModeActive) {
+      const effect = getRandomEffect($carloMode, true);
+      if (effect !== 'none') {
+        pendingModuleId = id;
+        carloOverlayType = effect;
+        showCarloOverlay = true;
+        return;
+      }
+    }
+
+    currentModule.set(id);
+  }
+
+  // Callback quand l'overlay Carlo est terminé
+  function onCarloOverlayComplete() {
+    showCarloOverlay = false;
+    if (pendingModuleId) {
+      currentModule.set(pendingModuleId);
+      pendingModuleId = null;
     }
   }
 
@@ -116,13 +159,13 @@
     <a href="/" class="logo-link">
       {#if $appMode === 'bfsa'}
         <img
-          src="/images/logo_bfsa.png"
-          alt="GeoBFSA"
+          src="/images/BFK.png"
+          alt="GeoBFK"
           class="logo-img bfsa-logo"
           class:collapsed={$sidebarCollapsed}
         />
         {#if !$sidebarCollapsed}
-          <span class="logo-subtitle bfsa-title">GEOBFSA</span>
+          <span class="logo-subtitle bfsa-title">GEOBFK</span>
         {/if}
       {:else}
         <img
@@ -161,6 +204,11 @@
         class:dragging={draggedIndex === index}
         class:drag-over={dragOverIndex === index && draggedIndex !== index}
         class:edit-mode={editMode}
+        class:carlo-mode={$isCarloModeActive}
+        class:carlo-wobbly={$isCarloModeActive && module.id === carloEffects.wobbly}
+        class:carlo-cardboard={$isCarloModeActive && module.id === carloEffects.cardboard}
+        class:carlo-hors-service={$isCarloModeActive && module.id === carloEffects.horsService}
+        class:carlo-taped={$isCarloModeActive && carloEffects.taped.includes(module.id)}
         onclick={() => selectModule(module.id)}
         title={$sidebarCollapsed ? module.label : ''}
         draggable={editMode}
@@ -170,6 +218,110 @@
         ondrop={(e) => handleDrop(e, index)}
         ondragend={handleDragEnd}
       >
+        <!-- Clous SVG en mode Carlo (pas sur le bouton oscillant ou scotché) -->
+        {#if $isCarloModeActive && !carloEffects.taped.includes(module.id) && module.id !== carloEffects.wobbly}
+          <!-- Nombre et position des clous varient selon le module -->
+          {@const nailConfig = {
+            'chat': ['tl', 'tr', 'bl'],
+            'canvas': ['tl', 'mr', 'br'],
+            'cad': ['tl', 'tr', 'bl', 'br'],
+            'editor': ['tl', 'tr'],
+            'databases': ['ml', 'tr', 'br'],
+            'converter': ['tl', 'tr', 'bl', 'br', 'ml'],
+            'wakelock': ['tl', 'br'],
+            'timepro': ['tr', 'bl', 'mr'],
+            'comm': ['tl', 'tr', 'br'],
+            'docgen': ['tl', 'ml', 'bl'],
+            'connections': ['tr', 'br'],
+            'settings': ['tl', 'tr', 'bl', 'br'],
+            'vpn': ['tl', 'tr', 'mr'],
+            'kdrive': ['ml', 'mr', 'bl'],
+          }[module.id] || ['tl', 'tr']}
+          {#each nailConfig as pos}
+            <svg class="carlo-nail nail-{pos}" viewBox="0 0 20 30" width="10" height="15">
+              <ellipse cx="10" cy="6" rx="8" ry="5" fill="#9CA3AF"/>
+              <ellipse cx="10" cy="5" rx="6" ry="3" fill="#D1D5DB"/>
+              <rect x="8" y="8" width="4" height="20" fill="#6B7280"/>
+              <rect x="9" y="8" width="1" height="20" fill="#9CA3AF"/>
+            </svg>
+          {/each}
+        {/if}
+
+        <!-- Scotch en mode Carlo (plusieurs morceaux selon le module) -->
+        {#if $isCarloModeActive && carloEffects.taped.includes(module.id)}
+          {@const tapeCount = module.id === 'databases' ? 3 : 4}
+          <div class="carlo-tape carlo-tape-1"></div>
+          <div class="carlo-tape carlo-tape-2"></div>
+          {#if tapeCount >= 3}
+            <div class="carlo-tape carlo-tape-3"></div>
+          {/if}
+          {#if tapeCount >= 4}
+            <div class="carlo-tape carlo-tape-4"></div>
+          {/if}
+        {/if}
+
+        <!-- Punaise en mode Carlo pour le bouton oscillant -->
+        {#if $isCarloModeActive && module.id === carloEffects.wobbly}
+          <div class="carlo-string"></div>
+        {/if}
+
+        <!-- Etiquette HORS SERVICE (Convertisseur) -->
+        {#if $isCarloModeActive && module.id === carloEffects.horsService}
+          <div class="carlo-hors-service-label">
+            <span>HORS</span>
+            <span>SERVICE</span>
+          </div>
+        {/if}
+
+        <!-- Overlay carton pour bouton Paramètres avec image (semi-transparent pour voir dessous) -->
+        {#if $isCarloModeActive && module.id === carloEffects.cardboard}
+          <div class="carlo-cardboard-overlay">
+            <img src="/images/carlo/parametres.png" alt="Paramètres" class="cardboard-image" />
+          </div>
+          <!-- Épingle centrée en haut du carton -->
+          <div class="carlo-cardboard-pin"></div>
+          <!-- Clous pour tenir le carton -->
+          <svg class="carlo-nail nail-tl cardboard-nail" viewBox="0 0 20 30" width="10" height="15">
+            <ellipse cx="10" cy="6" rx="8" ry="5" fill="#9CA3AF"/>
+            <ellipse cx="10" cy="5" rx="6" ry="3" fill="#D1D5DB"/>
+            <rect x="8" y="8" width="4" height="20" fill="#6B7280"/>
+          </svg>
+          <svg class="carlo-nail nail-br cardboard-nail" viewBox="0 0 20 30" width="10" height="15">
+            <ellipse cx="10" cy="6" rx="8" ry="5" fill="#9CA3AF"/>
+            <ellipse cx="10" cy="5" rx="6" ry="3" fill="#D1D5DB"/>
+            <rect x="8" y="8" width="4" height="20" fill="#6B7280"/>
+          </svg>
+        {/if}
+
+        <!-- Eléments vintage/obsolètes -->
+        {#if $isCarloModeActive}
+          <!-- Taches de rouille près des clous (pas sur les boutons spéciaux) -->
+          {#if !carloEffects.taped.includes(module.id) && module.id !== carloEffects.cardboard && module.id !== carloEffects.wobbly && module.id !== carloEffects.horsService}
+            <div class="carlo-rust rust-tl"></div>
+            <div class="carlo-rust rust-tr"></div>
+          {/if}
+
+          <!-- Assistant: "Mise en route prévue 14.08.2021" -->
+          {#if module.id === carloEffects.miseEnRoute && !$sidebarCollapsed}
+            <div class="carlo-mise-en-route">Mise en route prévue 14.08.2021</div>
+          {/if}
+
+          <!-- Cartes: "MàJ: 23.07.1989" -->
+          {#if module.id === carloEffects.oldUpdate && !$sidebarCollapsed}
+            <div class="carlo-update-date">MàJ: 23.07.1989</div>
+          {/if}
+
+          <!-- Toile d'araignée sur TimePro (rarement utilisé) -->
+          {#if module.id === 'timepro'}
+            <div class="carlo-cobweb"></div>
+          {/if}
+
+          <!-- Tache de café sur Documents -->
+          {#if module.id === 'docgen'}
+            <div class="carlo-coffee-stain"></div>
+          {/if}
+        {/if}
+
         <div class="nav-icon-wrapper">
           <!-- Assistant / Chat -->
           {#if module.id === 'chat'}
@@ -318,7 +470,7 @@
         {#if $appMode === 'god'}
           <span class="mode-badge god">GOD</span>
         {:else if $appMode === 'bfsa'}
-          <span class="mode-badge bfsa">BFSA</span>
+          <span class="mode-badge bfsa">BFK</span>
         {:else if $appMode === 'expert'}
           <span class="mode-badge expert">EXP</span>
         {/if}
@@ -359,6 +511,15 @@
     </div>
   </div>
 </aside>
+
+<!-- Carlo Overlay (BSOD / Loading) -->
+{#if showCarloOverlay}
+  <CarloOverlay
+    type={carloOverlayType}
+    duration={carloOverlayType === 'bsod' ? 10000 : 15000}
+    onComplete={onCarloOverlayComplete}
+  />
+{/if}
 
 <style>
   .sidebar {
@@ -457,12 +618,12 @@
 
   /* Style spécifique BFSA */
   .logo-img.bfsa-logo {
-    width: 80px;
+    width: 160px;
     filter: drop-shadow(0 2px 8px rgba(227, 6, 19, 0.3));
   }
 
   .logo-img.bfsa-logo.collapsed {
-    width: 32px;
+    width: 64px;
   }
 
   .logo-img.bfsa-logo:hover {
@@ -824,6 +985,563 @@
     background: rgba(0, 255, 136, 0.15);
     transform: scale(1.02);
     box-shadow: 0 0 15px var(--cyber-green-glow);
+  }
+
+  /* === CARLO MODE (BFSA) STYLES === */
+  .nav-item.carlo-mode {
+    position: relative;
+    transform: rotate(var(--carlo-rotation, 0deg));
+    transition: transform 0.3s ease;
+    overflow: visible;
+  }
+
+  /* Texture papier/carton usé */
+  .nav-item.carlo-mode::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+      radial-gradient(circle at 20% 80%, rgba(139, 90, 43, 0.08) 0%, transparent 40%),
+      radial-gradient(circle at 80% 20%, rgba(100, 70, 30, 0.06) 0%, transparent 30%),
+      repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.02) 2px,
+        rgba(0,0,0,0.02) 4px
+      );
+    pointer-events: none;
+    border-radius: 8px;
+    z-index: 1;
+  }
+
+  /* Rotation aleatoire pour chaque bouton */
+  .nav-item.carlo-mode:nth-child(odd) { --carlo-rotation: 1.8deg; }
+  .nav-item.carlo-mode:nth-child(even) { --carlo-rotation: -1.2deg; }
+  .nav-item.carlo-mode:nth-child(3n) { --carlo-rotation: 2.5deg; }
+  .nav-item.carlo-mode:nth-child(4n) { --carlo-rotation: -2deg; }
+  .nav-item.carlo-mode:nth-child(5n) { --carlo-rotation: 0.8deg; }
+
+  /* ===== CLOUS SVG ===== */
+  .carlo-nail {
+    position: absolute;
+    z-index: 20;
+    pointer-events: none;
+    filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.5));
+  }
+
+  /* Positions coins - TOUJOURS À L'INTÉRIEUR du bouton */
+  .carlo-nail.nail-tl {
+    top: 2px;
+    left: 6px;
+    transform: rotate(-12deg);
+  }
+
+  .carlo-nail.nail-tr {
+    top: 2px;
+    right: 6px;
+    transform: rotate(15deg);
+  }
+
+  .carlo-nail.nail-bl {
+    bottom: 2px;
+    left: 8px;
+    transform: rotate(-8deg);
+  }
+
+  .carlo-nail.nail-br {
+    bottom: 2px;
+    right: 8px;
+    transform: rotate(10deg);
+  }
+
+  /* Positions milieux - TOUJOURS À L'INTÉRIEUR */
+  .carlo-nail.nail-ml {
+    top: 50%;
+    left: 4px;
+    transform: translateY(-50%) rotate(-5deg);
+  }
+
+  .carlo-nail.nail-mr {
+    top: 50%;
+    right: 4px;
+    transform: translateY(-50%) rotate(8deg);
+  }
+
+  /* Clous sur le carton - DOIVENT être AU-DESSUS de l'image PNG */
+  .carlo-nail.cardboard-nail {
+    z-index: 50;
+    /* Ombre plus prononcée pour montrer qu'ils sont par-dessus */
+    filter: drop-shadow(2px 3px 3px rgba(0,0,0,0.6));
+  }
+
+  /* Épingle/punaise centrée en haut du carton - style réaliste */
+  .carlo-cardboard-pin {
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 55;
+    width: 12px;
+    height: 12px;
+    pointer-events: none;
+  }
+
+  /* Tête de la punaise - plastique mat */
+  .carlo-cardboard-pin::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 12px;
+    height: 12px;
+    background: radial-gradient(circle at 40% 35%,
+      #B33A3A 0%,
+      #8B2020 60%,
+      #5C1515 100%
+    );
+    border-radius: 50%;
+    box-shadow:
+      inset -1px -1px 2px rgba(0,0,0,0.4),
+      inset 1px 1px 1px rgba(255,255,255,0.15),
+      0 2px 3px rgba(0,0,0,0.4);
+  }
+
+  /* Petit reflet discret */
+  .carlo-cardboard-pin::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 3px;
+    width: 3px;
+    height: 2px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 50%;
+  }
+
+  /* ===== SCOTCH / TAPE ===== */
+  .carlo-tape {
+    position: absolute;
+    z-index: 15;
+    pointer-events: none;
+    height: 22px;
+    background: linear-gradient(180deg,
+      rgba(255, 240, 200, 0.15) 0%,
+      rgba(255, 235, 180, 0.75) 15%,
+      rgba(255, 230, 170, 0.8) 50%,
+      rgba(255, 235, 180, 0.75) 85%,
+      rgba(255, 240, 200, 0.15) 100%
+    );
+    border-top: 1px solid rgba(200, 180, 140, 0.3);
+    border-bottom: 1px solid rgba(200, 180, 140, 0.3);
+  }
+
+  .carlo-tape-1 {
+    top: 8px;
+    left: -15px;
+    right: -15px;
+    transform: rotate(-3deg);
+  }
+
+  .carlo-tape-2 {
+    bottom: 6px;
+    left: -10px;
+    right: -20px;
+    transform: rotate(2deg);
+    height: 18px;
+  }
+
+  .carlo-tape-3 {
+    top: 50%;
+    left: -12px;
+    width: 30px;
+    transform: translateY(-50%) rotate(85deg);
+    height: 16px;
+  }
+
+  .carlo-tape-4 {
+    top: 50%;
+    right: -12px;
+    width: 28px;
+    transform: translateY(-50%) rotate(-80deg);
+    height: 14px;
+  }
+
+  .nav-item.carlo-taped {
+    border: 1px dashed rgba(150, 120, 80, 0.4) !important;
+    background: rgba(200, 180, 140, 0.1) !important;
+  }
+
+  /* ===== PUNAISE CENTRALE ===== */
+  .carlo-string {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 25;
+    width: 16px;
+    height: 16px;
+    pointer-events: none;
+  }
+
+  /* Tête de la punaise */
+  .carlo-string::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 14px;
+    height: 14px;
+    background: radial-gradient(circle at 35% 35%,
+      #E53935 0%,
+      #C62828 40%,
+      #B71C1C 70%,
+      #8B0000 100%
+    );
+    border-radius: 50%;
+    box-shadow:
+      inset -2px -2px 4px rgba(0,0,0,0.4),
+      inset 2px 2px 4px rgba(255,255,255,0.2),
+      0 2px 4px rgba(0,0,0,0.5);
+    border: 1px solid #7B0000;
+  }
+
+  /* Pointe de la punaise (ombre) */
+  .carlo-string::after {
+    content: '';
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 8px;
+    background: linear-gradient(180deg, #666 0%, #333 100%);
+    clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
+  }
+
+  /* ===== BOUTON QUI OSCILLE (pendule réaliste) ===== */
+  .nav-item.carlo-wobbly {
+    transform-origin: top center;
+    animation: carlo-pendulum 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  /* Mouvement pendulaire avec amortissement et perturbations */
+  @keyframes carlo-pendulum {
+    0% { transform: rotate(0deg); }
+    /* Repos initial */
+    5% { transform: rotate(-0.5deg); }
+    /* Petite brise */
+    10% { transform: rotate(1deg); }
+    15% { transform: rotate(-0.3deg); }
+    /* Rafale soudaine */
+    20% { transform: rotate(-6deg); }
+    24% { transform: rotate(4.5deg); }
+    28% { transform: rotate(-3deg); }
+    31% { transform: rotate(2deg); }
+    34% { transform: rotate(-1.2deg); }
+    37% { transform: rotate(0.7deg); }
+    40% { transform: rotate(-0.3deg); }
+    /* Calme */
+    50% { transform: rotate(0.5deg); }
+    55% { transform: rotate(-0.8deg); }
+    /* Autre rafale */
+    60% { transform: rotate(4deg); }
+    64% { transform: rotate(-3deg); }
+    68% { transform: rotate(2deg); }
+    71% { transform: rotate(-1.3deg); }
+    74% { transform: rotate(0.8deg); }
+    /* Retour au calme */
+    80% { transform: rotate(-0.5deg); }
+    85% { transform: rotate(0.3deg); }
+    90% { transform: rotate(-0.2deg); }
+    95% { transform: rotate(0.1deg); }
+    100% { transform: rotate(0deg); }
+  }
+
+  /* ===== BOUTON AVEC CARTON PAR-DESSUS ===== */
+  /* Le bouton lui-même reste NORMAL - c'est l'image carton qui est par-dessus */
+
+  /* Bout de carton collé PAR-DESSUS le bouton normal */
+  .carlo-cardboard-overlay {
+    position: absolute;
+    /* Décalé et pas parfaitement aligné */
+    top: -3px;
+    left: 5px;
+    right: -8px;
+    bottom: 4px;
+    z-index: 30;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  .cardboard-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 2px;
+    /* Rotation différente du bouton - effet "collé à la va-vite" */
+    transform: rotate(4deg);
+    filter: drop-shadow(2px 3px 5px rgba(0,0,0,0.35));
+  }
+
+  /* Le bouton dessous reste NORMAL */
+  .nav-item.carlo-cardboard {
+    position: relative;
+    /* Pas de transformation sur le bouton lui-même */
+  }
+
+  /* Le contenu du bouton reste visible et normal */
+  .nav-item.carlo-cardboard .nav-icon-wrapper,
+  .nav-item.carlo-cardboard .nav-content {
+    /* Normal, pas de filtre - c'est le bouton "original" */
+    opacity: 1;
+  }
+
+  /* ===== BOUTON HORS SERVICE ===== */
+  .nav-item.carlo-hors-service {
+    background: repeating-linear-gradient(
+      45deg,
+      rgba(255, 0, 0, 0.1),
+      rgba(255, 0, 0, 0.1) 10px,
+      rgba(0, 0, 0, 0.05) 10px,
+      rgba(0, 0, 0, 0.05) 20px
+    ) !important;
+    border: 2px dashed #cc0000 !important;
+    opacity: 0.7;
+  }
+
+  .carlo-hors-service-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-8deg);
+    background: #cc0000;
+    color: white;
+    padding: 4px 12px;
+    font-family: 'Impact', 'Arial Black', sans-serif;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.1;
+    z-index: 30;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+    border: 1px solid #990000;
+  }
+
+  .nav-item.carlo-hors-service .nav-icon-wrapper,
+  .nav-item.carlo-hors-service .nav-content {
+    filter: grayscale(100%) blur(1px);
+    opacity: 0.3;
+  }
+
+  .nav-item.carlo-hors-service:hover {
+    cursor: not-allowed;
+  }
+
+  /* ===== EFFETS GLOBAUX MODE CARLO ===== */
+  .nav-item.carlo-mode:hover {
+    filter: sepia(0.15) contrast(0.92) brightness(1.05);
+  }
+
+  /* Desactiver transitions en mode Carlo pour effet plus "cassé" */
+  .nav-item.carlo-mode {
+    transition: none !important;
+  }
+
+  .nav-item.carlo-mode:active {
+    transform: rotate(var(--carlo-rotation, 0deg)) scale(0.98) !important;
+  }
+
+  /* ===== ELEMENTS VINTAGE/OBSOLETES ===== */
+
+  /* Taches de rouille près des clous */
+  .carlo-rust {
+    position: absolute;
+    width: 12px;
+    height: 14px;
+    pointer-events: none;
+    z-index: 5;
+    opacity: 0.6;
+    background: radial-gradient(ellipse at center,
+      rgba(139, 69, 19, 0.4) 0%,
+      rgba(160, 82, 45, 0.3) 30%,
+      rgba(165, 42, 42, 0.15) 60%,
+      transparent 80%
+    );
+    filter: blur(0.5px);
+  }
+
+  .carlo-rust.rust-tl {
+    top: 4px;
+    left: 2px;
+    transform: rotate(-10deg) scale(1.2);
+  }
+
+  .carlo-rust.rust-tr {
+    top: 6px;
+    right: 0px;
+    transform: rotate(15deg) scale(0.9);
+  }
+
+  /* Autocollant "NOUVEAU!" fané et décollé */
+  .carlo-sticker-new {
+    position: absolute;
+    top: -8px;
+    right: -12px;
+    background: linear-gradient(135deg,
+      #FFEB3B 0%,
+      #FDD835 40%,
+      #F9A825 100%
+    );
+    color: #C62828;
+    font-family: 'Impact', 'Arial Black', sans-serif;
+    font-size: 8px;
+    font-weight: bold;
+    padding: 3px 8px;
+    transform: rotate(18deg);
+    z-index: 25;
+    border-radius: 2px;
+    box-shadow: 1px 2px 3px rgba(0,0,0,0.3);
+    /* Effet fané/vieilli */
+    filter: sepia(0.4) saturate(0.7) brightness(0.85);
+    opacity: 0.75;
+    /* Effet décollé */
+    border-bottom: 2px solid rgba(200, 160, 60, 0.5);
+  }
+
+  /* Coin qui se décolle */
+  .carlo-sticker-new::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 6px;
+    height: 6px;
+    background: linear-gradient(135deg,
+      transparent 50%,
+      rgba(255, 255, 255, 0.8) 50%
+    );
+    transform: rotate(0deg);
+    border-radius: 0 2px 0 0;
+  }
+
+  /* Date de mise à jour antique - EN HAUT */
+  .carlo-update-date {
+    position: absolute;
+    top: -10px;
+    right: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 9px;
+    font-weight: bold;
+    color: #444;
+    background: linear-gradient(180deg, #f5f5dc 0%, #e8e4c9 100%);
+    padding: 3px 8px;
+    border-radius: 2px;
+    transform: rotate(2deg);
+    z-index: 25;
+    box-shadow: 1px 2px 4px rgba(0,0,0,0.25);
+    border: 1px solid #ccc;
+    white-space: nowrap;
+    /* Effet encre fanée */
+    filter: sepia(0.15);
+  }
+
+  /* Label "Mise en route prévue" pour Assistant - EN HAUT */
+  .carlo-mise-en-route {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-2deg);
+    font-family: 'Courier New', monospace;
+    font-size: 8px;
+    font-weight: bold;
+    color: #5D4037;
+    background: linear-gradient(180deg, #FFFDE7 0%, #FFF9C4 100%);
+    padding: 4px 10px;
+    border-radius: 3px;
+    z-index: 25;
+    box-shadow: 1px 2px 5px rgba(0,0,0,0.3);
+    border: 1px solid #BCAAA4;
+    white-space: nowrap;
+    /* Effet post-it vieilli */
+    filter: sepia(0.1) brightness(0.98);
+  }
+
+  /* Effet post-it décollé - coin en bas maintenant */
+  .carlo-mise-en-route::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 8px;
+    height: 8px;
+    background: linear-gradient(315deg, transparent 50%, rgba(0,0,0,0.1) 50%);
+  }
+
+  /* Toile d'araignée dans un coin */
+  .carlo-cobweb {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 28px;
+    height: 28px;
+    pointer-events: none;
+    z-index: 18;
+    opacity: 0.35;
+    /* Dessin toile simplifiée avec gradients */
+    background:
+      /* Fils radiaux */
+      linear-gradient(135deg, transparent 45%, rgba(255,255,255,0.6) 46%, rgba(255,255,255,0.6) 47%, transparent 48%),
+      linear-gradient(115deg, transparent 45%, rgba(255,255,255,0.5) 46%, rgba(255,255,255,0.5) 47%, transparent 48%),
+      linear-gradient(155deg, transparent 45%, rgba(255,255,255,0.4) 46%, rgba(255,255,255,0.4) 47%, transparent 48%),
+      /* Arc concentrique */
+      radial-gradient(circle at 100% 0%, transparent 60%, rgba(255,255,255,0.3) 61%, transparent 62%),
+      radial-gradient(circle at 100% 0%, transparent 75%, rgba(255,255,255,0.25) 76%, transparent 77%);
+    filter: blur(0.3px);
+  }
+
+  /* Tache de café */
+  .carlo-coffee-stain {
+    position: absolute;
+    bottom: 2px;
+    left: 8px;
+    width: 22px;
+    height: 18px;
+    pointer-events: none;
+    z-index: 8;
+    opacity: 0.25;
+    background: radial-gradient(ellipse at center,
+      rgba(101, 67, 33, 0.15) 0%,
+      rgba(101, 67, 33, 0.4) 40%,
+      rgba(101, 67, 33, 0.2) 50%,
+      rgba(139, 90, 43, 0.1) 70%,
+      transparent 85%
+    );
+    border-radius: 50%;
+    transform: rotate(-5deg) scaleX(1.3);
+    filter: blur(0.8px);
+  }
+
+  /* Anneau de la tasse */
+  .carlo-coffee-stain::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    height: 13px;
+    border: 2px solid rgba(101, 67, 33, 0.3);
+    border-radius: 50%;
+    background: transparent;
   }
 
 </style>

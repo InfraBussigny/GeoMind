@@ -1,5 +1,16 @@
 # GeoBrain Checkpoints
 
+## CP-20251214-1700
+```
+S:23|P:MODE-BFSA|T:Easter-Egg-Carlo-Perono
+F:carloMode.ts,CarloOverlay.svelte,CarloBrokenButton.svelte,carloMessages.ts,CarloProvider.svelte,FakeTeamsNotifications.svelte,Sidebar.svelte,ChatModule.svelte,SettingsModule.svelte,+layout.svelte,ThemeToggle.svelte
+W:Mode BFSA complet|Carlo Perono Easter Egg|Faux BSOD+Loading|Teams notifications(6 personnages)|270+ messages pool|Boutons bricolés(clous,scotch,punaises,carton)|Effets visuels chaos|Mode switcher(Settings+Ctrl+Shift+M)|4 modes app(standard,expert,god,bfsa)
+N:Nouveau module à définir|Tests BFSA|Polish UX
+X:Rename Carlo→Perono(collègues)|Pool messages enrichi(Kevin,Etienne,Nathalie,Tam,Guy,Carlo)|Thème BFSA rouge/bleu|Logo BFK.png|Intensité chaos configurable
+```
+
+---
+
 ## CP-20251214-1430
 ```
 S:22|P:UNIVERSAL-SEARCH|T:Module-Cartes-SearchBar

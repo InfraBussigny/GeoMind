@@ -21,16 +21,17 @@ export interface PortalConfig {
 }
 
 // Configuration par defaut des portails
+// Note: Seuls les portails supportant la recherche par URL sont actives
 const DEFAULT_PORTALS: PortalConfig[] = [
   {
-    id: 'geovd',
-    name: 'Geoportail VD Pro',
-    tabId: 'geovd',
+    id: 'geoportail',
+    name: 'Geoportail Bussigny',
+    tabId: 'geoportail',
     enabled: true,
     order: 0,
     isDefault: true,
-    icon: 'map',
-    relevantFor: ['parcelle', 'adresse', 'commune', 'coordonnees', 'lieu']
+    icon: 'globe',
+    relevantFor: ['parcelle', 'adresse', 'coordonnees', 'lieu']
   },
   {
     id: 'swisstopo',
@@ -40,7 +41,7 @@ const DEFAULT_PORTALS: PortalConfig[] = [
     order: 1,
     isDefault: false,
     icon: 'mountain',
-    relevantFor: ['adresse', 'commune', 'coordonnees', 'lieu']
+    relevantFor: ['parcelle', 'adresse', 'commune', 'coordonnees', 'lieu']
   },
   {
     id: 'rdppf',
@@ -51,36 +52,6 @@ const DEFAULT_PORTALS: PortalConfig[] = [
     isDefault: false,
     icon: 'document',
     relevantFor: ['parcelle', 'commune']
-  },
-  {
-    id: 'rf',
-    name: 'Registre foncier',
-    tabId: 'rf',
-    enabled: true,
-    order: 3,
-    isDefault: false,
-    icon: 'building',
-    relevantFor: ['parcelle', 'commune', 'adresse']
-  },
-  {
-    id: 'capitastra',
-    name: 'Capitastra VD',
-    tabId: 'capitastra',
-    enabled: true,
-    order: 4,
-    isDefault: false,
-    icon: 'file-text',
-    relevantFor: ['parcelle', 'commune', 'adresse']
-  },
-  {
-    id: 'geoportail',
-    name: 'Geoportail Bussigny',
-    tabId: 'geoportail',
-    enabled: true,
-    order: 5,
-    isDefault: false,
-    icon: 'globe',
-    relevantFor: ['parcelle', 'adresse', 'coordonnees', 'lieu']
   }
 ];
 

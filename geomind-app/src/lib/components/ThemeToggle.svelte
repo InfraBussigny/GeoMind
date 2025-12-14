@@ -22,7 +22,7 @@
   // Tooltip dynamique
   function getTooltip(t: ThemeMode, m: string): string {
     if (m === 'god') return 'Thème God mode actif';
-    if (m === 'bfsa') return 'Thème BFSA actif';
+    if (m === 'bfsa') return 'Theme BFK - Perono Edition';
     return t === 'light' ? 'Passer en mode sombre' : 'Passer en mode clair';
   }
 </script>

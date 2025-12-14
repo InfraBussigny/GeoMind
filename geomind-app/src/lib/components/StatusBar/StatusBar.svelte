@@ -119,7 +119,7 @@
     switch (mode) {
       case 'expert': return { label: 'Expert', class: 'expert' };
       case 'god': return { label: 'GOD', class: 'god' };
-      case 'bfsa': return { label: 'BFSA', class: 'bfsa' };
+      case 'bfsa': return { label: 'BFK', class: 'bfsa' };
       default: return { label: 'Standard', class: 'standard' };
     }
   }
