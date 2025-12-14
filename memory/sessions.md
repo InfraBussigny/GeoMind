@@ -1,3 +1,33 @@
+## Session 28 - 14 decembre 2025
+**Theme** : Module Communications refait + ameliorations diverses
+
+### Travail effectue
+
+#### 1. Module Communications refait
+- **Nouveau design** : Sidebar services + zone webview integree
+- **Services** : Outlook, Calendrier, WhatsApp, Teams, 3CX
+- **WebViews Tauri** integres dans la fenetre principale (pas popup)
+- **Toolbar** : Refresh, ouvrir externe, fermer
+- **Fallback iframe** pour mode navigateur
+
+#### 2. Corrections Tauri CSP
+- Ajout services geo suisses (geo.admin.ch, asit-asso.ch, etc.)
+- Ajout Teams (teams.microsoft.com, *.microsoft.com)
+- Permissions webview pour fenêtres enfants
+
+#### 3. Documentation
+- README mis a jour avec section GeoMind App
+- Script start-geomind.bat pour lancement automatique
+- Documentation depannage CSP et webviews
+
+### A faire plus tard
+- **Registre foncier VD dans module Cartes**
+  - Options : WebView Intercapi/Capitastra, split-view, ou API/WFS
+  - URL : https://www.capitastra.vd.ch ou https://www.intercapi.ch
+  - Objectif : Interaction avec le site depuis GeoMind
+
+---
+
 ## Session 27 - 13 decembre 2025 (nuit)
 **Theme** : Recherche approches CAD web avec Fabric.js
 
