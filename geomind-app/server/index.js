@@ -21,6 +21,7 @@ import security from './security.js';
 import { runOllamaAgent, chatWithTools as ollamaChat } from './ollama-agent.js';
 import { processSQLAssistant, buildEnrichedPrompt } from './sql-assistant.js';
 import * as mvtTiles from './mvt-tiles.js';
+import { setupCommunicationsRoutes } from './communications-routes.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -28,6 +29,9 @@ const PORT = 3001;
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+
+// Setup Communications routes (Outlook, Calendar, Teams, 3CX)
+setupCommunicationsRoutes(app);
 
 // ============================================
 // CREDENTIALS MANAGEMENT

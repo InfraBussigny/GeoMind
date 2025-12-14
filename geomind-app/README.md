@@ -30,6 +30,30 @@ Application desktop personnalisée pour le SIT de la commune de Bussigny.
 - Charte graphique Bussigny automatique
 - Documents récents
 
+### 📧 Communications
+Module intégré pour la productivité bureautique :
+
+**Microsoft 365 (Outlook)**
+- Emails : lecture, envoi, marquer lu/non-lu
+- Calendrier : événements, création de rendez-vous
+- Teams : création de réunions en ligne
+
+**3CX Téléphonie**
+- Appels : émettre, terminer, hold, transfert
+- Historique des appels
+- Statut de l'extension (disponible, occupé, absent)
+
+**Google Workspace**
+- Google Calendar : événements, création
+- Google Meet : création de réunions
+
+**WhatsApp**
+- Mode webview intégré pour WhatsApp Web personnel
+
+**Notifications**
+- Agrégation des notifications de toutes les sources
+- Badge de notifications non lues
+
 ## Installation
 
 ```bash
@@ -53,11 +77,20 @@ geomind-app/
 │   │   │   ├── Chat/
 │   │   │   ├── Canvas/
 │   │   │   ├── Editor/
-│   │   │   └── DocGen/
+│   │   │   ├── DocGen/
+│   │   │   └── CommunicationsPanel.svelte
+│   │   ├── services/       # Services API
+│   │   │   └── communications.ts
 │   │   ├── stores/         # État global (Svelte stores)
 │   │   └── styles/         # CSS (theme.css)
 │   └── routes/             # Pages SvelteKit
-├── src-tauri/              # Backend Rust
+├── server/                 # Backend Node.js
+│   ├── index.js            # Serveur Express principal
+│   ├── microsoft-graph.js  # API Microsoft Graph (Outlook/Teams)
+│   ├── threecx-api.js      # API 3CX téléphonie
+│   ├── google-calendar.js  # API Google Calendar/Meet
+│   └── communications-routes.js
+├── src-tauri/              # Backend Rust (Tauri)
 └── static/                 # Assets statiques
 ```
 

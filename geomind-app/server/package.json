@@ -7,6 +7,7 @@
     "dev": "node --watch index.js"
   },
   "dependencies": {
+    "@azure/msal-node": "^3.8.4",
     "@mapbox/sphericalmercator": "^2.0.2",
     "cheerio": "^1.1.2",
     "cors": "^2.8.5",
@@ -14,7 +15,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.18.2",
     "fetch-cookie": "^3.1.0",
-    "node-fetch": "^3.3.2",
+    "node-fetch": "^2.7.0",
     "pg": "^8.16.3",
     "postgres": "^3.4.5",
     "ssh2": "^1.17.0",

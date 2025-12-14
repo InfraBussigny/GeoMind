@@ -419,7 +419,7 @@ export async function exchangeOutlookCode(code: string): Promise<{ success: bool
  */
 export async function getEmails(folder = 'inbox', top = 50, skip = 0): Promise<{ success: boolean; emails?: EmailMessage[]; error?: string }> {
   try {
-    const response = await fetch(`${API_BASE}/outlook/mail/${folder}?top=${top}&skip=${skip}`);
+    const response = await fetch(`${API_BASE}/outlook/emails?folder=${folder}&top=${top}&skip=${skip}`);
     const result = await response.json();
 
     if (result.success && result.emails) {
@@ -440,7 +440,7 @@ export async function getEmails(folder = 'inbox', top = 50, skip = 0): Promise<{
  */
 export async function getEmail(id: string): Promise<{ success: boolean; email?: EmailMessage; error?: string }> {
   try {
-    const response = await fetch(`${API_BASE}/outlook/mail/message/${id}`);
+    const response = await fetch(`${API_BASE}/outlook/emails/${id}`);
     const result = await response.json();
 
     if (result.success && result.email) {
@@ -458,7 +458,7 @@ export async function getEmail(id: string): Promise<{ success: boolean; email?: 
  */
 export async function sendEmail(draft: EmailDraft): Promise<{ success: boolean; error?: string }> {
   try {
-    const response = await fetch(`${API_BASE}/outlook/mail/send`, {
+    const response = await fetch(`${API_BASE}/outlook/send`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(draft)
@@ -475,7 +475,7 @@ export async function sendEmail(draft: EmailDraft): Promise<{ success: boolean; 
  */
 export async function markEmailRead(id: string, isRead: boolean): Promise<{ success: boolean }> {
   try {
-    const response = await fetch(`${API_BASE}/outlook/mail/message/${id}/read`, {
+    const response = await fetch(`${API_BASE}/outlook/emails/${id}/read`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ isRead })
@@ -493,7 +493,7 @@ export async function markEmailRead(id: string, isRead: boolean): Promise<{ succ
 export async function getCalendarEvents(start: Date, end: Date): Promise<{ success: boolean; events?: CalendarEvent[]; error?: string }> {
   try {
     const response = await fetch(
-      `${API_BASE}/outlook/calendar/events?start=${start.toISOString()}&end=${end.toISOString()}`
+      `${API_BASE}/calendar/events?start=${start.toISOString()}&end=${end.toISOString()}`
     );
     const result = await response.json();
 
@@ -516,7 +516,7 @@ export async function getCalendarEvents(start: Date, end: Date): Promise<{ succe
  */
 export async function createCalendarEvent(event: Omit<CalendarEvent, 'id'>): Promise<{ success: boolean; eventId?: string; error?: string }> {
   try {
-    const response = await fetch(`${API_BASE}/outlook/calendar/events`, {
+    const response = await fetch(`${API_BASE}/calendar/events`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(event)
@@ -533,7 +533,7 @@ export async function createCalendarEvent(event: Omit<CalendarEvent, 'id'>): Pro
  */
 export async function getUnreadCount(): Promise<number> {
   try {
-    const response = await fetch(`${API_BASE}/outlook/mail/unread/count`);
+    const response = await fetch(`${API_BASE}/outlook/unread-count`);
     const result = await response.json();
     const count = result.success ? result.count : 0;
     outlookStore.setUnreadCount(count);
@@ -636,7 +636,7 @@ export async function transferCall(callId: string, targetNumber: string): Promis
     const response = await fetch(`${API_BASE}/3cx/call/${callId}/transfer`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ target: targetNumber })
+      body: JSON.stringify({ targetNumber })
     });
     return await response.json();
   } catch {
@@ -649,7 +649,7 @@ export async function transferCall(callId: string, targetNumber: string): Promis
  */
 export async function getCallHistory(limit = 50): Promise<{ success: boolean; calls?: CallRecord[]; error?: string }> {
   try {
-    const response = await fetch(`${API_BASE}/3cx/calls/history?limit=${limit}`);
+    const response = await fetch(`${API_BASE}/3cx/history?limit=${limit}`);
     const result = await response.json();
 
     if (result.success && result.calls) {
@@ -686,7 +686,7 @@ export async function setExtensionStatus(status: PhoneExtension['status']): Prom
  */
 export async function getMissedCallsCount(): Promise<number> {
   try {
-    const response = await fetch(`${API_BASE}/3cx/calls/missed/count`);
+    const response = await fetch(`${API_BASE}/3cx/missed-count`);
     const result = await response.json();
     const count = result.success ? result.count : 0;
     threeCXStore.setMissedCalls(count);
@@ -908,6 +908,184 @@ export function formatEmailDate(date: Date): string {
   } else {
     return date.toLocaleDateString('fr-CH', { day: '2-digit', month: 'short' });
   }
+}
+
+// ============================================
+// Google Calendar / Meet API Functions
+// ============================================
+
+export interface GoogleCalendarEvent {
+  id: string;
+  subject: string;
+  description?: string;
+  start: Date;
+  end: Date;
+  location?: string;
+  attendees: Array<{ name: string; email: string; responseStatus?: string }>;
+  isAllDay: boolean;
+  hangoutLink?: string;
+  conferenceData?: any;
+  status: string;
+}
+
+export interface GoogleState {
+  isAuthenticated: boolean;
+  user: { name: string; email: string; picture?: string } | null;
+}
+
+function createGoogleStore() {
+  const initial: GoogleState = {
+    isAuthenticated: false,
+    user: null
+  };
+
+  const { subscribe, update } = writable<GoogleState>(initial);
+
+  return {
+    subscribe,
+    setAuthenticated(isAuthenticated: boolean, user?: { name: string; email: string; picture?: string }) {
+      update(state => ({ ...state, isAuthenticated, user: user || null }));
+    },
+    logout() {
+      update(() => initial);
+    }
+  };
+}
+
+export const googleStore = createGoogleStore();
+
+/**
+ * Check Google auth status
+ */
+export async function checkGoogleAuthStatus(): Promise<{ authenticated: boolean }> {
+  try {
+    const response = await fetch(`${API_BASE}/google/status`);
+    const result = await response.json();
+    googleStore.setAuthenticated(result.authenticated);
+    return result;
+  } catch {
+    return { authenticated: false };
+  }
+}
+
+/**
+ * Get Google OAuth URL
+ */
+export async function getGoogleAuthUrl(): Promise<{ success: boolean; authUrl?: string; error?: string }> {
+  try {
+    const response = await fetch(`${API_BASE}/google/auth-url`);
+    return await response.json();
+  } catch (error) {
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
+ * Get Google Calendar events
+ */
+export async function getGoogleCalendarEvents(start: Date, end: Date): Promise<{ success: boolean; events?: GoogleCalendarEvent[]; error?: string }> {
+  try {
+    const response = await fetch(
+      `${API_BASE}/google/calendar/events?start=${start.toISOString()}&end=${end.toISOString()}`
+    );
+    const result = await response.json();
+
+    if (result.success && result.events) {
+      result.events = result.events.map((e: GoogleCalendarEvent) => ({
+        ...e,
+        start: new Date(e.start),
+        end: new Date(e.end)
+      }));
+    }
+
+    return result;
+  } catch (error) {
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
+ * Create Google Calendar event (optionally with Meet)
+ */
+export async function createGoogleCalendarEvent(
+  event: Omit<GoogleCalendarEvent, 'id' | 'hangoutLink' | 'conferenceData' | 'status'>,
+  addMeet = false
+): Promise<{ success: boolean; eventId?: string; meetLink?: string; error?: string }> {
+  try {
+    const response = await fetch(`${API_BASE}/google/calendar/events`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...event, addMeet })
+    });
+
+    return await response.json();
+  } catch (error) {
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
+ * Create Google Meet meeting
+ */
+export async function createGoogleMeetMeeting(
+  subject: string,
+  startDateTime?: Date,
+  endDateTime?: Date,
+  attendees?: string[]
+): Promise<{ success: boolean; meetLink?: string; eventId?: string; error?: string }> {
+  try {
+    const response = await fetch(`${API_BASE}/google/meet`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        subject,
+        startDateTime: startDateTime?.toISOString(),
+        endDateTime: endDateTime?.toISOString(),
+        attendees
+      })
+    });
+
+    return await response.json();
+  } catch (error) {
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
+ * Create Teams meeting
+ */
+export async function createTeamsMeeting(
+  subject: string,
+  startDateTime?: Date,
+  endDateTime?: Date,
+  attendees?: string[]
+): Promise<{ success: boolean; joinUrl?: string; eventId?: string; error?: string }> {
+  try {
+    const response = await fetch(`${API_BASE}/teams/meeting`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        subject,
+        startDateTime: startDateTime?.toISOString(),
+        endDateTime: endDateTime?.toISOString(),
+        attendees
+      })
+    });
+
+    return await response.json();
+  } catch (error) {
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
+ * Logout from Google
+ */
+export async function logoutGoogle(): Promise<void> {
+  try {
+    await fetch(`${API_BASE}/google/logout`, { method: 'POST' });
+  } catch {}
+  googleStore.logout();
 }
 
 // ============================================
