@@ -6,27 +6,31 @@
   import { setMapController, type MapContext, type MapController } from '$lib/services/mapAssistant';
   import type { PortalSearchResult } from '$lib/services/universalSearch';
 
+  // Dynamic URLs for search (overrides default map URLs)
+  let dynamicUrls = $state<Record<string, string>>({});
+
   // Handle search navigation
   function handleSearchNavigate(event: CustomEvent<{ tabId: string; url: string }>) {
     const { tabId, url } = event.detail;
-    const map = maps.find(m => m.id === tabId);
-    if (map) {
-      map.url = url;
-      iframeKeys[tabId]++;
-      handleTabChange(tabId as MapId);
-    }
+    dynamicUrls[tabId] = url;
+    iframeKeys[tabId]++;
+    handleTabChange(tabId as MapId);
   }
 
   // Handle open all from search
   function handleSearchOpenAll(event: CustomEvent<{ results: PortalSearchResult[] }>) {
     const { results } = event.detail;
     results.forEach(result => {
-      const map = maps.find(m => m.id === result.tabId);
-      if (map && result.url) {
-        map.url = result.url;
+      if (result.url) {
+        dynamicUrls[result.tabId] = result.url;
         iframeKeys[result.tabId]++;
       }
     });
+  }
+
+  // Get URL for a map (dynamic if set, otherwise default)
+  function getMapUrl(mapId: string): string {
+    return dynamicUrls[mapId] || maps.find(m => m.id === mapId)?.url || '';
   }
 
   // Assistant state
@@ -116,7 +120,7 @@
     {
       id: 'geovd',
       name: 'Geoportail VD',
-      url: 'https://www.geoportail.vd.ch/map.htm',
+      url: 'https://www.geo.vd.ch',
       icon: 'map',
       hasLogin: false
     },
@@ -382,7 +386,7 @@
           {:else}
             {#key iframeKeys[map.id]}
               <iframe
-                src={map.url}
+                src={getMapUrl(map.id)}
                 title={map.name}
                 class="portal-iframe"
                 allow="geolocation; fullscreen"
