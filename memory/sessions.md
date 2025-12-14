@@ -15,13 +15,15 @@
 - Nouvel onglet **Capitastra VD** (capitastra.vd.ch)
 - CSP mis a jour pour autoriser ces domaines
 
-#### 3. Barre de recherche universelle (Cartes)
-- **Service `universalSearch.ts`** avec parser intelligent
-- Reconnait : parcelle, adresse, commune, coordonnees MN95
-- Genere URLs adaptees pour chaque portail
+#### 3. Barre de recherche universelle v2 (Cartes)
+- **Composant `UniversalSearchBar.svelte`** dedie
+- **Store `portalConfig.ts`** pour configuration persistante
+- **Tri intelligent** : pertinents en haut, autres grises en dessous
+- **Navigation clavier** : fleches haut/bas, Entree, Echap
+- **Portail par defaut** : configurable, s'ouvre avec Entree
+- **Apercu URL** au survol (tooltip)
+- **Settings UI** : drag & drop pour reordonner, checkbox pour activer/desactiver
 - Portails supportes : Swisstopo, Geoportail VD, RDPPF, Intercapi, Capitastra, Geoportail Bussigny
-- **UI integree** dans la barre d'onglets
-- Dropdown avec resultats et bouton "ouvrir sur tous les portails"
 
 #### 4. Corrections Tauri CSP
 - Ajout services geo suisses (geo.admin.ch, asit-asso.ch, etc.)
