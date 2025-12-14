@@ -1,8 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { providers, backendConnected, appMode, glitchSettings, moduleConfig, ALL_MODULES, type ModuleType } from '$lib/stores/app';
+  import { portalConfig, type PortalConfig } from '$lib/stores/portalConfig';
   import { getProviders, saveProviderConfig } from '$lib/services/api';
   import ThemeToggle from '../ThemeToggle.svelte';
+
+  // Portal configuration drag state
+  let draggedPortalIndex = $state<number | null>(null);
 
   // Système d'onglets pour organiser les paramètres
   type SettingsTab = 'general' | 'ia' | 'connections' | 'advanced';
@@ -816,6 +820,78 @@
         </div>
       </section>
     {/if}
+
+    <!-- Portal Search Configuration -->
+    <section class="settings-section portal-config-section">
+      <h2>Configuration des portails de recherche</h2>
+      <p class="section-description">
+        Configurez l'ordre et l'activation des portails dans la recherche universelle du module Cartes.
+        Glissez-deposez pour reordonner. Le portail par defaut s'ouvre avec Entree.
+      </p>
+
+      <div class="portal-list">
+        {#each $portalConfig as portal, index (portal.id)}
+          <div
+            class="portal-item"
+            class:dragging={draggedPortalIndex === index}
+            class:disabled={!portal.enabled}
+            draggable="true"
+            ondragstart={(e) => {
+              draggedPortalIndex = index;
+              e.dataTransfer?.setData('text/plain', index.toString());
+            }}
+            ondragend={() => { draggedPortalIndex = null; }}
+            ondragover={(e) => { e.preventDefault(); }}
+            ondrop={(e) => {
+              e.preventDefault();
+              const fromIndex = parseInt(e.dataTransfer?.getData('text/plain') || '0');
+              if (fromIndex !== index) {
+                portalConfig.reorder(fromIndex, index);
+              }
+              draggedPortalIndex = null;
+            }}
+          >
+            <span class="drag-handle" title="Glisser pour reordonner">≡</span>
+
+            <label class="portal-checkbox">
+              <input
+                type="checkbox"
+                checked={portal.enabled}
+                onchange={() => portalConfig.toggle(portal.id)}
+              />
+            </label>
+
+            <span class="portal-name" class:is-default={portal.isDefault}>
+              {#if portal.isDefault}
+                <span class="default-star" title="Portail par defaut">★</span>
+              {/if}
+              {portal.name}
+            </span>
+
+            <span class="portal-types">
+              {portal.relevantFor.slice(0, 3).join(', ')}
+              {#if portal.relevantFor.length > 3}...{/if}
+            </span>
+
+            <button
+              class="btn-set-default"
+              class:active={portal.isDefault}
+              onclick={() => portalConfig.setDefault(portal.id)}
+              title={portal.isDefault ? 'Portail par defaut' : 'Definir par defaut'}
+              disabled={!portal.enabled}
+            >
+              {portal.isDefault ? '★' : '☆'}
+            </button>
+          </div>
+        {/each}
+      </div>
+
+      <div class="portal-actions">
+        <button class="btn-reset-portals" onclick={() => portalConfig.reset()}>
+          Reinitialiser l'ordre
+        </button>
+      </div>
+    </section>
 
     <!-- Glitch Effects Section - God mode or Easter Egg unlocked -->
     {#if $appMode === 'god' || $glitchSettings.unlockedByEasterEgg}
@@ -2387,5 +2463,146 @@
     background: rgba(255, 68, 68, 0.1);
     color: var(--error);
     border-color: var(--error);
+  }
+
+  /* Portal Configuration Styles */
+  .portal-config-section {
+    margin-top: 24px;
+  }
+
+  .portal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .portal-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--noir-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: grab;
+    transition: all 0.2s;
+  }
+
+  .portal-item:hover:not(.disabled) {
+    border-color: var(--cyber-green);
+    background: rgba(0, 255, 136, 0.05);
+  }
+
+  .portal-item.dragging {
+    opacity: 0.5;
+    border-color: var(--cyber-green);
+    box-shadow: 0 0 10px var(--cyber-green-glow);
+  }
+
+  .portal-item.disabled {
+    opacity: 0.5;
+  }
+
+  .drag-handle {
+    font-size: 18px;
+    color: var(--text-muted);
+    cursor: grab;
+    user-select: none;
+  }
+
+  .portal-item:active .drag-handle {
+    cursor: grabbing;
+  }
+
+  .portal-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--cyber-green);
+    cursor: pointer;
+  }
+
+  .portal-name {
+    flex: 1;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .portal-name.is-default {
+    color: var(--cyber-green);
+  }
+
+  .default-star {
+    color: var(--warning);
+    font-size: 14px;
+  }
+
+  .portal-types {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .btn-set-default {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-set-default:hover:not(:disabled) {
+    border-color: var(--warning);
+    color: var(--warning);
+    background: rgba(255, 193, 7, 0.1);
+  }
+
+  .btn-set-default.active {
+    border-color: var(--warning);
+    color: var(--warning);
+    background: rgba(255, 193, 7, 0.15);
+  }
+
+  .btn-set-default:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .portal-actions {
+    display: flex;
+    gap: 12px;
+  }
+
+  .btn-reset-portals {
+    padding: 8px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    transition: all 0.2s;
+  }
+
+  .btn-reset-portals:hover {
+    background: var(--bg-hover);
+    color: var(--text-bright);
+    border-color: var(--text-muted);
   }
 </style>

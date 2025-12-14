@@ -2,82 +2,31 @@
   import { onMount, onDestroy } from 'svelte';
   import PostGISViewer from './PostGISViewer.svelte';
   import MapAssistant from './MapAssistant.svelte';
+  import UniversalSearchBar from './UniversalSearchBar.svelte';
   import { setMapController, type MapContext, type MapController } from '$lib/services/mapAssistant';
-  import { universalSearch, type ParsedQuery, type PortalSearchResult } from '$lib/services/universalSearch';
+  import type { PortalSearchResult } from '$lib/services/universalSearch';
 
-  // Universal search state
-  let searchQuery = $state('');
-  let searchResults = $state<PortalSearchResult[]>([]);
-  let parsedQuery = $state<ParsedQuery | null>(null);
-  let showSearchResults = $state(false);
-  let searchInputRef: HTMLInputElement | null = null;
-
-  // Map portal IDs to our tab IDs
-  const portalToTab: Record<string, string> = {
-    'swisstopo': 'swisstopo',
-    'geovd': 'geovd',
-    'rdppf': 'rdppf',
-    'rf': 'rf',
-    'capitastra': 'capitastra',
-    'geoportail': 'geoportail'
-  };
-
-  // Perform universal search
-  function handleSearch() {
-    if (searchQuery.trim().length < 2) {
-      searchResults = [];
-      parsedQuery = null;
-      showSearchResults = false;
-      return;
+  // Handle search navigation
+  function handleSearchNavigate(event: CustomEvent<{ tabId: string; url: string }>) {
+    const { tabId, url } = event.detail;
+    const map = maps.find(m => m.id === tabId);
+    if (map) {
+      map.url = url;
+      iframeKeys[tabId]++;
+      handleTabChange(tabId as MapId);
     }
-
-    const result = universalSearch(searchQuery);
-    parsedQuery = result.parsed;
-    searchResults = result.results.filter(r => r.supported);
-    showSearchResults = true;
   }
 
-  // Handle search result click
-  function openSearchResult(result: PortalSearchResult) {
-    const tabId = portalToTab[result.portalId];
-    if (tabId && result.url) {
-      // Find the map configuration
-      const map = maps.find(m => m.id === tabId);
-      if (map) {
-        // Update the URL for this portal
+  // Handle open all from search
+  function handleSearchOpenAll(event: CustomEvent<{ results: PortalSearchResult[] }>) {
+    const { results } = event.detail;
+    results.forEach(result => {
+      const map = maps.find(m => m.id === result.tabId);
+      if (map && result.url) {
         map.url = result.url;
-        // Force iframe refresh
-        iframeKeys[tabId]++;
-        // Switch to tab
-        handleTabChange(tabId as MapId);
-      }
-    }
-    showSearchResults = false;
-    searchQuery = '';
-  }
-
-  // Open all supported results in parallel
-  function openAllResults() {
-    searchResults.forEach(result => {
-      const tabId = portalToTab[result.portalId];
-      if (tabId && result.url) {
-        const map = maps.find(m => m.id === tabId);
-        if (map) {
-          map.url = result.url;
-          iframeKeys[tabId]++;
-        }
+        iframeKeys[result.tabId]++;
       }
     });
-    showSearchResults = false;
-    searchQuery = '';
-  }
-
-  // Close search dropdown when clicking outside
-  function handleClickOutside(event: MouseEvent) {
-    const target = event.target as HTMLElement;
-    if (!target.closest('.search-container')) {
-      showSearchResults = false;
-    }
   }
 
   // Assistant state
@@ -222,15 +171,10 @@
     }
   }
 
-  onMount(() => {
-    document.addEventListener('click', handleClickOutside);
-  });
-
   onDestroy(() => {
     if (contextSyncInterval) {
       clearInterval(contextSyncInterval);
     }
-    document.removeEventListener('click', handleClickOutside);
   });
 
   // Keys pour forcer le rechargement des iframes
@@ -342,67 +286,10 @@
     </div>
 
     <!-- Universal Search Bar -->
-    <div class="search-container">
-      <div class="search-input-wrapper">
-        <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-        <input
-          type="text"
-          bind:this={searchInputRef}
-          bind:value={searchQuery}
-          oninput={handleSearch}
-          placeholder="Recherche: parcelle, adresse, coordonnées..."
-          class="search-input"
-        />
-        {#if searchQuery}
-          <button class="search-clear" onclick={() => { searchQuery = ''; showSearchResults = false; }}>
-            &times;
-          </button>
-        {/if}
-      </div>
-
-      <!-- Search Results Dropdown -->
-      {#if showSearchResults && searchResults.length > 0}
-        <div class="search-dropdown">
-          <!-- Parsed query info -->
-          {#if parsedQuery}
-            <div class="search-parsed">
-              <span class="parsed-type">{parsedQuery.type}</span>
-              {#if parsedQuery.commune}<span class="parsed-detail">Commune: {parsedQuery.commune}</span>{/if}
-              {#if parsedQuery.parcelle}<span class="parsed-detail">Parcelle: {parsedQuery.parcelle}</span>{/if}
-              {#if parsedQuery.coordX}<span class="parsed-detail">X: {parsedQuery.coordX}, Y: {parsedQuery.coordY}</span>{/if}
-            </div>
-          {/if}
-
-          <!-- Results list -->
-          <div class="search-results-list">
-            {#each searchResults as result}
-              <button class="search-result-item" onclick={() => openSearchResult(result)}>
-                <div class="result-portal">
-                  <span class="portal-name">{result.portalName}</span>
-                  <span class="result-method">{result.method}</span>
-                </div>
-                <div class="result-description">{result.description}</div>
-              </button>
-            {/each}
-          </div>
-
-          <!-- Open all button -->
-          {#if searchResults.length > 1}
-            <button class="search-open-all" onclick={openAllResults}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polygon points="12 2 2 7 12 12 22 7 12 2"/>
-                <polyline points="2 17 12 22 22 17"/>
-                <polyline points="2 12 12 17 22 12"/>
-              </svg>
-              Ouvrir sur tous les portails ({searchResults.length})
-            </button>
-          {/if}
-        </div>
-      {/if}
-    </div>
+    <UniversalSearchBar
+      on:navigate={handleSearchNavigate}
+      on:openAll={handleSearchOpenAll}
+    />
 
     <!-- Spacer -->
     <div class="tab-spacer"></div>
@@ -603,182 +490,6 @@
     flex: 1;
   }
 
-  /* Universal Search Styles */
-  .search-container {
-    position: relative;
-    margin: 0 var(--spacing-md);
-  }
-
-  .search-input-wrapper {
-    display: flex;
-    align-items: center;
-    background: var(--noir-card);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-sm);
-    padding: 0 var(--spacing-sm);
-    transition: all var(--transition-fast);
-  }
-
-  .search-input-wrapper:focus-within {
-    border-color: var(--cyber-green);
-    box-shadow: 0 0 8px var(--cyber-green-glow);
-  }
-
-  .search-icon {
-    color: var(--text-muted);
-    flex-shrink: 0;
-  }
-
-  .search-input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: var(--text-primary);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    padding: 6px 8px;
-    min-width: 220px;
-  }
-
-  .search-input::placeholder {
-    color: var(--text-muted);
-    font-style: italic;
-  }
-
-  .search-clear {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    font-size: 18px;
-    cursor: pointer;
-    padding: 0 4px;
-    line-height: 1;
-    transition: color var(--transition-fast);
-  }
-
-  .search-clear:hover {
-    color: var(--danger);
-  }
-
-  .search-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    margin-top: 4px;
-    background: var(--noir-card);
-    border: 1px solid var(--cyber-green);
-    border-radius: var(--border-radius-sm);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 15px var(--cyber-green-glow);
-    z-index: 1000;
-    overflow: hidden;
-    min-width: 300px;
-  }
-
-  .search-parsed {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 8px 12px;
-    background: rgba(0, 255, 136, 0.05);
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  .parsed-type {
-    background: var(--cyber-green);
-    color: var(--noir-profond);
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-family: var(--font-mono);
-  }
-
-  .parsed-detail {
-    color: var(--text-secondary);
-    font-size: 11px;
-    font-family: var(--font-mono);
-  }
-
-  .search-results-list {
-    max-height: 300px;
-    overflow-y: auto;
-  }
-
-  .search-result-item {
-    width: 100%;
-    display: block;
-    text-align: left;
-    padding: 10px 12px;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid var(--border-color);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-  }
-
-  .search-result-item:last-child {
-    border-bottom: none;
-  }
-
-  .search-result-item:hover {
-    background: rgba(0, 255, 136, 0.1);
-  }
-
-  .result-portal {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 4px;
-  }
-
-  .portal-name {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--cyber-green);
-  }
-
-  .result-method {
-    background: var(--noir-surface);
-    color: var(--text-muted);
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-size: 9px;
-    font-family: var(--font-mono);
-    text-transform: uppercase;
-  }
-
-  .result-description {
-    font-size: 11px;
-    color: var(--text-secondary);
-    font-family: var(--font-mono);
-  }
-
-  .search-open-all {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
-    padding: 10px 12px;
-    background: rgba(0, 255, 136, 0.1);
-    border: none;
-    border-top: 1px solid var(--cyber-green);
-    color: var(--cyber-green);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-  }
-
-  .search-open-all:hover {
-    background: var(--cyber-green);
-    color: var(--noir-profond);
-  }
 
   .tab-actions {
     display: flex;

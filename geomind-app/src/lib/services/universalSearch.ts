@@ -3,9 +3,12 @@
  * Parse les requêtes et génère des URLs adaptées pour chaque portail
  */
 
+import { get } from 'svelte/store';
+import { portalConfig, type PortalConfig, type QueryType } from '$lib/stores/portalConfig';
+
 // Types de requêtes supportées
 export interface ParsedQuery {
-  type: 'parcelle' | 'adresse' | 'commune' | 'coordonnees' | 'lieu' | 'unknown';
+  type: QueryType;
   commune?: string;
   parcelle?: string;
   adresse?: string;
@@ -22,10 +25,15 @@ export interface ParsedQuery {
 export interface PortalSearchResult {
   portalId: string;
   portalName: string;
+  tabId: string;
   url: string | null;
   supported: boolean;
   method: 'url' | 'api' | 'manual';
   description: string;
+  isRelevant: boolean;
+  isDefault: boolean;
+  order: number;
+  icon: string;
 }
 
 // Liste des communes vaudoises (principales)
@@ -204,10 +212,15 @@ function generateSwisstopoUrl(parsed: ParsedQuery): PortalSearchResult {
   return {
     portalId: 'swisstopo',
     portalName: 'Swisstopo',
+    tabId: 'swisstopo',
     url,
     supported: true,
     method: 'url',
-    description
+    description,
+    isRelevant: false,
+    isDefault: false,
+    order: 0,
+    icon: 'mountain'
   };
 }
 
@@ -243,10 +256,15 @@ function generateGeoportailVDUrl(parsed: ParsedQuery): PortalSearchResult {
   return {
     portalId: 'geovd',
     portalName: 'Geoportail VD',
+    tabId: 'geovd',
     url,
     supported: true,
     method: 'url',
-    description
+    description,
+    isRelevant: false,
+    isDefault: false,
+    order: 0,
+    icon: 'map'
   };
 }
 
@@ -288,10 +306,15 @@ function generateRDPPFUrl(parsed: ParsedQuery): PortalSearchResult {
   return {
     portalId: 'rdppf',
     portalName: 'RDPPF VD',
+    tabId: 'rdppf',
     url,
     supported,
     method: 'url',
-    description
+    description,
+    isRelevant: false,
+    isDefault: false,
+    order: 0,
+    icon: 'document'
   };
 }
 
@@ -321,10 +344,15 @@ function generateIntercapiUrl(parsed: ParsedQuery): PortalSearchResult {
   return {
     portalId: 'rf',
     portalName: 'Registre foncier',
+    tabId: 'rf',
     url,
     supported,
     method: 'url',
-    description
+    description,
+    isRelevant: false,
+    isDefault: false,
+    order: 0,
+    icon: 'building'
   };
 }
 
@@ -354,10 +382,15 @@ function generateCapitrastraUrl(parsed: ParsedQuery): PortalSearchResult {
   return {
     portalId: 'capitastra',
     portalName: 'Capitastra VD',
+    tabId: 'capitastra',
     url,
     supported,
     method: 'url',
-    description
+    description,
+    isRelevant: false,
+    isDefault: false,
+    order: 0,
+    icon: 'file-text'
   };
 }
 
@@ -389,22 +422,79 @@ function generateGeoportailBussignyUrl(parsed: ParsedQuery): PortalSearchResult 
 
   return {
     portalId: 'geoportail',
-    portalName: 'Géoportail Bussigny',
+    portalName: 'Geoportail Bussigny',
+    tabId: 'geoportail',
     url,
     supported: true,
     method: 'url',
-    description
+    description,
+    isRelevant: false,
+    isDefault: false,
+    order: 0,
+    icon: 'globe'
   };
 }
 
 /**
  * Recherche universelle - parse et génère toutes les URLs
+ * Retourne les résultats triés par pertinence puis par ordre utilisateur
  */
 export function universalSearch(query: string): {
   parsed: ParsedQuery;
   results: PortalSearchResult[];
+  relevantResults: PortalSearchResult[];
+  otherResults: PortalSearchResult[];
 } {
   const parsed = parseQuery(query);
+  const config = get(portalConfig);
   const results = generateSearchUrls(parsed);
-  return { parsed, results };
+
+  // Enrichir les résultats avec les infos de config
+  const enrichedResults = results.map(result => {
+    const portalCfg = config.find(p => p.id === result.portalId);
+    if (!portalCfg) return result;
+
+    const isRelevant = portalCfg.relevantFor.includes(parsed.type);
+    return {
+      ...result,
+      tabId: portalCfg.tabId,
+      isRelevant,
+      isDefault: portalCfg.isDefault,
+      order: portalCfg.order,
+      icon: portalCfg.icon
+    };
+  });
+
+  // Filtrer les portails désactivés
+  const enabledResults = enrichedResults.filter(r => {
+    const portalCfg = config.find(p => p.id === r.portalId);
+    return portalCfg?.enabled !== false;
+  });
+
+  // Séparer pertinents et non-pertinents
+  const relevantResults = enabledResults
+    .filter(r => r.isRelevant && r.supported)
+    .sort((a, b) => {
+      // Défaut en premier, puis par ordre
+      if (a.isDefault && !b.isDefault) return -1;
+      if (!a.isDefault && b.isDefault) return 1;
+      return a.order - b.order;
+    });
+
+  const otherResults = enabledResults
+    .filter(r => !r.isRelevant || !r.supported)
+    .sort((a, b) => a.order - b.order);
+
+  // Résultats complets triés
+  const sortedResults = [...relevantResults, ...otherResults];
+
+  return { parsed, results: sortedResults, relevantResults, otherResults };
+}
+
+/**
+ * Obtenir le portail par défaut pour une recherche
+ */
+export function getDefaultPortalResult(query: string): PortalSearchResult | null {
+  const { relevantResults } = universalSearch(query);
+  return relevantResults.find(r => r.isDefault) || relevantResults[0] || null;
 }
