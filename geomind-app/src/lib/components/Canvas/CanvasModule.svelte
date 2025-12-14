@@ -4,7 +4,6 @@
   import MapAssistant from './MapAssistant.svelte';
   import UniversalSearchBar from './UniversalSearchBar.svelte';
   import { setMapController, type MapContext, type MapController } from '$lib/services/mapAssistant';
-  import type { PortalSearchResult } from '$lib/services/universalSearch';
 
   // Dynamic URLs for search (overrides default map URLs)
   let dynamicUrls = $state<Record<string, string>>({});
@@ -19,21 +18,6 @@
     handleTabChange(tabId as MapId);
   }
 
-  // Handle open all from search
-  function handleSearchOpenAll(event: CustomEvent<{ results: PortalSearchResult[] }>) {
-    const { results } = event.detail;
-    const newUrls = { ...dynamicUrls };
-    const newKeys = { ...iframeKeys };
-    results.forEach(result => {
-      if (result.url) {
-        console.log('[Search] OpenAll:', result.tabId, 'URL:', result.url);
-        newUrls[result.tabId] = result.url;
-        newKeys[result.tabId] = (newKeys[result.tabId] || 0) + 1;
-      }
-    });
-    dynamicUrls = newUrls;
-    iframeKeys = newKeys;
-  }
 
   // Get URL for a map (dynamic if set, otherwise default)
   function getMapUrl(mapId: string): string {
@@ -128,8 +112,8 @@
     },
     {
       id: 'geovd',
-      name: 'Geoportail VD',
-      url: 'https://www.geo.vd.ch',
+      name: 'Geoportail VD Pro',
+      url: 'https://www.geoportail.vd.ch/map.htm',
       icon: 'map',
       hasLogin: false
     },
@@ -301,7 +285,6 @@
     <!-- Universal Search Bar -->
     <UniversalSearchBar
       on:navigate={handleSearchNavigate}
-      on:openAll={handleSearchOpenAll}
     />
 
     <!-- Spacer -->

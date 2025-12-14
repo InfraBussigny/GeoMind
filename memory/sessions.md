@@ -1,3 +1,38 @@
+## Session 29 - 14 decembre 2025 (apres-midi)
+**Theme** : Recherche universelle v3 - Corrections et tests
+
+### Travail effectue
+
+#### 1. Correction parsing recherche
+- **Priorite adresses** : Les adresses (Rue de...) sont maintenant detectees avant les parcelles
+- **10 types de tests** : parcelle, coordonnees, adresse, commune, lieu - tous passent
+- **Patterns ameliores** : Support avenue, chemin, route, place, boulevard, passage, impasse
+
+#### 2. Geoportail VD Pro
+- **URL corrigee** : `geoportail.vd.ch/map.htm` (guichet professionnel)
+- **Note** : Ce portail ne supporte pas de recherche directe via URL
+
+#### 3. UX amelioree
+- **Bouton "Ouvrir tous" supprime** (ne fonctionnait pas)
+- **Recherche gardee en memoire** apres selection d'un resultat
+- **Bouton X** pour effacer completement
+
+#### 4. Tests automatises
+- Script de test parsing : 10/10 reussis
+- Verification TypeScript : OK
+
+### URLs des portails
+| Portail | URL | Params supportes |
+|---------|-----|------------------|
+| Swisstopo | map.geo.admin.ch | swisssearch=, center= |
+| Geoportail VD Pro | geoportail.vd.ch/map.htm | (manuel) |
+| RDPPF | rdppf.vd.ch | no_commune=, no_parcelle= |
+| Registre foncier | intercapi.ch | commune=, parcelle= |
+| Capitastra | capitastra.vd.ch | noOfsCommune=, noParcelle= |
+| Geo Bussigny | geo.bussigny.ch | st=, c=, s= (QWC2) |
+
+---
+
 ## Session 28 - 14 decembre 2025
 **Theme** : Module Communications refait + ameliorations Cartes
 

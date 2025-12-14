@@ -44,14 +44,30 @@ const COMMUNES_VD = [
   'Morges', 'Nyon', 'Vevey', 'Montreux', 'Yverdon', 'Pully', 'Lutry'
 ];
 
-// Code OFS des communes (exemples)
+// Code OFS des communes vaudoises (complet pour les communes courantes)
 const COMMUNE_OFS: Record<string, string> = {
   'bussigny': '5624',
   'lausanne': '5586',
   'renens': '5591',
   'prilly': '5590',
   'ecublens': '5518',
-  'crissier': '5514'
+  'crissier': '5514',
+  'chavannes': '5511',
+  'saint-sulpice': '5598',
+  'villars-sainte-croix': '5690',
+  'bremblens': '5504',
+  'denges': '5632',
+  'echandens': '5517',
+  'lonay': '5652',
+  'preverenges': '5665',
+  'tolochenaz': '5680',
+  'morges': '5642',
+  'nyon': '5724',
+  'vevey': '5890',
+  'montreux': '5886',
+  'yverdon': '5938',
+  'pully': '5589',
+  'lutry': '5585'
 };
 
 /**
@@ -73,39 +89,74 @@ export function parseQuery(query: string): ParsedQuery {
     }
   }
 
-  // Pattern: parcelle avec commune (ex: "Bussigny parcelle 791", "Bussigny 791", "parcelle 791 Bussigny")
-  const parcellePatterns = [
-    /(\w+)\s+(?:parcelle|parc\.?|p\.?)\s*(\d+)/i,
-    /(?:parcelle|parc\.?|p\.?)\s*(\d+)\s+(\w+)/i,
-    /(\w+)\s+(\d+)(?:\s|$)/i  // Simple: "Bussigny 791"
+  // PRIORITE 1: Adresses (commencent par un préfixe de rue)
+  // Doit être vérifié AVANT les parcelles pour éviter "Rue de Lausanne 15" -> parcelle
+  const ruePrefix = /^(rue|avenue|av\.?|chemin|ch\.?|route|rte\.?|place|pl\.?|boulevard|bd\.?|passage|impasse|allee|sentier)\s+/i;
+  if (ruePrefix.test(raw)) {
+    // C'est une adresse qui commence par un type de voie
+    const adresseMatch = raw.match(/^(.+?)\s+(\d+[a-z]?)\s*,?\s*(\d{4})?\s*(\w+)?$/i);
+    if (adresseMatch) {
+      return {
+        type: 'adresse',
+        rue: adresseMatch[1],
+        numero: adresseMatch[2],
+        npa: adresseMatch[3],
+        commune: adresseMatch[4],
+        adresse: raw,
+        raw
+      };
+    }
+    // Même sans numéro, c'est une adresse
+    return {
+      type: 'adresse',
+      adresse: raw,
+      raw
+    };
+  }
+
+  // Adresse commençant par un numéro (ex: "15 rue de Lausanne")
+  const numeroFirst = raw.match(/^(\d+[a-z]?)\s+(rue|avenue|av\.?|chemin|ch\.?|route|rte\.?|place|pl\.?|boulevard|bd\.?)\s+(.+?)(?:\s*,?\s*(\d{4})?\s*(\w+)?)?$/i);
+  if (numeroFirst) {
+    return {
+      type: 'adresse',
+      numero: numeroFirst[1],
+      rue: `${numeroFirst[2]} ${numeroFirst[3]}`,
+      npa: numeroFirst[4],
+      commune: numeroFirst[5],
+      adresse: raw,
+      raw
+    };
+  }
+
+  // PRIORITE 2: Parcelle avec mot-clé explicite (ex: "Bussigny parcelle 791", "parcelle 791 Bussigny")
+  const parcelleExplicite = [
+    /(\w+)\s+(?:parcelle|parc\.?)\s*(\d+)/i,
+    /(?:parcelle|parc\.?)\s*(\d+)\s+(\w+)/i
   ];
 
-  for (const pattern of parcellePatterns) {
+  for (let i = 0; i < parcelleExplicite.length; i++) {
+    const pattern = parcelleExplicite[i];
     const match = raw.match(pattern);
     if (match) {
       let commune = match[1];
       let parcelle = match[2];
 
       // Si le pattern a inversé l'ordre
-      if (pattern === parcellePatterns[1]) {
+      if (i === 1) {
         parcelle = match[1];
         commune = match[2];
       }
 
       // Vérifier si c'est une commune connue
       const communeNorm = commune.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      const isCommune = COMMUNES_VD.some(c =>
+      const communeMatch = COMMUNES_VD.find(c =>
         c.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') === communeNorm
       );
 
-      if (isCommune) {
-        // Capitaliser la commune
-        const communeMatch = COMMUNES_VD.find(c =>
-          c.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') === communeNorm
-        );
+      if (communeMatch) {
         return {
           type: 'parcelle',
-          commune: communeMatch || commune,
+          commune: communeMatch,
           parcelle,
           raw
         };
@@ -113,34 +164,25 @@ export function parseQuery(query: string): ParsedQuery {
     }
   }
 
-  // Pattern: adresse (ex: "Rue de Lausanne 15, Bussigny" ou "15 rue de Lausanne Bussigny")
-  const adressePatterns = [
-    /(.+?)\s+(\d+[a-z]?)\s*,?\s*(\d{4})?\s*(\w+)?$/i,
-    /(\d+[a-z]?)\s+(.+?)\s*,?\s*(\d{4})?\s*(\w+)?$/i
-  ];
-
-  for (const pattern of adressePatterns) {
-    const match = raw.match(pattern);
-    if (match && match[1] && match[2]) {
-      // Détecter si c'est une rue
-      const part1 = match[1].toLowerCase();
-      const isRue = /^(rue|avenue|av\.|chemin|ch\.|route|rte\.|place|pl\.|boulevard|bd\.)/i.test(part1);
-
-      if (isRue || pattern === adressePatterns[1]) {
-        return {
-          type: 'adresse',
-          rue: pattern === adressePatterns[0] ? match[1] : match[2],
-          numero: pattern === adressePatterns[0] ? match[2] : match[1],
-          npa: match[3],
-          commune: match[4],
-          adresse: raw,
-          raw
-        };
-      }
+  // PRIORITE 3: Parcelle simple "Commune Numero" (ex: "Bussigny 791")
+  // Seulement si c'est exactement "Mot Numero" sans rien d'autre
+  const parcelleSimple = raw.match(/^(\w+)\s+(\d+)$/i);
+  if (parcelleSimple) {
+    const communeNorm = parcelleSimple[1].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const communeMatch = COMMUNES_VD.find(c =>
+      c.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') === communeNorm
+    );
+    if (communeMatch) {
+      return {
+        type: 'parcelle',
+        commune: communeMatch,
+        parcelle: parcelleSimple[2],
+        raw
+      };
     }
   }
 
-  // Pattern: commune seule
+  // PRIORITE 4: Commune seule
   const communeNorm = normalized.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   const matchedCommune = COMMUNES_VD.find(c =>
     c.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') === communeNorm
@@ -181,31 +223,37 @@ export function generateSearchUrls(parsed: ParsedQuery): PortalSearchResult[] {
 }
 
 function generateSwisstopoUrl(parsed: ParsedQuery): PortalSearchResult {
-  const base = 'https://map.geo.admin.ch/#/map?lang=fr&topic=ech&bgLayer=ch.swisstopo.pixelkarte-farbe';
+  // Swisstopo map.geo.admin.ch - nouveau format URL (2024+)
+  // Documentation: https://api3.geo.admin.ch/
+  const base = 'https://map.geo.admin.ch';
 
   let url: string | null = null;
   let description = '';
 
   switch (parsed.type) {
     case 'coordonnees':
-      url = `${base}&center=${parsed.coordX},${parsed.coordY}&z=13`;
-      description = `Centrer sur ${parsed.coordX}, ${parsed.coordY}`;
+      // Format: /#/map?center=X,Y&z=zoom (MN95)
+      url = `${base}/#/map?lang=fr&center=${parsed.coordX},${parsed.coordY}&z=12&bgLayer=ch.swisstopo.pixelkarte-farbe`;
+      description = `Centre sur ${parsed.coordX}, ${parsed.coordY}`;
       break;
     case 'parcelle':
-      url = `${base}&swisssearch=${encodeURIComponent(`${parsed.commune} parcelle ${parsed.parcelle}`)}`;
-      description = `Recherche parcelle ${parsed.parcelle} à ${parsed.commune}`;
+      // Utiliser swisssearch pour parcelle
+      url = `${base}/#/map?lang=fr&bgLayer=ch.swisstopo.pixelkarte-farbe&swisssearch=${encodeURIComponent(`${parsed.commune} ${parsed.parcelle}`)}`;
+      description = `Parcelle ${parsed.parcelle} a ${parsed.commune}`;
       break;
     case 'adresse':
-      url = `${base}&swisssearch=${encodeURIComponent(parsed.adresse || parsed.raw)}`;
-      description = `Recherche adresse`;
+      // Recherche adresse textuelle
+      const adresseSearch = parsed.adresse || `${parsed.rue} ${parsed.numero} ${parsed.commune || ''}`.trim();
+      url = `${base}/#/map?lang=fr&bgLayer=ch.swisstopo.pixelkarte-farbe&swisssearch=${encodeURIComponent(adresseSearch)}`;
+      description = `Adresse: ${adresseSearch}`;
       break;
     case 'commune':
-      url = `${base}&swisssearch=${encodeURIComponent(parsed.commune!)}`;
-      description = `Recherche commune ${parsed.commune}`;
+      url = `${base}/#/map?lang=fr&bgLayer=ch.swisstopo.pixelkarte-farbe&swisssearch=${encodeURIComponent(parsed.commune!)}`;
+      description = `Commune ${parsed.commune}`;
       break;
     case 'lieu':
     default:
-      url = `${base}&swisssearch=${encodeURIComponent(parsed.raw)}`;
+      url = `${base}/#/map?lang=fr&bgLayer=ch.swisstopo.pixelkarte-farbe&swisssearch=${encodeURIComponent(parsed.raw)}`;
       description = `Recherche "${parsed.raw}"`;
   }
 
@@ -225,37 +273,43 @@ function generateSwisstopoUrl(parsed: ParsedQuery): PortalSearchResult {
 }
 
 function generateGeoportailVDUrl(parsed: ParsedQuery): PortalSearchResult {
-  const base = 'https://www.geo.vd.ch';
+  // geoportail.vd.ch - Guichet professionnel cantonal vaudois
+  // URL de base: /map.htm avec parametre mapresources pour les themes
+  // Note: Ce portail ne supporte pas de parametres de recherche directe dans l'URL
+  const base = 'https://www.geoportail.vd.ch/map.htm';
 
   let url: string | null = null;
   let description = '';
 
-  // Geoportail VD utilise des paramètres URL pour la recherche
   switch (parsed.type) {
     case 'parcelle':
-      // Format: /theme/localisation/?parcelle=COMMUNE-NUMERO
-      url = `${base}/theme/localisation_thematique/?map_x=&map_y=&map_zoom=&parcelle=${parsed.commune}-${parsed.parcelle}`;
-      description = `Parcelle ${parsed.parcelle} à ${parsed.commune}`;
+      // Ouvrir avec le theme cadastre/localisation
+      url = base;
+      description = `Parcelle ${parsed.parcelle} a ${parsed.commune} (recherche manuelle)`;
       break;
     case 'coordonnees':
-      url = `${base}/theme/localisation_thematique/?map_x=${parsed.coordX}&map_y=${parsed.coordY}&map_zoom=10`;
-      description = `Coordonnées ${parsed.coordX}, ${parsed.coordY}`;
+      // Le guichet pro ne supporte pas les coordonnees en URL directe
+      url = base;
+      description = `Coord. ${parsed.coordX}, ${parsed.coordY} (recherche manuelle)`;
       break;
     case 'adresse':
-    case 'commune':
-    case 'lieu':
-      // Recherche textuelle
-      url = `${base}/?searchText=${encodeURIComponent(parsed.raw)}`;
-      description = `Recherche "${parsed.raw}"`;
+      const adresse = parsed.adresse || `${parsed.rue || ''} ${parsed.numero || ''} ${parsed.commune || ''}`.trim();
+      url = base;
+      description = `Adresse: ${adresse} (recherche manuelle)`;
       break;
+    case 'commune':
+      url = base;
+      description = `Commune ${parsed.commune} (recherche manuelle)`;
+      break;
+    case 'lieu':
     default:
-      url = `${base}/?searchText=${encodeURIComponent(parsed.raw)}`;
-      description = `Recherche "${parsed.raw}"`;
+      url = base;
+      description = `Recherche "${parsed.raw}" (manuelle)`;
   }
 
   return {
     portalId: 'geovd',
-    portalName: 'Geoportail VD',
+    portalName: 'Geoportail VD Pro',
     tabId: 'geovd',
     url,
     supported: true,
@@ -269,34 +323,50 @@ function generateGeoportailVDUrl(parsed: ParsedQuery): PortalSearchResult {
 }
 
 function generateRDPPFUrl(parsed: ParsedQuery): PortalSearchResult {
+  // RDPPF VD - Registre des restrictions de droit public à la propriété foncière
+  // Format: /portail.aspx?no_commune=OFS&no_parcelle=NUMERO
   const base = 'https://www.rdppf.vd.ch';
 
   let url: string | null = null;
   let description = '';
   let supported = true;
 
+  // Normaliser le nom de commune pour la recherche OFS
+  const communeNorm = parsed.commune?.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, '-') || '';
+  const ofsCode = COMMUNE_OFS[communeNorm] || '';
+
   switch (parsed.type) {
     case 'parcelle':
-      // RDPPF a un format spécifique pour les parcelles
-      const ofsCode = COMMUNE_OFS[parsed.commune?.toLowerCase() || ''] || '';
       if (ofsCode) {
         url = `${base}/portail.aspx?no_commune=${ofsCode}&no_parcelle=${parsed.parcelle}`;
-        description = `RDPPF parcelle ${parsed.parcelle} à ${parsed.commune}`;
+        description = `RDPPF parcelle ${parsed.parcelle} a ${parsed.commune}`;
       } else {
+        // Sans code OFS, on ouvre le portail avec juste le numéro de parcelle
         url = `${base}/portail.aspx`;
-        description = `Recherche manuelle requise (commune ${parsed.commune})`;
+        description = `RDPPF - Commune "${parsed.commune}" non trouvee`;
+        supported = false;
       }
       break;
     case 'commune':
-      const communeOfs = COMMUNE_OFS[parsed.commune?.toLowerCase() || ''];
-      if (communeOfs) {
-        url = `${base}/portail.aspx?no_commune=${communeOfs}`;
+      if (ofsCode) {
+        url = `${base}/portail.aspx?no_commune=${ofsCode}`;
         description = `RDPPF commune ${parsed.commune}`;
       } else {
         url = `${base}/portail.aspx`;
-        description = `Recherche manuelle requise`;
+        description = `RDPPF - Commune non trouvee`;
+        supported = false;
       }
       break;
+    case 'coordonnees':
+      // RDPPF ne supporte pas directement les coordonnées
+      url = `${base}/portail.aspx`;
+      description = 'RDPPF - Coordonnees non supportees';
+      supported = false;
+      break;
+    case 'adresse':
+    case 'lieu':
     default:
       url = `${base}/portail.aspx`;
       description = 'RDPPF - Recherche manuelle';
@@ -319,6 +389,9 @@ function generateRDPPFUrl(parsed: ParsedQuery): PortalSearchResult {
 }
 
 function generateIntercapiUrl(parsed: ParsedQuery): PortalSearchResult {
+  // Intercapi.ch - Portail intercommunal du Registre foncier VD
+  // Note: Ce portail nécessite souvent une authentification
+  // Format URL de base, la recherche se fait via l'interface
   const base = 'https://www.intercapi.ch';
 
   let url: string | null = null;
@@ -327,17 +400,27 @@ function generateIntercapiUrl(parsed: ParsedQuery): PortalSearchResult {
 
   switch (parsed.type) {
     case 'parcelle':
-      // Intercapi recherche par canton/commune/parcelle
-      url = `${base}/recherche?canton=VD&commune=${encodeURIComponent(parsed.commune || '')}&parcelle=${parsed.parcelle}`;
-      description = `RF parcelle ${parsed.parcelle} à ${parsed.commune}`;
+      // Intercapi peut accepter des paramètres de recherche directe
+      // Format: commune en minuscule, numéro de parcelle
+      const communeLower = parsed.commune?.toLowerCase() || '';
+      url = `${base}/immo_search.php?commune=${encodeURIComponent(communeLower)}&parcelle=${parsed.parcelle}`;
+      description = `RF parcelle ${parsed.parcelle} a ${parsed.commune}`;
       break;
     case 'commune':
-      url = `${base}/recherche?canton=VD&commune=${encodeURIComponent(parsed.commune || '')}`;
+      url = `${base}/immo_search.php?commune=${encodeURIComponent(parsed.commune?.toLowerCase() || '')}`;
       description = `RF commune ${parsed.commune}`;
       break;
+    case 'adresse':
+      // Recherche par adresse
+      const adresse = parsed.adresse || `${parsed.rue || ''} ${parsed.numero || ''}`.trim();
+      url = `${base}/immo_search.php?adresse=${encodeURIComponent(adresse)}`;
+      description = `RF adresse: ${adresse}`;
+      break;
+    case 'coordonnees':
+    case 'lieu':
     default:
       url = base;
-      description = 'Registre foncier - Recherche manuelle';
+      description = 'RF - Recherche manuelle';
       supported = false;
   }
 
@@ -357,22 +440,48 @@ function generateIntercapiUrl(parsed: ParsedQuery): PortalSearchResult {
 }
 
 function generateCapitrastraUrl(parsed: ParsedQuery): PortalSearchResult {
+  // Capitastra.vd.ch - Système d'information cadastral vaudois
+  // Format: /hrcintapp/externalCall.action avec paramètres
   const base = 'https://www.capitastra.vd.ch';
 
   let url: string | null = null;
   let description = '';
   let supported = true;
 
+  // Normaliser le nom de commune
+  const communeNorm = parsed.commune?.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
+  const ofsCode = COMMUNE_OFS[communeNorm] || '';
+
   switch (parsed.type) {
     case 'parcelle':
-      // Capitastra - recherche par commune et parcelle
-      url = `${base}/hrcintapp/externalCall.action?commune=${encodeURIComponent(parsed.commune || '')}&parcelle=${parsed.parcelle}`;
-      description = `Capitastra parcelle ${parsed.parcelle} à ${parsed.commune}`;
+      if (ofsCode) {
+        // Capitastra utilise le code OFS et numéro de parcelle
+        url = `${base}/hrcintapp/externalCall.action?noOfsCommune=${ofsCode}&noParcelle=${parsed.parcelle}`;
+        description = `Capitastra parcelle ${parsed.parcelle} a ${parsed.commune}`;
+      } else {
+        // Sans code OFS, utiliser le nom de commune
+        url = `${base}/hrcintapp/externalCall.action?commune=${encodeURIComponent(parsed.commune || '')}&noParcelle=${parsed.parcelle}`;
+        description = `Capitastra parcelle ${parsed.parcelle}`;
+      }
       break;
     case 'commune':
-      url = `${base}/hrcintapp/externalCall.action?commune=${encodeURIComponent(parsed.commune || '')}`;
-      description = `Capitastra commune ${parsed.commune}`;
+      if (ofsCode) {
+        url = `${base}/hrcintapp/externalCall.action?noOfsCommune=${ofsCode}`;
+        description = `Capitastra commune ${parsed.commune}`;
+      } else {
+        url = `${base}/hrcintapp/externalCall.action?commune=${encodeURIComponent(parsed.commune || '')}`;
+        description = `Capitastra commune ${parsed.commune}`;
+      }
       break;
+    case 'adresse':
+      // Capitastra peut rechercher par adresse
+      const adresse = parsed.adresse || `${parsed.rue || ''} ${parsed.numero || ''}`.trim();
+      url = `${base}/hrcintapp/externalCall.action?adresse=${encodeURIComponent(adresse)}`;
+      description = `Capitastra adresse: ${adresse}`;
+      break;
+    case 'coordonnees':
+    case 'lieu':
     default:
       url = base;
       description = 'Capitastra - Recherche manuelle';
@@ -395,28 +504,50 @@ function generateCapitrastraUrl(parsed: ParsedQuery): PortalSearchResult {
 }
 
 function generateGeoportailBussignyUrl(parsed: ParsedQuery): PortalSearchResult {
+  // geo.bussigny.ch utilise QWC2 (QGIS Web Client 2)
+  // Parametres URL QWC2:
+  // - st=search text (recherche textuelle)
+  // - c=x,y (center - coordonnees MN95)
+  // - s=scale (echelle)
+  // - e=minx,miny,maxx,maxy (extent)
   const base = 'https://geo.bussigny.ch';
 
   let url: string | null = null;
   let description = '';
 
-  // Le géoportail Bussigny utilise probablement des paramètres similaires
   switch (parsed.type) {
     case 'parcelle':
-      if (parsed.commune?.toLowerCase() === 'bussigny') {
-        url = `${base}/?parcelle=${parsed.parcelle}`;
-        description = `Géoportail parcelle ${parsed.parcelle}`;
-      } else {
-        url = base;
-        description = 'Géoportail Bussigny uniquement';
-      }
+      // Pour les parcelles de Bussigny, on peut chercher directement le numero
+      // Pour les autres communes, on prefixe avec le nom de commune
+      const isBussigny = parsed.commune?.toLowerCase() === 'bussigny';
+      const searchText = isBussigny
+        ? `${parsed.parcelle}`  // Juste le numero pour Bussigny
+        : `${parsed.commune} ${parsed.parcelle}`;  // Commune + numero pour les autres
+      url = `${base}/?st=${encodeURIComponent(searchText)}`;
+      description = isBussigny
+        ? `Parcelle ${parsed.parcelle} a Bussigny`
+        : `Parcelle ${parsed.parcelle} a ${parsed.commune}`;
       break;
     case 'coordonnees':
-      url = `${base}/?x=${parsed.coordX}&y=${parsed.coordY}&zoom=10`;
-      description = `Coordonnées ${parsed.coordX}, ${parsed.coordY}`;
+      // QWC2: c=x,y pour centrer, s=scale (1000 = environ 1:1000)
+      url = `${base}/?c=${parsed.coordX},${parsed.coordY}&s=1000`;
+      description = `Centre sur ${parsed.coordX}, ${parsed.coordY}`;
       break;
+    case 'adresse':
+      // Recherche adresse via st=
+      const adresse = parsed.adresse || `${parsed.rue || ''} ${parsed.numero || ''}`.trim();
+      url = `${base}/?st=${encodeURIComponent(adresse)}`;
+      description = `Adresse: ${adresse}`;
+      break;
+    case 'commune':
+      // Recherche commune (centrer sur Bussigny ou rechercher autre commune)
+      url = `${base}/?st=${encodeURIComponent(parsed.commune!)}`;
+      description = `Commune ${parsed.commune}`;
+      break;
+    case 'lieu':
     default:
-      url = `${base}/?search=${encodeURIComponent(parsed.raw)}`;
+      // Recherche libre
+      url = `${base}/?st=${encodeURIComponent(parsed.raw)}`;
       description = `Recherche "${parsed.raw}"`;
   }
 

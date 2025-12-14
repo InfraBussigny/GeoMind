@@ -24,7 +24,7 @@ export interface PortalConfig {
 const DEFAULT_PORTALS: PortalConfig[] = [
   {
     id: 'geovd',
-    name: 'Geoportail VD',
+    name: 'Geoportail VD Pro',
     tabId: 'geovd',
     enabled: true,
     order: 0,
@@ -60,7 +60,7 @@ const DEFAULT_PORTALS: PortalConfig[] = [
     order: 3,
     isDefault: false,
     icon: 'building',
-    relevantFor: ['parcelle', 'commune']
+    relevantFor: ['parcelle', 'commune', 'adresse']
   },
   {
     id: 'capitastra',
@@ -70,7 +70,7 @@ const DEFAULT_PORTALS: PortalConfig[] = [
     order: 4,
     isDefault: false,
     icon: 'file-text',
-    relevantFor: ['parcelle', 'commune']
+    relevantFor: ['parcelle', 'commune', 'adresse']
   },
   {
     id: 'geoportail',

@@ -1,5 +1,16 @@
 # GeoBrain Checkpoints
 
+## CP-20251214-1430
+```
+S:22|P:UNIVERSAL-SEARCH|T:Module-Cartes-SearchBar
+F:universalSearch.ts,UniversalSearchBar.svelte,CanvasModule.svelte,portalConfig.ts,SettingsModule.svelte
+W:Barre recherche universelle refaite|Parsing 5 types(parcelle,adresse,coordonnees,commune,lieu)|6 portails(Swisstopo,GeoportailVD-Pro,RDPPF,RF,Capitastra,Bussigny)|Config drag&drop Settings|Bouton openAll supprime|Recherche gardee en memoire
+N:Tests manuels portails|Verifier iframes fonctionnent|Polish UX dropdown
+X:geo.vd.ch→geoportail.vd.ch/map.htm|QWC2 params(st=,c=,s=)|GeoMapFish params(map_x,map_y)|10/10 tests parsing OK
+```
+
+---
+
 ## CP-20251213-0230
 ```
 S:21|P:UX-REFACTOR+GROQ|T:Settings-tabs+Agent-multiProvider

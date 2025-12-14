@@ -5,7 +5,6 @@
 
   const dispatch = createEventDispatcher<{
     navigate: { tabId: string; url: string };
-    openAll: { results: PortalSearchResult[] };
   }>();
 
   // State
@@ -40,22 +39,18 @@
     selectedIndex = relevantResults.length > 0 ? 0 : -1;
   }
 
-  // Handle result click
+  // Handle result click - keep search query in memory
   function selectResult(result: PortalSearchResult) {
     if (result.url) {
       dispatch('navigate', { tabId: result.tabId, url: result.url });
     }
-    closeDropdown();
+    // Fermer le dropdown mais garder la recherche
+    showDropdown = false;
+    selectedIndex = -1;
   }
 
-  // Open all relevant results
-  function openAllRelevant() {
-    dispatch('openAll', { results: relevantResults });
-    closeDropdown();
-  }
-
-  // Close dropdown and reset
-  function closeDropdown() {
+  // Clear search completely
+  function clearSearch() {
     showDropdown = false;
     searchQuery = '';
     parsedQuery = null;
@@ -88,7 +83,7 @@
         break;
       case 'Escape':
         event.preventDefault();
-        closeDropdown();
+        showDropdown = false;
         inputRef?.blur();
         break;
     }
@@ -140,7 +135,7 @@
       class="search-input"
     />
     {#if searchQuery}
-      <button class="search-clear" onclick={closeDropdown} title="Effacer">
+      <button class="search-clear" onclick={clearSearch} title="Effacer">
         &times;
       </button>
     {/if}
@@ -216,18 +211,6 @@
             </button>
           {/each}
         </div>
-      {/if}
-
-      <!-- Open all button -->
-      {#if relevantResults.length > 1}
-        <button class="open-all-btn" onclick={openAllRelevant}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
-            <polyline points="2 17 12 22 22 17"/>
-            <polyline points="2 12 12 17 22 12"/>
-          </svg>
-          Ouvrir sur tous les portails pertinents ({relevantResults.length})
-        </button>
       {/if}
 
       <!-- Keyboard hint -->
@@ -445,29 +428,6 @@
     font-size: 11px;
     color: var(--text-secondary);
     font-family: var(--font-mono);
-  }
-
-  .open-all-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
-    padding: 10px 12px;
-    background: rgba(0, 255, 136, 0.1);
-    border: none;
-    border-top: 1px solid var(--cyber-green);
-    color: var(--cyber-green);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-  }
-
-  .open-all-btn:hover {
-    background: var(--cyber-green);
-    color: var(--noir-profond);
   }
 
   .keyboard-hint {
