@@ -109,6 +109,20 @@
       icon: 'document',
       hasLogin: false
     },
+    {
+      id: 'rf',
+      name: 'Registre foncier',
+      url: 'https://www.intercapi.ch',
+      icon: 'building',
+      hasLogin: false
+    },
+    {
+      id: 'capitastra',
+      name: 'Capitastra VD',
+      url: 'https://www.capitastra.vd.ch',
+      icon: 'file-text',
+      hasLogin: false
+    },
   ];
 
   type MapId = typeof maps[number]['id'];
@@ -225,6 +239,20 @@
               <polyline points="2 17 12 22 22 17"/>
               <polyline points="2 12 12 17 22 12"/>
               <circle cx="19" cy="5" r="3" fill="currentColor"/>
+            {:else if map.icon === 'building'}
+              <path d="M3 21h18"/>
+              <path d="M5 21V7l8-4v18"/>
+              <path d="M19 21V11l-6-4"/>
+              <path d="M9 9v.01"/>
+              <path d="M9 12v.01"/>
+              <path d="M9 15v.01"/>
+              <path d="M9 18v.01"/>
+            {:else if map.icon === 'file-text'}
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <line x1="10" y1="9" x2="8" y2="9"/>
             {/if}
           </svg>
           <span class="tab-label">{map.name}</span>
