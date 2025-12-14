@@ -1,5 +1,5 @@
 ## Session 28 - 14 decembre 2025
-**Theme** : Module Communications refait + ameliorations diverses
+**Theme** : Module Communications refait + ameliorations Cartes
 
 ### Travail effectue
 
@@ -10,21 +10,29 @@
 - **Toolbar** : Refresh, ouvrir externe, fermer
 - **Fallback iframe** pour mode navigateur
 
-#### 2. Corrections Tauri CSP
+#### 2. Registre foncier integre au module Cartes
+- Nouvel onglet **Registre foncier** (intercapi.ch)
+- Nouvel onglet **Capitastra VD** (capitastra.vd.ch)
+- CSP mis a jour pour autoriser ces domaines
+
+#### 3. Barre de recherche universelle (Cartes)
+- **Service `universalSearch.ts`** avec parser intelligent
+- Reconnait : parcelle, adresse, commune, coordonnees MN95
+- Genere URLs adaptees pour chaque portail
+- Portails supportes : Swisstopo, Geoportail VD, RDPPF, Intercapi, Capitastra, Geoportail Bussigny
+- **UI integree** dans la barre d'onglets
+- Dropdown avec resultats et bouton "ouvrir sur tous les portails"
+
+#### 4. Corrections Tauri CSP
 - Ajout services geo suisses (geo.admin.ch, asit-asso.ch, etc.)
 - Ajout Teams (teams.microsoft.com, *.microsoft.com)
-- Permissions webview pour fenêtres enfants
+- Ajout intercapi.ch, capitastra.vd.ch, rdppf.vd.ch
 
-#### 3. Documentation
-- README mis a jour avec section GeoMind App
-- Script start-geomind.bat pour lancement automatique
-- Documentation depannage CSP et webviews
-
-### A faire plus tard
-- **Registre foncier VD dans module Cartes**
-  - Options : WebView Intercapi/Capitastra, split-view, ou API/WFS
-  - URL : https://www.capitastra.vd.ch ou https://www.intercapi.ch
-  - Objectif : Interaction avec le site depuis GeoMind
+### Exemples de requetes universelles
+- `Bussigny parcelle 791` → Recherche parcelle sur tous les portails
+- `2538000 1152000` → Navigation aux coordonnees MN95
+- `Rue de Lausanne 15, Bussigny` → Recherche adresse
+- `Lausanne` → Recherche commune
 
 ---
 
