@@ -12,25 +12,34 @@
   // Handle search navigation
   function handleSearchNavigate(event: CustomEvent<{ tabId: string; url: string }>) {
     const { tabId, url } = event.detail;
-    dynamicUrls[tabId] = url;
-    iframeKeys[tabId]++;
+    console.log('[Search] Navigate to:', tabId, 'URL:', url);
+    // Force reactivity by creating new object
+    dynamicUrls = { ...dynamicUrls, [tabId]: url };
+    iframeKeys = { ...iframeKeys, [tabId]: (iframeKeys[tabId] || 0) + 1 };
     handleTabChange(tabId as MapId);
   }
 
   // Handle open all from search
   function handleSearchOpenAll(event: CustomEvent<{ results: PortalSearchResult[] }>) {
     const { results } = event.detail;
+    const newUrls = { ...dynamicUrls };
+    const newKeys = { ...iframeKeys };
     results.forEach(result => {
       if (result.url) {
-        dynamicUrls[result.tabId] = result.url;
-        iframeKeys[result.tabId]++;
+        console.log('[Search] OpenAll:', result.tabId, 'URL:', result.url);
+        newUrls[result.tabId] = result.url;
+        newKeys[result.tabId] = (newKeys[result.tabId] || 0) + 1;
       }
     });
+    dynamicUrls = newUrls;
+    iframeKeys = newKeys;
   }
 
   // Get URL for a map (dynamic if set, otherwise default)
   function getMapUrl(mapId: string): string {
-    return dynamicUrls[mapId] || maps.find(m => m.id === mapId)?.url || '';
+    const url = dynamicUrls[mapId] || maps.find(m => m.id === mapId)?.url || '';
+    console.log('[getMapUrl]', mapId, '->', url);
+    return url;
   }
 
   // Assistant state
