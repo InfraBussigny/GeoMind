@@ -1,5 +1,16 @@
 # GeoBrain Checkpoints
 
+## CP-20251214-2100
+```
+S:30|P:MODULES-INTEGRATION|T:Intercapi-TimePro-VPN
+F:IntercapiModule.svelte,intercapiStore.ts,TimeProModule.svelte,VpnModule.svelte,CommunicationsPanel.svelte,app.ts,Sidebar.svelte,+page.svelte,tauri.conf.json
+W:Module Intercapi créé(iframe/webview,recherche,historique,favoris)|TimeProModule refait(webview intégré,panel timer,URL configurable)|VpnModule amélioré(historique connexions,info panel)|Auto-merge nouveaux modules dans config existante
+N:Tester en mode Tauri desktop|Polish UX modules
+X:Intercapi=intercapi.vd.ch|Webview.create() pour Tauri|Iframe fallback web|VPN=FortiClient natif(non intégrable)|CSP mis à jour
+```
+
+---
+
 ## CP-20251214-1700
 ```
 S:23|P:MODE-BFSA|T:Easter-Egg-Carlo-Perono

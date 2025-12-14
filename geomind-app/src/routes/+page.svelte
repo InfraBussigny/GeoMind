@@ -15,6 +15,7 @@
   import WakeLockModule from '$lib/components/WakeLock/WakeLockModule.svelte';
   import VpnModule from '$lib/components/VPN/VpnModule.svelte';
   import KDriveModule from '$lib/components/KDrive/KDriveModule.svelte';
+  import { IntercapiModule } from '$lib/components/Intercapi';
 </script>
 
 <div class="module-container">
@@ -48,6 +49,8 @@
     <VpnModule />
   {:else if $currentModule === 'kdrive'}
     <KDriveModule />
+  {:else if $currentModule === 'intercapi'}
+    <IntercapiModule />
   {/if}
 </div>
 

@@ -1,7 +1,7 @@
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 
-export type ModuleType = 'chat' | 'canvas' | 'editor' | 'docgen' | 'connections' | 'settings' | 'comm' | 'databases' | 'timepro' | 'wip' | 'cad' | 'converter' | 'wakelock' | 'vpn' | 'kdrive';
+export type ModuleType = 'chat' | 'canvas' | 'editor' | 'docgen' | 'connections' | 'settings' | 'comm' | 'databases' | 'timepro' | 'wip' | 'cad' | 'converter' | 'wakelock' | 'vpn' | 'kdrive' | 'intercapi';
 
 export const currentModule = writable<ModuleType>('chat');
 export const sidebarCollapsed = writable(false);
@@ -240,17 +240,19 @@ export const ALL_MODULES: { id: ModuleType; label: string; description: string; 
   { id: 'comm', label: 'Comms', description: 'Outlook & 3CX' },
   { id: 'docgen', label: 'DocGen', description: 'Generation docs' },
   { id: 'connections', label: 'Connexions', description: 'Serveurs DB' },
+  { id: 'intercapi', label: 'Intercapi', description: 'Registre Foncier VD' },
   { id: 'settings', label: 'Parametres', description: 'Configuration', alwaysVisible: true },
   { id: 'wip', label: 'WIP', description: 'En developpement' },
   { id: 'cad', label: 'CAD', description: 'Viewer DXF/DWG' },
-  { id: 'vpn', label: 'VPN', description: 'FortiClient VPN' }
+  { id: 'vpn', label: 'VPN', description: 'FortiClient VPN' },
+  { id: 'kdrive', label: 'kDrive', description: 'Partage fichiers' }
 ];
 
 // Modules par défaut pour chaque mode (excluant standard qui est fixe)
 const DEFAULT_MODULE_CONFIG: Record<string, ModuleType[]> = {
-  expert: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'comm', 'docgen', 'connections', 'settings', 'cad', 'vpn'],
-  god: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'comm', 'docgen', 'connections', 'settings', 'wip', 'cad', 'vpn'],
-  bfsa: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'comm', 'docgen', 'connections', 'settings', 'cad', 'vpn']
+  expert: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'comm', 'docgen', 'connections', 'intercapi', 'settings', 'cad', 'vpn'],
+  god: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'comm', 'docgen', 'connections', 'intercapi', 'settings', 'wip', 'cad', 'vpn'],
+  bfsa: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'comm', 'docgen', 'connections', 'intercapi', 'settings', 'cad', 'vpn']
 };
 
 // Modules fixes pour le mode standard (non modifiable)
@@ -259,7 +261,34 @@ const STANDARD_MODULES: ModuleType[] = ['chat', 'canvas', 'databases', 'converte
 // Store pour la configuration personnalisée des modules par mode
 function createModuleConfigStore() {
   const stored = browser ? localStorage.getItem('geomind-module-config') : null;
-  const initial: Record<string, ModuleType[]> = stored ? JSON.parse(stored) : { ...DEFAULT_MODULE_CONFIG };
+
+  // Merger la config sauvegardée avec les nouveaux modules par défaut
+  // Cela permet d'ajouter automatiquement les nouveaux modules sans reset
+  let initial: Record<string, ModuleType[]>;
+
+  if (stored) {
+    const savedConfig = JSON.parse(stored) as Record<string, ModuleType[]>;
+    initial = { ...DEFAULT_MODULE_CONFIG };
+
+    // Pour chaque mode, on garde les modules sauvegardés ET on ajoute les nouveaux
+    for (const mode of Object.keys(DEFAULT_MODULE_CONFIG)) {
+      const savedModules = savedConfig[mode] || [];
+      const defaultModules = DEFAULT_MODULE_CONFIG[mode] || [];
+
+      // Trouver les nouveaux modules (dans default mais pas dans saved)
+      const newModules = defaultModules.filter(m => !savedModules.includes(m));
+
+      // Garder la config utilisateur + ajouter les nouveaux modules
+      initial[mode] = [...savedModules, ...newModules];
+    }
+
+    // Sauvegarder la config mergée si elle a changé
+    if (browser && JSON.stringify(initial) !== stored) {
+      localStorage.setItem('geomind-module-config', JSON.stringify(initial));
+    }
+  } else {
+    initial = { ...DEFAULT_MODULE_CONFIG };
+  }
 
   const { subscribe, set, update } = writable(initial);
 
@@ -323,7 +352,7 @@ export const moduleConfig = createModuleConfigStore();
 // Ordre par défaut des modules
 const DEFAULT_MODULE_ORDER: ModuleType[] = [
   'chat', 'canvas', 'cad', 'editor', 'databases', 'converter',
-  'vpn', 'wakelock', 'timepro', 'comm', 'docgen', 'connections',
+  'vpn', 'kdrive', 'intercapi', 'wakelock', 'timepro', 'comm', 'docgen', 'connections',
   'settings', 'wip'
 ];
 

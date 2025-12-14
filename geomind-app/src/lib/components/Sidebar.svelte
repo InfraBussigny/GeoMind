@@ -38,6 +38,7 @@
     { id: 'comm', label: 'Communications', description: 'Canal social' },
     { id: 'docgen', label: 'Documents', description: 'Generation PDF' },
     { id: 'connections', label: 'Connexions', description: 'Serveurs' },
+    { id: 'intercapi', label: 'Intercapi', description: 'Registre Foncier' },
     { id: 'settings', label: 'Parametres', description: 'Configuration' },
     { id: 'wip', label: 'WIP', description: 'En developpement' },
     { id: 'vpn', label: 'VPN', description: 'FortiClient VPN' },
@@ -445,6 +446,12 @@
             <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <!-- Nuage -->
               <path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/>
+            </svg>
+          <!-- Intercapi / Registre Foncier -->
+          {:else if module.id === 'intercapi'}
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <!-- Bâtiment avec colonnes (registre foncier) -->
+              <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/>
             </svg>
           {/if}
         </div>

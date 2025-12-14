@@ -3,12 +3,19 @@
   import { browser } from '$app/environment';
   import { notificationsStore } from '$lib/services/communications';
 
-  // Time Pro URL - TODO: Make configurable
-  const timeProUrl = 'https://timepro.example.ch/employee/dashboard';
+  // State
+  let isTauri = $state(false);
+  let webviewReady = $state(false);
+  let isLoading = $state(false);
+  let iframeError = $state(false);
+  let currentWebview: any = null;
+  let webviewContainer: HTMLDivElement;
+  let resizeObserver: ResizeObserver | null = null;
 
-  // Window state
-  let timeProWebWindow: Window | null = null;
-  let timeProWebOpen = $state(false);
+  // Time Pro URL - Configurable
+  let timeProUrl = $state('');
+  let showSettings = $state(false);
+  let showPanel = $state(true);
 
   // Auto-pointage config
   interface AutoPointageConfig {
@@ -38,8 +45,22 @@
   let rePointageTimeLeft = $state('');
   let rePointageMinutes = $state(45);
 
-  onMount(() => {
+  onMount(async () => {
     if (browser) {
+      // Load Time Pro URL
+      timeProUrl = localStorage.getItem('geomind_timepro_url') || '';
+
+      // Check if Tauri
+      try {
+        const { getCurrentWindow } = await import('@tauri-apps/api/window');
+        const win = await getCurrentWindow();
+        if (win) {
+          isTauri = true;
+        }
+      } catch {
+        isTauri = false;
+      }
+
       // Load saved config from localStorage
       try {
         const saved = localStorage.getItem('geomind_autopointage');
@@ -55,86 +76,143 @@
       if (autoPointageConfig.enabled) {
         startAutoPointageChecker();
       }
+
+      // Load Time Pro if URL configured
+      if (timeProUrl) {
+        loadTimePro();
+      }
     }
   });
 
   onDestroy(() => {
     stopRePointageTimer();
     stopAutoPointageChecker();
+    destroyWebview();
+    if (resizeObserver) {
+      resizeObserver.disconnect();
+    }
   });
 
-  // Open Time Pro Web
-  async function openTimeProWeb() {
-    if (timeProWebWindow && !timeProWebWindow.closed) {
-      timeProWebWindow.focus();
-      return;
-    }
-
-    if (browser) {
+  // Webview management
+  async function destroyWebview() {
+    if (currentWebview) {
       try {
-        const { WebviewWindow } = await import('@tauri-apps/api/webviewWindow');
-
-        const existing = await WebviewWindow.getByLabel('timepro');
-        if (existing) {
-          await existing.setFocus();
-          timeProWebOpen = true;
-          return;
-        }
-
-        const webview = new WebviewWindow('timepro', {
-          url: timeProUrl,
-          title: 'Time Pro - Pointage',
-          width: 1200,
-          height: 800,
-          center: true,
-          resizable: true,
-          decorations: true,
-          userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        });
-
-        webview.once('tauri://created', () => {
-          timeProWebOpen = true;
-        });
-
-        webview.once('tauri://error', () => {
-          openTimeProWebFallback();
-        });
-
-        webview.once('tauri://close-requested', () => {
-          timeProWebOpen = false;
-        });
-
+        await currentWebview.close();
       } catch (e) {
-        openTimeProWebFallback();
+        console.log('Error closing webview:', e);
       }
-    } else {
-      openTimeProWebFallback();
+      currentWebview = null;
+      webviewReady = false;
     }
   }
 
-  function openTimeProWebFallback() {
-    const width = 1200;
-    const height = 800;
-    const left = (screen.width - width) / 2;
-    const top = (screen.height - height) / 2;
+  function getContainerBounds(): { x: number; y: number; width: number; height: number } | null {
+    if (!webviewContainer) return null;
+    const rect = webviewContainer.getBoundingClientRect();
+    return {
+      x: Math.round(rect.left),
+      y: Math.round(rect.top),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height)
+    };
+  }
 
-    timeProWebWindow = window.open(
-      timeProUrl,
-      'TimeProWeb',
-      `width=${width},height=${height},left=${left},top=${top},menubar=no,toolbar=no,location=no,status=no`
-    );
-
-    if (timeProWebWindow) {
-      timeProWebOpen = true;
-
-      const checkWindow = setInterval(() => {
-        if (timeProWebWindow?.closed) {
-          timeProWebOpen = false;
-          timeProWebWindow = null;
-          clearInterval(checkWindow);
-        }
-      }, 1000);
+  async function loadTimePro() {
+    if (!timeProUrl) {
+      showSettings = true;
+      return;
     }
+
+    isLoading = true;
+    iframeError = false;
+    await destroyWebview();
+
+    if (isTauri) {
+      await createTauriWebview();
+    } else {
+      webviewReady = true;
+      isLoading = false;
+    }
+  }
+
+  async function createTauriWebview() {
+    try {
+      const { Webview } = await import('@tauri-apps/api/webview');
+      const { getCurrentWindow } = await import('@tauri-apps/api/window');
+
+      const bounds = getContainerBounds();
+      if (!bounds) {
+        console.error('Could not get container bounds');
+        isLoading = false;
+        return;
+      }
+
+      const mainWindow = await getCurrentWindow();
+      currentWebview = await Webview.create(mainWindow, 'webview-timepro', {
+        url: timeProUrl,
+        x: bounds.x,
+        y: bounds.y,
+        width: bounds.width,
+        height: bounds.height,
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      });
+
+      webviewReady = true;
+      isLoading = false;
+      setupResizeObserver();
+    } catch (e) {
+      console.error('Error creating Tauri webview:', e);
+      isLoading = false;
+      webviewReady = true;
+    }
+  }
+
+  function setupResizeObserver() {
+    if (resizeObserver) resizeObserver.disconnect();
+
+    resizeObserver = new ResizeObserver(async () => {
+      if (currentWebview && webviewContainer) {
+        const bounds = getContainerBounds();
+        if (bounds) {
+          try {
+            await currentWebview.setPosition({ x: bounds.x, y: bounds.y });
+            await currentWebview.setSize({ width: bounds.width, height: bounds.height });
+          } catch (e) {
+            console.log('Error resizing webview:', e);
+          }
+        }
+      }
+    });
+
+    resizeObserver.observe(webviewContainer);
+  }
+
+  function refreshWebview() {
+    loadTimePro();
+  }
+
+  function openExternal() {
+    if (timeProUrl) {
+      window.open(timeProUrl, '_blank');
+    }
+  }
+
+  function saveTimeProUrl() {
+    if (browser && timeProUrl) {
+      localStorage.setItem('geomind_timepro_url', timeProUrl);
+      showSettings = false;
+      loadTimePro();
+    }
+  }
+
+  function handleIframeLoad() {
+    isLoading = false;
+    iframeError = false;
+  }
+
+  function handleIframeError() {
+    isLoading = false;
+    iframeError = true;
   }
 
   // Timer functions
@@ -403,604 +481,883 @@
 </script>
 
 <div class="timepro-module">
-  <!-- Header with Time Pro Web button -->
-  <div class="timepro-header">
-    <h2>Time Pro - Pointage</h2>
-    <button class="timepro-web-btn" onclick={openTimeProWeb}>
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10"/>
-        <polyline points="12 6 12 12 16 14"/>
-      </svg>
-      {timeProWebOpen ? 'Time Pro ouvert' : 'Ouvrir Time Pro'}
-    </button>
-  </div>
-
-  <div class="timepro-content">
-    <!-- Re-pointage Timer Section -->
-    <div class="timepro-section">
-      <h3>Timer Re-pointage</h3>
-      <p class="section-desc">Demarrez un timer pour etre rappele de re-pointer apres une pause.</p>
-
-      {#if rePointageTimer}
-        <div class="timer-active">
-          <div class="timer-display">
-            <span class="timer-countdown">{rePointageTimeLeft}</span>
-            <span class="timer-label">avant rappel</span>
-          </div>
-          <button class="timer-stop-btn" onclick={stopRePointageTimer}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="6" y="6" width="12" height="12"/>
-            </svg>
-            Annuler
-          </button>
-        </div>
-      {:else}
-        <div class="timer-setup">
-          <div class="timer-input-group">
-            <label>Minutes:</label>
-            <input type="number" min="1" max="180" bind:value={rePointageMinutes} />
-          </div>
-          <div class="timer-presets">
-            <button class="preset-btn" onclick={() => startRePointageTimer(30)}>30min</button>
-            <button class="preset-btn" onclick={() => startRePointageTimer(45)}>45min</button>
-            <button class="preset-btn" onclick={() => startRePointageTimer(60)}>1h</button>
-            <button class="preset-btn" onclick={() => startRePointageTimer(90)}>1h30</button>
-          </div>
-          <button class="timer-start-btn" onclick={() => startRePointageTimer()}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="5 3 19 12 5 21 5 3"/>
-            </svg>
-            Demarrer ({rePointageMinutes}min)
-          </button>
-        </div>
-      {/if}
+  <!-- Collapsible Panel -->
+  <div class="timepro-panel" class:collapsed={!showPanel}>
+    <div class="panel-header">
+      <h3>Pointage</h3>
+      <button class="panel-toggle" onclick={() => showPanel = !showPanel} title={showPanel ? 'Reduire' : 'Agrandir'}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          {#if showPanel}
+            <polyline points="15 18 9 12 15 6"/>
+          {:else}
+            <polyline points="9 18 15 12 9 6"/>
+          {/if}
+        </svg>
+      </button>
     </div>
 
-    <!-- Scheduled Pointages Section -->
-    <div class="timepro-section">
-      <div class="section-header">
-        <h3>Pointages Programmes</h3>
-        <button
-          class="toggle-auto-btn"
-          class:active={autoPointageConfig.enabled}
-          onclick={toggleAutoPointage}
-        >
-          {autoPointageConfig.enabled ? 'Actif' : 'Inactif'}
-        </button>
-      </div>
-      <p class="section-desc">Configurez des rappels automatiques pour vos pointages quotidiens.</p>
-
-      {#if nextPointage && autoPointageConfig.enabled}
-        <div class="next-pointage">
-          <span class="next-label">Prochain pointage:</span>
-          <span class="next-info">{nextPointage.label} - {nextPointage.time}</span>
-        </div>
-      {/if}
-
-      <!-- Existing schedules -->
-      {#if autoPointageConfig.schedules.length > 0}
-        <div class="schedules-list">
-          {#each autoPointageConfig.schedules as schedule}
-            <div class="schedule-item" class:in={schedule.type === 'in'} class:out={schedule.type === 'out'}>
-              <div class="schedule-info">
-                <span class="schedule-time">{schedule.time}</span>
-                <span class="schedule-label">{schedule.label}</span>
-                <span class="schedule-days">
-                  {schedule.days.map(d => getDayName(d)).join(', ')}
-                </span>
-              </div>
-              <button class="schedule-delete" onclick={() => removeScheduledPointage(schedule.id)}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="18" y1="6" x2="6" y2="18"/>
-                  <line x1="6" y1="6" x2="18" y2="18"/>
+    {#if showPanel}
+      <div class="panel-content">
+        <!-- Timer Section -->
+        <div class="panel-section">
+          <h4>Timer Re-pointage</h4>
+          {#if rePointageTimer}
+            <div class="timer-active-compact">
+              <span class="timer-countdown-compact">{rePointageTimeLeft}</span>
+              <button class="timer-stop-compact" onclick={stopRePointageTimer} title="Annuler">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="6" y="6" width="12" height="12"/>
                 </svg>
               </button>
             </div>
-          {/each}
+          {:else}
+            <div class="timer-presets-compact">
+              <button class="preset-compact" onclick={() => startRePointageTimer(30)}>30m</button>
+              <button class="preset-compact" onclick={() => startRePointageTimer(45)}>45m</button>
+              <button class="preset-compact" onclick={() => startRePointageTimer(60)}>1h</button>
+            </div>
+          {/if}
         </div>
-      {/if}
 
-      <!-- Add new schedule -->
-      <div class="add-schedule-form">
-        <div class="schedule-form-row">
-          <input type="time" bind:value={newScheduleTime} class="time-input" />
-          <select bind:value={newScheduleType} class="type-select">
-            <option value="in">Entree</option>
-            <option value="out">Sortie</option>
-          </select>
-          <input type="text" placeholder="Label (optionnel)" bind:value={newScheduleLabel} class="label-input" />
-        </div>
-        <div class="days-selector">
-          {#each [1, 2, 3, 4, 5, 6, 0] as day}
+        <!-- Schedules Section -->
+        <div class="panel-section">
+          <div class="section-title-row">
+            <h4>Programmes</h4>
             <button
-              class="day-btn"
-              class:selected={newScheduleDays.includes(day)}
-              onclick={() => toggleScheduleDay(day)}
+              class="toggle-auto-compact"
+              class:active={autoPointageConfig.enabled}
+              onclick={toggleAutoPointage}
             >
-              {getDayName(day)}
+              {autoPointageConfig.enabled ? 'ON' : 'OFF'}
             </button>
-          {/each}
+          </div>
+
+          {#if nextPointage && autoPointageConfig.enabled}
+            <div class="next-pointage-compact">
+              <span>{nextPointage.label}</span>
+              <span class="next-time">{nextPointage.time}</span>
+            </div>
+          {/if}
+
+          {#if autoPointageConfig.schedules.length > 0}
+            <div class="schedules-compact">
+              {#each autoPointageConfig.schedules as schedule}
+                <div class="schedule-compact" class:in={schedule.type === 'in'} class:out={schedule.type === 'out'}>
+                  <span class="sched-time">{schedule.time}</span>
+                  <span class="sched-label">{schedule.label}</span>
+                  <button class="sched-del" onclick={() => removeScheduledPointage(schedule.id)}>x</button>
+                </div>
+              {/each}
+            </div>
+          {/if}
+
+          <div class="add-schedule-compact">
+            <input type="time" bind:value={newScheduleTime} class="time-compact" />
+            <select bind:value={newScheduleType} class="type-compact">
+              <option value="in">E</option>
+              <option value="out">S</option>
+            </select>
+            <button class="add-compact" onclick={addScheduledPointage}>+</button>
+          </div>
         </div>
-        <button class="add-schedule-btn" onclick={addScheduledPointage} disabled={newScheduleDays.length === 0}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
+
+        <!-- Quick Actions -->
+        <div class="panel-section">
+          <button class="quick-action" onclick={() => { showSettings = true; }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+            Configurer URL
+          </button>
+        </div>
+      </div>
+    {/if}
+  </div>
+
+  <!-- Main Content: Webview -->
+  <div class="timepro-main">
+    <!-- Toolbar -->
+    <div class="timepro-toolbar">
+      <div class="toolbar-left">
+        <svg class="toolbar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span class="toolbar-title">Time Pro</span>
+        {#if isTauri}
+          <span class="mode-badge desktop">Desktop</span>
+        {:else}
+          <span class="mode-badge web">Web</span>
+        {/if}
+      </div>
+      <div class="toolbar-actions">
+        <button class="tool-btn" onclick={refreshWebview} title="Rafraichir" disabled={!timeProUrl}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"/>
+            <polyline points="1 20 1 14 7 14"/>
+            <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
           </svg>
-          Ajouter un pointage programme
+        </button>
+        <button class="tool-btn" onclick={openExternal} title="Ouvrir externe" disabled={!timeProUrl}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+            <polyline points="15 3 21 3 21 9"/>
+            <line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+        </button>
+        <button class="tool-btn" onclick={() => showSettings = true} title="Parametres">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
         </button>
       </div>
     </div>
 
-    <!-- Quick Examples -->
-    <div class="timepro-section examples">
-      <h3>Exemples typiques</h3>
-      <div class="example-btns">
-        <button class="example-btn" onclick={() => {
-          newScheduleTime = '08:00'; newScheduleType = 'in'; newScheduleLabel = 'Matin'; newScheduleDays = [1,2,3,4,5];
-          addScheduledPointage();
-        }}>+ 08:00 Entree (Lun-Ven)</button>
-        <button class="example-btn" onclick={() => {
-          newScheduleTime = '12:00'; newScheduleType = 'out'; newScheduleLabel = 'Pause midi'; newScheduleDays = [1,2,3,4,5];
-          addScheduledPointage();
-        }}>+ 12:00 Sortie</button>
-        <button class="example-btn" onclick={() => {
-          newScheduleTime = '13:00'; newScheduleType = 'in'; newScheduleLabel = 'Retour midi'; newScheduleDays = [1,2,3,4,5];
-          addScheduledPointage();
-        }}>+ 13:00 Entree</button>
-        <button class="example-btn" onclick={() => {
-          newScheduleTime = '17:00'; newScheduleType = 'out'; newScheduleLabel = 'Fin journee'; newScheduleDays = [1,2,3,4,5];
-          addScheduledPointage();
-        }}>+ 17:00 Sortie</button>
-      </div>
+    <!-- Webview Container -->
+    <div class="webview-container" bind:this={webviewContainer}>
+      {#if !timeProUrl}
+        <div class="setup-required">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <h3>Configuration requise</h3>
+          <p>Entrez l'URL de votre instance Time Pro pour l'integrer ici.</p>
+          <button class="setup-btn" onclick={() => showSettings = true}>
+            Configurer Time Pro
+          </button>
+        </div>
+      {:else if isLoading}
+        <div class="loading-overlay">
+          <div class="spinner"></div>
+          <p>Chargement de Time Pro...</p>
+        </div>
+      {:else if iframeError && !isTauri}
+        <div class="error-overlay">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <h3>Affichage bloque</h3>
+          <p>Time Pro ne permet pas l'integration en mode navigateur.<br/>
+             Utilisez l'application desktop pour une integration complete.</p>
+          <button class="primary-btn" onclick={openExternal}>
+            Ouvrir dans un nouvel onglet
+          </button>
+        </div>
+      {:else if !isTauri && webviewReady}
+        <iframe
+          src={timeProUrl}
+          title="Time Pro"
+          class="timepro-iframe"
+          onload={handleIframeLoad}
+          onerror={handleIframeError}
+        ></iframe>
+      {:else if isTauri && webviewReady}
+        <div class="webview-placeholder"></div>
+      {/if}
     </div>
   </div>
+
+  <!-- Settings Modal -->
+  {#if showSettings}
+    <div class="modal-overlay" onclick={() => showSettings = false}>
+      <div class="modal-content" onclick={(e) => e.stopPropagation()}>
+        <div class="modal-header">
+          <h3>Configuration Time Pro</h3>
+          <button class="modal-close" onclick={() => showSettings = false}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <label class="field-label">
+            URL Time Pro
+            <input
+              type="url"
+              bind:value={timeProUrl}
+              placeholder="https://timepro.votreentreprise.ch"
+              class="field-input"
+            />
+          </label>
+          <p class="field-help">L'URL complete de votre portail Time Pro (avec https://)</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" onclick={() => showSettings = false}>Annuler</button>
+          <button class="btn-save" onclick={saveTimeProUrl} disabled={!timeProUrl}>Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  {/if}
 </div>
 
 <style>
   .timepro-module {
     display: flex;
-    flex-direction: column;
     height: 100%;
     background: var(--bg-primary);
+    overflow: hidden;
   }
 
-  .timepro-header {
+  /* === Panel === */
+  .timepro-panel {
+    width: 240px;
+    min-width: 240px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--border-color);
-    background: var(--bg-secondary);
+    flex-direction: column;
+    background: var(--noir-card, #161b22);
+    border-right: 1px solid var(--border-color);
+    transition: width 0.2s, min-width 0.2s;
   }
 
-  .timepro-header h2 {
+  .timepro-panel.collapsed {
+    width: 48px;
+    min-width: 48px;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .panel-header h3 {
     margin: 0;
-    font-size: 20px;
+    font-size: 14px;
+    font-weight: 600;
     color: var(--text-primary);
+  }
+
+  .timepro-panel.collapsed .panel-header h3 {
+    display: none;
+  }
+
+  .panel-toggle {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .panel-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+  }
+
+  .panel-toggle svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .panel-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+  }
+
+  .panel-section {
+    margin-bottom: 16px;
+  }
+
+  .panel-section h4 {
+    margin: 0 0 10px 0;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .section-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .section-title-row h4 {
+    margin: 0;
+  }
+
+  /* Timer compact */
+  .timer-active-compact {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid #00d4ff;
+    border-radius: 6px;
+  }
+
+  .timer-countdown-compact {
+    font-size: 24px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: #00d4ff;
+  }
+
+  .timer-stop-compact {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid #ff6464;
+    border-radius: 4px;
+    color: #ff6464;
+    cursor: pointer;
+  }
+
+  .timer-stop-compact:hover {
+    background: #ff6464;
+    color: white;
+  }
+
+  .timer-stop-compact svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .timer-presets-compact {
+    display: flex;
+    gap: 6px;
+  }
+
+  .preset-compact {
+    flex: 1;
+    padding: 8px 4px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .preset-compact:hover {
+    border-color: #00d4ff;
+    color: #00d4ff;
+    background: rgba(0, 212, 255, 0.1);
+  }
+
+  /* Toggle button compact */
+  .toggle-auto-compact {
+    padding: 4px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--bg-tertiary);
+    color: var(--text-muted);
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .toggle-auto-compact.active {
+    background: rgba(0, 212, 255, 0.2);
+    border-color: #00d4ff;
+    color: #00d4ff;
+  }
+
+  /* Next pointage compact */
+  .next-pointage-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px;
+    background: rgba(0, 212, 255, 0.1);
+    border-left: 3px solid #00d4ff;
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .next-pointage-compact .next-time {
+    font-weight: 600;
+    color: #00d4ff;
+  }
+
+  /* Schedules compact */
+  .schedules-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .schedule-compact {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+    border-left: 3px solid var(--border-color);
+    font-size: 12px;
+  }
+
+  .schedule-compact.in { border-left-color: #22c55e; }
+  .schedule-compact.out { border-left-color: #f59e0b; }
+
+  .sched-time {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .sched-label {
+    flex: 1;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sched-del {
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 3px;
+    color: var(--text-muted);
+    font-size: 12px;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.2s;
+  }
+
+  .schedule-compact:hover .sched-del {
+    opacity: 1;
+  }
+
+  .sched-del:hover {
+    background: rgba(255, 100, 100, 0.2);
+    color: #ff6464;
+  }
+
+  /* Add schedule compact */
+  .add-schedule-compact {
+    display: flex;
+    gap: 4px;
+  }
+
+  .time-compact {
+    flex: 1;
+    padding: 6px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-size: 11px;
+    font-family: var(--font-mono);
+  }
+
+  .type-compact {
+    width: 36px;
+    padding: 6px 4px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-size: 11px;
+  }
+
+  .add-compact {
+    width: 28px;
+    padding: 6px;
+    background: var(--bg-tertiary);
+    border: 1px dashed var(--border-color);
+    border-radius: 4px;
+    color: var(--text-muted);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .add-compact:hover {
+    border-color: #00d4ff;
+    color: #00d4ff;
+    border-style: solid;
+  }
+
+  /* Quick action */
+  .quick-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .quick-action:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: rgba(0, 255, 136, 0.05);
+  }
+
+  .quick-action svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* === Main Content === */
+  .timepro-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  /* Toolbar */
+  .timepro-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--noir-surface, #0d1117);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .toolbar-left {
     display: flex;
     align-items: center;
     gap: 10px;
   }
 
-  .timepro-header h2::before {
-    content: '';
-    width: 4px;
-    height: 24px;
-    background: linear-gradient(180deg, #00d4ff, #0099cc);
-    border-radius: 2px;
+  .toolbar-icon {
+    width: 20px;
+    height: 20px;
+    color: #00d4ff;
   }
 
-  .timepro-web-btn {
+  .toolbar-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .mode-badge {
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .mode-badge.desktop {
+    background: rgba(0, 255, 136, 0.15);
+    color: var(--primary);
+    border: 1px solid var(--primary);
+  }
+
+  .mode-badge.web {
+    background: rgba(255, 165, 0, 0.15);
+    color: var(--warning);
+    border: 1px solid var(--warning);
+  }
+
+  .toolbar-actions {
+    display: flex;
+    gap: 4px;
+  }
+
+  .tool-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .tool-btn:hover:not(:disabled) {
+    border-color: #00d4ff;
+    color: #00d4ff;
+    background: rgba(0, 212, 255, 0.1);
+  }
+
+  .tool-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .tool-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Webview container */
+  .webview-container {
+    flex: 1;
+    position: relative;
+    background: #fff;
+    overflow: hidden;
+  }
+
+  .webview-placeholder {
+    width: 100%;
+    height: 100%;
+  }
+
+  .timepro-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  /* States */
+  .setup-required,
+  .loading-overlay,
+  .error-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    background: var(--noir-profond, #010409);
+    text-align: center;
+    padding: 40px;
+  }
+
+  .setup-required svg,
+  .error-overlay svg {
+    width: 64px;
+    height: 64px;
+    color: #00d4ff;
+    opacity: 0.6;
+  }
+
+  .error-overlay svg {
+    color: var(--warning);
+  }
+
+  .setup-required h3,
+  .error-overlay h3 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--text-primary);
+  }
+
+  .setup-required p,
+  .error-overlay p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-muted);
+    max-width: 400px;
+    line-height: 1.6;
+  }
+
+  .setup-btn,
+  .primary-btn {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 20px;
+    padding: 12px 24px;
     background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
     border: none;
     border-radius: 8px;
     color: white;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
-    box-shadow: 0 2px 8px rgba(0, 212, 255, 0.3);
   }
 
-  .timepro-web-btn:hover {
+  .setup-btn:hover,
+  .primary-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 16px rgba(0, 212, 255, 0.4);
   }
 
-  .timepro-content {
-    flex: 1;
-    padding: 24px;
-    overflow-y: auto;
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border-color);
+    border-top-color: #00d4ff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
   }
 
-  .timepro-section {
-    background: var(--bg-secondary);
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .loading-overlay p {
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .modal-content {
+    width: 90%;
+    max-width: 450px;
+    background: var(--noir-card, #161b22);
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
+    overflow: hidden;
   }
 
-  .timepro-section h3 {
-    margin: 0 0 8px 0;
-    font-size: 16px;
-    color: var(--text-primary);
-    font-weight: 600;
-  }
-
-  .section-header {
+  .modal-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .modal-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .modal-close {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .modal-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+  }
+
+  .modal-close svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .field-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
     margin-bottom: 8px;
   }
 
-  .section-desc {
+  .field-input {
+    width: 100%;
+    padding: 12px;
+    background: var(--noir-surface, #0d1117);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
     font-size: 13px;
-    color: var(--text-muted);
-    margin: 0 0 16px 0;
+    margin-top: 8px;
   }
 
-  .toggle-auto-btn {
-    padding: 6px 14px;
-    border: 1px solid var(--border-color);
-    border-radius: 20px;
-    background: var(--bg-tertiary);
-    color: var(--text-secondary);
+  .field-input:focus {
+    outline: none;
+    border-color: #00d4ff;
+  }
+
+  .field-help {
+    margin: 8px 0 0;
     font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 20px;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .btn-cancel,
+  .btn-save {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 13px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
   }
 
-  .toggle-auto-btn.active {
-    background: rgba(0, 212, 255, 0.2);
-    border-color: #00d4ff;
-    color: #00d4ff;
-  }
-
-  /* Timer styles */
-  .timer-active {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(0, 212, 255, 0.1);
-    border: 1px solid #00d4ff;
-    border-radius: 8px;
-    padding: 20px;
-  }
-
-  .timer-display {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .timer-countdown {
-    font-size: 42px;
-    font-weight: 700;
-    font-family: var(--font-mono);
-    color: #00d4ff;
-    text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
-  }
-
-  .timer-label {
-    font-size: 13px;
-    color: var(--text-muted);
-  }
-
-  .timer-stop-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 18px;
-    background: rgba(255, 100, 100, 0.2);
-    border: 1px solid #ff6464;
-    border-radius: 6px;
-    color: #ff6464;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .timer-stop-btn:hover {
-    background: #ff6464;
-    color: white;
-  }
-
-  .timer-setup {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .timer-input-group {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .timer-input-group label {
-    font-size: 14px;
-    color: var(--text-secondary);
-  }
-
-  .timer-input-group input {
-    width: 90px;
-    padding: 10px 14px;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    font-family: var(--font-mono);
-    font-size: 16px;
-    text-align: center;
-  }
-
-  .timer-presets {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .preset-btn {
-    padding: 10px 18px;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    color: var(--text-secondary);
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .preset-btn:hover {
-    border-color: #00d4ff;
-    color: #00d4ff;
-    background: rgba(0, 212, 255, 0.1);
-  }
-
-  .timer-start-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 14px 24px;
-    background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
-    border: none;
-    border-radius: 8px;
-    color: white;
-    font-weight: 600;
-    font-size: 15px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .timer-start-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 212, 255, 0.4);
-  }
-
-  /* Next pointage */
-  .next-pointage {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 18px;
-    background: rgba(0, 212, 255, 0.1);
-    border-left: 4px solid #00d4ff;
-    border-radius: 0 8px 8px 0;
-    margin-bottom: 16px;
-  }
-
-  .next-label {
-    font-size: 13px;
-    color: var(--text-muted);
-  }
-
-  .next-info {
-    font-weight: 600;
-    color: #00d4ff;
-  }
-
-  /* Schedules list */
-  .schedules-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-
-  .schedule-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 18px;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    border-left: 4px solid var(--border-color);
-  }
-
-  .schedule-item.in {
-    border-left-color: #22c55e;
-  }
-
-  .schedule-item.out {
-    border-left-color: #f59e0b;
-  }
-
-  .schedule-info {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-
-  .schedule-time {
-    font-family: var(--font-mono);
-    font-weight: 700;
-    font-size: 15px;
-    color: var(--text-primary);
-  }
-
-  .schedule-label {
-    font-size: 14px;
-    color: var(--text-secondary);
-  }
-
-  .schedule-days {
-    font-size: 12px;
-    color: var(--text-muted);
-    padding: 3px 10px;
-    background: var(--bg-primary);
-    border-radius: 4px;
-  }
-
-  .schedule-delete {
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .btn-cancel {
     background: transparent;
-    border: 1px solid transparent;
-    border-radius: 6px;
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .schedule-delete:hover {
-    background: rgba(255, 100, 100, 0.2);
-    border-color: #ff6464;
-    color: #ff6464;
-  }
-
-  /* Add schedule form */
-  .add-schedule-form {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    padding-top: 16px;
-    border-top: 1px solid var(--border-color);
-  }
-
-  .schedule-form-row {
-    display: flex;
-    gap: 12px;
-  }
-
-  .time-input {
-    width: 110px;
-    padding: 12px 14px;
     border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    font-family: var(--font-mono);
-  }
-
-  .type-select {
-    padding: 12px 14px;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background: var(--bg-primary);
-    color: var(--text-primary);
-  }
-
-  .label-input {
-    flex: 1;
-    padding: 12px 14px;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background: var(--bg-primary);
-    color: var(--text-primary);
-  }
-
-  .days-selector {
-    display: flex;
-    gap: 8px;
-  }
-
-  .day-btn {
-    flex: 1;
-    padding: 10px 6px;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background: var(--bg-tertiary);
-    color: var(--text-muted);
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .day-btn:hover {
-    border-color: #00d4ff;
-    color: var(--text-primary);
-  }
-
-  .day-btn.selected {
-    background: rgba(0, 212, 255, 0.2);
-    border-color: #00d4ff;
-    color: #00d4ff;
-    font-weight: 600;
-  }
-
-  .add-schedule-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 14px 24px;
-    background: var(--bg-tertiary);
-    border: 1px dashed var(--border-color);
-    border-radius: 8px;
     color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.2s;
   }
 
-  .add-schedule-btn:hover:not(:disabled) {
-    border-style: solid;
-    border-color: #00d4ff;
-    color: #00d4ff;
-    background: rgba(0, 212, 255, 0.1);
+  .btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
   }
 
-  .add-schedule-btn:disabled {
+  .btn-save {
+    background: #00d4ff;
+    border: none;
+    color: #000;
+  }
+
+  .btn-save:hover:not(:disabled) {
+    background: #00b8db;
+  }
+
+  .btn-save:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-  }
-
-  /* Examples section */
-  .timepro-section.examples {
-    background: transparent;
-    border: none;
-    padding: 0;
-  }
-
-  .example-btns {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 12px;
-  }
-
-  .example-btn {
-    padding: 10px 14px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    color: var(--text-secondary);
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .example-btn:hover {
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
   }
 </style>

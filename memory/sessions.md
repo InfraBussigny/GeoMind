@@ -1,3 +1,66 @@
+## Session 30 - 14 decembre 2025 (soir)
+**Theme** : Integration modules dans GeoMind (Intercapi, TimePro, VPN)
+
+### Travail effectue
+
+#### 1. Module Intercapi (nouveau)
+- **IntercapiModule.svelte** : Module complet pour le Registre Foncier VD
+  - Integration iframe/webview selon environnement (Tauri vs Web)
+  - Barre de recherche avec autocomplete communes VD
+  - Onglets : Navigateur, Historique, Favoris
+  - Detection mode desktop/web avec badge
+  - Toolbar : rafraichir, ouvrir externe, parametres
+- **intercapiStore.ts** : Store de gestion
+  - Historique des recherches (50 max)
+  - Favoris persistants localStorage
+  - Configuration (URL base, derniere commune)
+  - Mapping communes VD avec codes OFS
+  - Fonctions buildIntercapiUrl(), parseSearchQuery()
+- **Auto-merge modules** : Correction app.ts pour que les nouveaux modules soient automatiquement ajoutes aux configs existantes
+
+#### 2. TimeProModule (refait)
+- **Architecture** : Panel lateral repliable + zone webview integree
+- **Webview Tauri** : Time Pro s'affiche dans GeoMind (mode desktop)
+- **URL configurable** : Modal de configuration pour l'URL Time Pro
+- **Panel compact** : Timer re-pointage et pointages programmes accessibles
+- **Mode badge** : Indique Desktop vs Web
+
+#### 3. VpnModule (ameliore)
+- **Historique connexions** : Suivi des 10 dernieres connexions/deconnexions
+- **Panneau info** : Explique les limitations (FortiClient = app native Windows)
+- **Persistance** : Historique sauvegarde localStorage
+- **Note** : VPN ne peut pas etre integre car FortiClient est une app native geree par EMS
+
+#### 4. CommunicationsPanel (verifie)
+- Deja bien integre avec webviews Tauri
+- Utilise `Webview.create()` pour WhatsApp, Outlook, Teams, 3CX
+- Pas de modifications necessaires
+
+#### 5. Configuration Tauri
+- **CSP mis a jour** : Ajout intercapi.vd.ch, capitastra.vd.ch dans toutes les directives
+
+### Fichiers crees/modifies
+- `src/lib/components/Intercapi/IntercapiModule.svelte` (nouveau)
+- `src/lib/components/Intercapi/index.ts` (nouveau)
+- `src/lib/stores/intercapiStore.ts` (nouveau)
+- `src/lib/components/TimeProModule.svelte` (refait)
+- `src/lib/components/VPN/VpnModule.svelte` (ameliore)
+- `src/lib/stores/app.ts` (auto-merge modules)
+- `src/lib/components/Sidebar.svelte` (icone intercapi)
+- `src/routes/+page.svelte` (rendu intercapi)
+- `src-tauri/tauri.conf.json` (CSP)
+
+### Architecture modules integres
+
+| Module | Integration | Mode Desktop | Mode Web |
+|--------|-------------|--------------|----------|
+| Intercapi | Webview/iframe | OK | Fallback externe |
+| TimePro | Webview/iframe | OK | Fallback externe |
+| Communications | Webview enfant | OK | Iframe (peut etre bloque) |
+| VPN | Status only | Lancer FortiClient | Lancer FortiClient |
+
+---
+
 ## Session 29 - 14 decembre 2025 (apres-midi)
 **Theme** : Recherche universelle v3 - Corrections et tests
 
