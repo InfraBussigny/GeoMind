@@ -3455,7 +3455,7 @@ function initDefaultConnections() {
 // ============================================
 
 const FORTICLIENT_PATH = 'C:\\Program Files\\Fortinet\\FortiClient';
-const FORTICLIENT_CONSOLE = `"${FORTICLIENT_PATH}\\FortiTray.exe"`;
+const FORTICLIENT_CONSOLE = `"${FORTICLIENT_PATH}\\FortiClient.exe"`;
 
 // Get VPN connection status
 app.get('/api/vpn/status', async (req, res) => {
@@ -3597,6 +3597,97 @@ app.get('/api/vpn/profiles', async (req, res) => {
       profiles: [],
       warning: 'Impossible de lire les profils VPN'
     });
+  }
+});
+
+// ============================================
+// KDRIVE API PROXY
+// ============================================
+
+const KDRIVE_API_BASE = 'https://api.infomaniak.com/2/drive';
+
+// Proxy: List files in drive root or folder
+app.get('/api/kdrive/:driveId/files/:folderId?', async (req, res) => {
+  const { driveId, folderId } = req.params;
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader) {
+    return res.status(401).json({ success: false, error: 'Authorization header required' });
+  }
+
+  try {
+    const url = folderId && folderId !== '1'
+      ? `${KDRIVE_API_BASE}/${driveId}/files/${folderId}/files`
+      : `${KDRIVE_API_BASE}/${driveId}/files`;
+
+    const response = await fetch(url, {
+      headers: { 'Authorization': authHeader }
+    });
+
+    const data = await response.json();
+    res.status(response.status).json(data);
+  } catch (error) {
+    console.error('[kDrive] Proxy error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Proxy: Upload file to folder
+app.post('/api/kdrive/:driveId/files/:folderId/upload', express.raw({ type: '*/*', limit: '100mb' }), async (req, res) => {
+  const { driveId, folderId } = req.params;
+  const authHeader = req.headers.authorization;
+  const contentType = req.headers['content-type'];
+
+  if (!authHeader) {
+    return res.status(401).json({ success: false, error: 'Authorization header required' });
+  }
+
+  try {
+    const url = `${KDRIVE_API_BASE}/${driveId}/files/${folderId}/upload`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': contentType
+      },
+      body: req.body
+    });
+
+    const data = await response.json();
+    res.status(response.status).json(data);
+  } catch (error) {
+    console.error('[kDrive] Upload error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Proxy: Create share link
+app.post('/api/kdrive/:driveId/files/:fileId/link', async (req, res) => {
+  const { driveId, fileId } = req.params;
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader) {
+    return res.status(401).json({ success: false, error: 'Authorization header required' });
+  }
+
+  try {
+    const url = `${KDRIVE_API_BASE}/${driveId}/files/${fileId}/link`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(req.body)
+    });
+
+    const data = await response.json();
+    res.status(response.status).json(data);
+  } catch (error) {
+    console.error('[kDrive] Share link error:', error);
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 

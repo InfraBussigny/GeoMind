@@ -15,12 +15,12 @@
   // - converter: "HORS SERVICE"
   // - canvas: "MàJ: 30.03.2001"
   // - wip: bouton qui oscille (punaise)
-  // - databases, connections: scotch
+  // - databases, connexions: scotch
   const carloEffects = {
     cardboard: 'settings' as ModuleType,
     horsService: 'converter' as ModuleType,
     wobbly: 'wip' as ModuleType,
-    taped: ['databases', 'connections'] as ModuleType[],
+    taped: ['databases', 'connexions'] as ModuleType[],
     miseEnRoute: 'chat' as ModuleType,
     oldUpdate: 'canvas' as ModuleType,
   };
@@ -35,13 +35,12 @@
     { id: 'converter', label: 'Convertisseur', description: 'Formats fichiers' },
     { id: 'wakelock', label: 'Anti-veille', description: 'Empeche la veille' },
     { id: 'timepro', label: 'TimePro', description: 'Pointage' },
-    { id: 'comm', label: 'Communications', description: 'Canal social' },
+    { id: 'connexions', label: 'Connexions', description: 'VPN & Serveurs DB' },
+    { id: 'comm', label: 'Communications', description: 'Outlook, Teams, 3CX' },
     { id: 'docgen', label: 'Documents', description: 'Generation PDF' },
-    { id: 'connections', label: 'Connexions', description: 'Serveurs' },
     { id: 'intercapi', label: 'Intercapi', description: 'Registre Foncier' },
     { id: 'settings', label: 'Parametres', description: 'Configuration' },
     { id: 'wip', label: 'WIP', description: 'En developpement' },
-    { id: 'vpn', label: 'VPN', description: 'FortiClient VPN' },
     { id: 'kdrive', label: 'kDrive', description: 'Partage fichiers' },
   ];
 
@@ -231,11 +230,10 @@
             'converter': ['tl', 'tr', 'bl', 'br', 'ml'],
             'wakelock': ['tl', 'br'],
             'timepro': ['tr', 'bl', 'mr'],
-            'comm': ['tl', 'tr', 'br'],
+            'connexions': ['tl', 'tr', 'br'],
             'docgen': ['tl', 'ml', 'bl'],
-            'connections': ['tr', 'br'],
+            'comm': ['tr', 'bl', 'br'],
             'settings': ['tl', 'tr', 'bl', 'br'],
-            'vpn': ['tl', 'tr', 'mr'],
             'kdrive': ['ml', 'mr', 'bl'],
           }[module.id] || ['tl', 'tr']}
           {#each nailConfig as pos}
@@ -376,20 +374,23 @@
               <circle cx="18" cy="18" r="4" fill="currentColor" stroke="none"/>
               <path d="M17 17l2 1-2 1z" fill="var(--noir-profond)" stroke="none"/>
             </svg>
-          <!-- Communications -->
+          <!-- Connexions (VPN + Communications) -->
+          {:else if module.id === 'connexions'}
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <!-- Bouclier VPN avec signal -->
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <path d="M8.5 12.5c1-1 2.5-1.5 3.5-1.5s2.5.5 3.5 1.5"/>
+              <path d="M10 14c.5-.5 1.25-.75 2-.75s1.5.25 2 .75"/>
+              <circle cx="12" cy="16" r="1" fill="currentColor"/>
+            </svg>
+          <!-- Communications (Outlook, Teams, 3CX) -->
           {:else if module.id === 'comm'}
             <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
-            </svg>
-          <!-- Connexions -->
-          {:else if module.id === 'connections'}
-            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <!-- Serveur avec connexion -->
-              <rect x="2" y="2" width="20" height="8" rx="2"/>
-              <rect x="2" y="14" width="20" height="8" rx="2"/>
-              <circle cx="6" cy="6" r="1" fill="currentColor"/>
-              <circle cx="6" cy="18" r="1" fill="currentColor"/>
-              <line x1="12" y1="10" x2="12" y2="14"/>
+              <!-- Bulle de communication avec signaux -->
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+              <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+              <circle cx="8" cy="12" r="1" fill="currentColor"/>
+              <circle cx="16" cy="12" r="1" fill="currentColor"/>
             </svg>
           <!-- Parametres / Settings -->
           {:else if module.id === 'settings'}
@@ -433,13 +434,6 @@
               <!-- Soleil / écran allumé -->
               <circle cx="12" cy="12" r="4"/>
               <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-            </svg>
-          <!-- VPN / FortiClient -->
-          {:else if module.id === 'vpn'}
-            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <!-- Bouclier VPN -->
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-              <path d="M9 12l2 2 4-4"/>
             </svg>
           <!-- kDrive / Cloud -->
           {:else if module.id === 'kdrive'}

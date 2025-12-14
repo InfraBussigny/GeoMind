@@ -1,5 +1,16 @@
 # GeoBrain Checkpoints
 
+## CP-20251214-2330
+```
+S:30-FIN|P:CONNEXIONS-MODULE|T:Layout-Gauche-Droite
+F:ConnexionsModule.svelte,Sidebar.svelte,app.ts,+page.svelte,server/index.js,IntercapiModule.svelte
+W:Module Connexions refait(layout 2 colonnes)|VPN panel gauche(flex1,240-350px)|Serveurs panel droite(flex3)|FortiClient.exe(pas FortiTray)|Elements agrandis(icones1.75rem,noms1.05rem,btns36px)|Fix boutons imbriques IntercapiModule
+N:Tester VPN button|Polish UX modules|Tests Tauri desktop
+X:Ratio 1:3 VPN/Serveurs|Responsive min220-max350|Grid connexions supprime→liste rows|CSP OK intercapi+capitastra
+```
+
+---
+
 ## CP-20251214-2100
 ```
 S:30|P:MODULES-INTEGRATION|T:Intercapi-TimePro-VPN

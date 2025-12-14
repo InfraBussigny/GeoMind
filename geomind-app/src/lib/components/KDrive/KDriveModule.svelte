@@ -42,6 +42,13 @@
   let files = $state<KDriveFile[]>([]);
   let isLoadingFiles = $state(false);
 
+  // Breadcrumb for navigation (folder stack)
+  interface FolderInfo {
+    id: number;
+    name: string;
+  }
+  let folderStack = $state<FolderInfo[]>([{ id: 1, name: 'Racine' }]);
+
   let selectedLocalFiles = $state<File[]>([]);
   let isUploading = $state(false);
   let uploadProgress = $state(0);
@@ -50,6 +57,13 @@
   let uploadHistory = $state<UploadedFile[]>([]);
   let showConfig = $state(false);
   let copiedLink = $state<string | null>(null);
+
+  // Default config for Marc (using API token)
+  const DEFAULT_CONFIG: KDriveConfig = {
+    driveId: '2025713',
+    email: 'marc.zermatten@gmail.com',
+    appPassword: 'bc0-aSNG0XL0e8cnk6rEzQf_Mtiklo2EW4slw7CDfvezRDFnbsT43MKoCtUGyGSBnIdMjt9B8XbcGIGB'
+  };
 
   // Load saved config on mount
   onMount(() => {
@@ -66,6 +80,11 @@
       } catch (e) {
         console.error('Error loading kDrive config:', e);
       }
+    } else {
+      // Use default config if nothing saved
+      config = { ...DEFAULT_CONFIG };
+      // Auto-connect with default config
+      testConnection();
     }
 
     const history = localStorage.getItem('geomind-kdrive-history');
@@ -88,14 +107,15 @@
     localStorage.setItem('geomind-kdrive-history', JSON.stringify(uploadHistory));
   }
 
-  // WebDAV base URL
-  function getWebDAVUrl(path: string = ''): string {
-    return `https://${config.driveId}.connect.kdrive.infomaniak.com${path}`;
-  }
+  // API base URL (via backend proxy to avoid CORS)
+  const API_BASE = 'http://localhost:3001/api/kdrive';
 
-  // Auth header
+  // Current folder ID (root = 1)
+  let currentFolderId = $state(1);
+
+  // Auth header (Bearer token)
   function getAuthHeader(): string {
-    return 'Basic ' + btoa(`${config.email}:${config.appPassword}`);
+    return `Bearer ${config.appPassword}`;
   }
 
   // Test connection
@@ -104,23 +124,27 @@
     connectionError = null;
 
     try {
-      const response = await fetch(getWebDAVUrl('/'), {
-        method: 'PROPFIND',
+      const response = await fetch(`${API_BASE}/${config.driveId}/files`, {
         headers: {
-          'Authorization': getAuthHeader(),
-          'Depth': '0',
-          'Content-Type': 'application/xml'
-        },
-        body: '<?xml version="1.0"?><d:propfind xmlns:d="DAV:"><d:prop><d:resourcetype/></d:prop></d:propfind>'
+          'Authorization': getAuthHeader()
+        }
       });
 
-      if (response.ok || response.status === 207) {
-        isConfigured = true;
-        saveConfig();
-        showConfig = false;
-        await loadFiles();
+      if (response.ok) {
+        const data = await response.json();
+        if (data.result === 'success') {
+          isConfigured = true;
+          saveConfig();
+          showConfig = false;
+          currentFolderId = 1;
+          currentPath = '/';
+          folderStack = [{ id: 1, name: 'Racine' }];
+          await loadFiles();
+        } else {
+          connectionError = data.error?.description || 'Erreur inconnue';
+        }
       } else if (response.status === 401) {
-        connectionError = 'Identifiants incorrects';
+        connectionError = 'Token API invalide';
       } else {
         connectionError = `Erreur de connexion: ${response.status}`;
       }
@@ -132,25 +156,39 @@
     }
   }
 
-  // Load files from current path
+  // Load files from current folder
   async function loadFiles() {
     if (!isConfigured) return;
     isLoadingFiles = true;
 
     try {
-      const response = await fetch(getWebDAVUrl(currentPath), {
-        method: 'PROPFIND',
+      const url = currentFolderId === 1
+        ? `${API_BASE}/${config.driveId}/files`
+        : `${API_BASE}/${config.driveId}/files/${currentFolderId}/files`;
+
+      const response = await fetch(url, {
         headers: {
-          'Authorization': getAuthHeader(),
-          'Depth': '1',
-          'Content-Type': 'application/xml'
-        },
-        body: '<?xml version="1.0"?><d:propfind xmlns:d="DAV:"><d:prop><d:displayname/><d:resourcetype/><d:getcontentlength/><d:getlastmodified/></d:prop></d:propfind>'
+          'Authorization': getAuthHeader()
+        }
       });
 
-      if (response.ok || response.status === 207) {
-        const text = await response.text();
-        files = parseWebDAVResponse(text);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.result === 'success') {
+          files = (data.data || []).map((f: any) => ({
+            id: f.id,
+            name: f.name,
+            type: f.type === 'dir' ? 'dir' : 'file',
+            size: f.size,
+            lastModified: f.last_modified_at ? new Date(f.last_modified_at * 1000).toISOString() : undefined,
+            path: f.path || `/${f.name}`
+          }));
+          // Sort: directories first, then alphabetically
+          files = files.sort((a, b) => {
+            if (a.type !== b.type) return a.type === 'dir' ? -1 : 1;
+            return a.name.localeCompare(b.name);
+          });
+        }
       } else {
         console.error('Error loading files:', response.status);
       }
@@ -161,58 +199,37 @@
     }
   }
 
-  // Parse WebDAV PROPFIND response
-  function parseWebDAVResponse(xml: string): KDriveFile[] {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(xml, 'text/xml');
-    const responses = doc.querySelectorAll('response');
-    const result: KDriveFile[] = [];
+  // Navigate to folder (using folder ID)
+  function navigateTo(folder: KDriveFile) {
+    if (folder.type !== 'dir') return;
 
-    let index = 0;
-    responses.forEach((resp) => {
-      const href = resp.querySelector('href')?.textContent || '';
-      const displayName = resp.querySelector('displayname')?.textContent || '';
-      const resourceType = resp.querySelector('resourcetype');
-      const isDir = resourceType?.querySelector('collection') !== null;
-      const size = resp.querySelector('getcontentlength')?.textContent;
-      const lastMod = resp.querySelector('getlastmodified')?.textContent;
-
-      // Skip the current directory itself
-      const decodedHref = decodeURIComponent(href);
-      const pathFromHref = decodedHref.replace(/^\/remote\.php\/dav\/files\/[^/]+/, '');
-
-      if (pathFromHref !== currentPath && pathFromHref !== currentPath + '/') {
-        result.push({
-          id: index++,
-          name: displayName || pathFromHref.split('/').filter(Boolean).pop() || '',
-          type: isDir ? 'dir' : 'file',
-          size: size ? parseInt(size) : undefined,
-          lastModified: lastMod,
-          path: pathFromHref
-        });
-      }
-    });
-
-    // Sort: directories first, then alphabetically
-    return result.sort((a, b) => {
-      if (a.type !== b.type) return a.type === 'dir' ? -1 : 1;
-      return a.name.localeCompare(b.name);
-    });
-  }
-
-  // Navigate to folder
-  function navigateTo(path: string) {
-    currentPath = path;
+    // Add to folder stack
+    folderStack = [...folderStack, { id: folder.id, name: folder.name }];
+    currentFolderId = folder.id;
+    currentPath = folderStack.map(f => f.name).join('/');
     loadFiles();
   }
 
   // Go up one level
   function goUp() {
-    if (currentPath === '/') return;
-    const parts = currentPath.split('/').filter(Boolean);
-    parts.pop();
-    currentPath = '/' + parts.join('/');
-    if (currentPath !== '/') currentPath += '/';
+    if (folderStack.length <= 1) return;
+
+    // Pop from stack
+    folderStack = folderStack.slice(0, -1);
+    const parentFolder = folderStack[folderStack.length - 1];
+    currentFolderId = parentFolder.id;
+    currentPath = folderStack.length === 1 ? '/' : folderStack.map(f => f.name).join('/');
+    loadFiles();
+  }
+
+  // Navigate to specific folder in breadcrumb
+  function navigateToBreadcrumb(index: number) {
+    if (index >= folderStack.length - 1) return;
+
+    folderStack = folderStack.slice(0, index + 1);
+    const targetFolder = folderStack[folderStack.length - 1];
+    currentFolderId = targetFolder.id;
+    currentPath = folderStack.length === 1 ? '/' : folderStack.map(f => f.name).join('/');
     loadFiles();
   }
 
@@ -224,7 +241,7 @@
     }
   }
 
-  // Upload files
+  // Upload files using REST API
   async function uploadFiles() {
     if (selectedLocalFiles.length === 0) return;
     isUploading = true;
@@ -237,27 +254,30 @@
       uploadStatus = `Upload de ${file.name}...`;
 
       try {
-        const uploadPath = currentPath.endsWith('/')
-          ? currentPath + file.name
-          : currentPath + '/' + file.name;
+        // Use REST API upload endpoint
+        const uploadUrl = `${API_BASE}/${config.driveId}/files/${currentFolderId}/upload`;
 
-        const response = await fetch(getWebDAVUrl(uploadPath), {
-          method: 'PUT',
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch(uploadUrl, {
+          method: 'POST',
           headers: {
-            'Authorization': getAuthHeader(),
-            'Content-Type': file.type || 'application/octet-stream'
+            'Authorization': getAuthHeader()
           },
-          body: file
+          body: formData
         });
 
-        if (response.ok || response.status === 201 || response.status === 204) {
-          // Add to history
+        if (response.ok) {
+          const data = await response.json();
+
+          // Add to history with the real file ID from response
           const uploadedFile: UploadedFile = {
-            id: Date.now().toString(),
+            id: data.data?.id?.toString() || Date.now().toString(),
             name: file.name,
             size: file.size,
             uploadedAt: new Date(),
-            path: uploadPath,
+            path: currentPath + '/' + file.name,
             shareEnabled: false
           };
           uploadHistory = [uploadedFile, ...uploadHistory.slice(0, 49)];
@@ -266,8 +286,9 @@
           completed++;
           uploadProgress = Math.round((completed / total) * 100);
         } else {
-          console.error('Upload failed:', response.status);
-          uploadStatus = `Erreur upload ${file.name}: ${response.status}`;
+          const errorData = await response.json().catch(() => ({}));
+          console.error('Upload failed:', response.status, errorData);
+          uploadStatus = `Erreur upload ${file.name}: ${errorData.error?.description || response.status}`;
         }
       } catch (err) {
         console.error('Upload error:', err);
@@ -290,20 +311,17 @@
 
   // Create share link (via REST API)
   async function createShareLink(file: UploadedFile) {
-    // Note: Creating share links requires the REST API, not WebDAV
-    // We'll try the REST API endpoint
     try {
-      const response = await fetch(`https://api.infomaniak.com/2/drive/${config.driveId}/files/path/link`, {
+      // Use file ID to create share link
+      const response = await fetch(`${API_BASE}/${config.driveId}/files/${file.id}/link`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${config.appPassword}`,
+          'Authorization': getAuthHeader(),
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          path: file.path,
           right: 'read',
-          password: null,
-          valid_until: null
+          can_download: true
         })
       });
 
@@ -314,8 +332,8 @@
         uploadHistory = [...uploadHistory];
         saveHistory();
       } else {
-        // Fallback: construct a manual share URL
-        const shareUrl = `https://kdrive.infomaniak.com/app/share/${config.driveId}/files${file.path}`;
+        // Fallback: direct link to file in kDrive web interface
+        const shareUrl = `https://kdrive.infomaniak.com/app/drive/${config.driveId}/files/${file.id}`;
         file.shareLink = shareUrl;
         file.shareEnabled = true;
         uploadHistory = [...uploadHistory];
@@ -324,7 +342,7 @@
     } catch (err) {
       console.error('Error creating share link:', err);
       // Fallback URL
-      const shareUrl = `https://kdrive.infomaniak.com/app/drive/${config.driveId}/files${encodeURIComponent(file.path)}`;
+      const shareUrl = `https://kdrive.infomaniak.com/app/drive/${config.driveId}/files/${file.id}`;
       file.shareLink = shareUrl;
       file.shareEnabled = true;
       uploadHistory = [...uploadHistory];
@@ -364,6 +382,8 @@
     config = { driveId: '', email: '', appPassword: '' };
     files = [];
     currentPath = '/';
+    currentFolderId = 1;
+    folderStack = [{ id: 1, name: 'Racine' }];
     localStorage.removeItem('geomind-kdrive-config');
     showConfig = true;
   }
@@ -506,7 +526,7 @@
         {/if}
 
         <div class="upload-actions">
-          <span class="current-path">Destination: {currentPath}</span>
+          <span class="current-path">Destination: {folderStack[folderStack.length - 1].name}</span>
           <button
             class="btn-upload"
             onclick={uploadFiles}
@@ -527,12 +547,26 @@
         <div class="browser-header">
           <h4>Parcourir kDrive</h4>
           <div class="browser-nav">
-            <button class="nav-btn" onclick={goUp} disabled={currentPath === '/'} title="Remonter">
+            <button class="nav-btn" onclick={goUp} disabled={folderStack.length <= 1} title="Remonter">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M15 18l-6-6 6-6"/>
               </svg>
             </button>
-            <span class="path-display">{currentPath}</span>
+            <div class="breadcrumb">
+              {#each folderStack as folder, index}
+                {#if index > 0}
+                  <span class="breadcrumb-sep">/</span>
+                {/if}
+                <button
+                  class="breadcrumb-item"
+                  class:current={index === folderStack.length - 1}
+                  onclick={() => navigateToBreadcrumb(index)}
+                  disabled={index === folderStack.length - 1}
+                >
+                  {folder.name}
+                </button>
+              {/each}
+            </div>
             <button class="nav-btn" onclick={() => loadFiles()} disabled={isLoadingFiles} title="Rafraichir">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class:spinning={isLoadingFiles}>
                 <path d="M23 4v6h-6M1 20v-6h6"/>
@@ -552,7 +586,7 @@
               <div
                 class="file-item"
                 class:folder={file.type === 'dir'}
-                ondblclick={() => file.type === 'dir' && navigateTo(file.path)}
+                ondblclick={() => file.type === 'dir' && navigateTo(file)}
               >
                 <div class="file-icon">
                   {#if file.type === 'dir'}
@@ -992,14 +1026,47 @@
     cursor: not-allowed;
   }
 
-  .path-display {
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .breadcrumb-sep {
+    color: var(--text-secondary);
+    opacity: 0.5;
+    font-size: 0.75rem;
+  }
+
+  .breadcrumb-item {
+    background: transparent;
+    border: none;
+    padding: 0.2rem 0.4rem;
     font-size: 0.8rem;
     font-family: monospace;
     color: var(--text-secondary);
-    max-width: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.15s;
     white-space: nowrap;
+  }
+
+  .breadcrumb-item:hover:not(:disabled) {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+
+  .breadcrumb-item.current {
+    color: var(--text-primary);
+    font-weight: 500;
+    cursor: default;
+  }
+
+  .breadcrumb-item:disabled {
+    cursor: default;
   }
 
   .spinning {

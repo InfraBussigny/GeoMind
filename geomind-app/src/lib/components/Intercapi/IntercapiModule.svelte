@@ -405,7 +405,7 @@
           </div>
           <div class="items-grid">
             {#each $intercapiHistory as item}
-              <button class="item-card" onclick={() => searchFromHistory(item)}>
+              <div class="item-card" onclick={() => searchFromHistory(item)} role="button" tabindex="0">
                 <span class="item-icon">
                   {#if item.type === 'parcelle'}📍{:else if item.type === 'adresse'}🏠{:else}🔗{/if}
                 </span>
@@ -420,7 +420,7 @@
                 >
                   ×
                 </button>
-              </button>
+              </div>
             {/each}
           </div>
         {/if}
@@ -439,7 +439,7 @@
         {:else}
           <div class="items-grid favorites">
             {#each $intercapiFavorites as fav}
-              <button class="item-card favorite" onclick={() => searchFromFavorite(fav)}>
+              <div class="item-card favorite" onclick={() => searchFromFavorite(fav)} role="button" tabindex="0">
                 <span class="item-icon">⭐</span>
                 <div class="item-info">
                   <span class="item-commune">{fav.commune}</span>
@@ -455,7 +455,7 @@
                 >
                   ×
                 </button>
-              </button>
+              </div>
             {/each}
           </div>
         {/if}

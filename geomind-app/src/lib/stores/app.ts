@@ -1,7 +1,7 @@
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 
-export type ModuleType = 'chat' | 'canvas' | 'editor' | 'docgen' | 'connections' | 'settings' | 'comm' | 'databases' | 'timepro' | 'wip' | 'cad' | 'converter' | 'wakelock' | 'vpn' | 'kdrive' | 'intercapi';
+export type ModuleType = 'chat' | 'canvas' | 'editor' | 'docgen' | 'settings' | 'connexions' | 'comm' | 'databases' | 'timepro' | 'wip' | 'cad' | 'converter' | 'wakelock' | 'kdrive' | 'intercapi';
 
 export const currentModule = writable<ModuleType>('chat');
 export const sidebarCollapsed = writable(false);
@@ -237,26 +237,25 @@ export const ALL_MODULES: { id: ModuleType; label: string; description: string; 
   { id: 'converter', label: 'Convertisseur', description: 'Conversion fichiers', alwaysVisible: true },
   { id: 'wakelock', label: 'Anti-veille', description: 'Empeche la veille' },
   { id: 'timepro', label: 'TimePro', description: 'Pointage & Timer' },
-  { id: 'comm', label: 'Comms', description: 'Outlook & 3CX' },
+  { id: 'connexions', label: 'Connexions', description: 'VPN & Serveurs DB' },
+  { id: 'comm', label: 'Communications', description: 'Outlook, Teams, 3CX' },
   { id: 'docgen', label: 'DocGen', description: 'Generation docs' },
-  { id: 'connections', label: 'Connexions', description: 'Serveurs DB' },
   { id: 'intercapi', label: 'Intercapi', description: 'Registre Foncier VD' },
   { id: 'settings', label: 'Parametres', description: 'Configuration', alwaysVisible: true },
   { id: 'wip', label: 'WIP', description: 'En developpement' },
   { id: 'cad', label: 'CAD', description: 'Viewer DXF/DWG' },
-  { id: 'vpn', label: 'VPN', description: 'FortiClient VPN' },
   { id: 'kdrive', label: 'kDrive', description: 'Partage fichiers' }
 ];
 
 // Modules par défaut pour chaque mode (excluant standard qui est fixe)
 const DEFAULT_MODULE_CONFIG: Record<string, ModuleType[]> = {
-  expert: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'comm', 'docgen', 'connections', 'intercapi', 'settings', 'cad', 'vpn'],
-  god: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'comm', 'docgen', 'connections', 'intercapi', 'settings', 'wip', 'cad', 'vpn'],
-  bfsa: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'comm', 'docgen', 'connections', 'intercapi', 'settings', 'cad', 'vpn']
+  expert: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'connexions', 'comm', 'docgen', 'intercapi', 'settings', 'cad', 'kdrive'],
+  god: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'connexions', 'comm', 'docgen', 'intercapi', 'settings', 'wip', 'cad', 'kdrive'],
+  bfsa: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'connexions', 'comm', 'docgen', 'intercapi', 'settings', 'cad', 'kdrive']
 };
 
 // Modules fixes pour le mode standard (non modifiable)
-const STANDARD_MODULES: ModuleType[] = ['chat', 'canvas', 'databases', 'converter', 'wakelock', 'connections', 'settings'];
+const STANDARD_MODULES: ModuleType[] = ['chat', 'canvas', 'databases', 'converter', 'wakelock', 'connexions', 'settings'];
 
 // Store pour la configuration personnalisée des modules par mode
 function createModuleConfigStore() {
@@ -352,7 +351,7 @@ export const moduleConfig = createModuleConfigStore();
 // Ordre par défaut des modules
 const DEFAULT_MODULE_ORDER: ModuleType[] = [
   'chat', 'canvas', 'cad', 'editor', 'databases', 'converter',
-  'vpn', 'kdrive', 'intercapi', 'wakelock', 'timepro', 'comm', 'docgen', 'connections',
+  'connexions', 'kdrive', 'intercapi', 'wakelock', 'timepro', 'comm', 'docgen',
   'settings', 'wip'
 ];
 

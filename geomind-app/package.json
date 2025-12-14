@@ -27,6 +27,7 @@
 		"vite": "^7.2.2"
 	},
 	"dependencies": {
+		"@azure/msal-node": "^3.8.4",
 		"@dagrejs/dagre": "^1.1.8",
 		"@mapbox/sphericalmercator": "^2.0.2",
 		"@tarikjabiri/dxf": "^2.8.9",
