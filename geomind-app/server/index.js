@@ -3606,6 +3606,38 @@ app.get('/api/vpn/profiles', async (req, res) => {
 
 const KDRIVE_API_BASE = 'https://api.infomaniak.com/2/drive';
 
+// Get saved kDrive config (from server-side file, not exposed in frontend code)
+app.get('/api/kdrive/config', (req, res) => {
+  try {
+    const configPath = path.join(__dirname, 'config', 'kdrive.json');
+    if (fs.existsSync(configPath)) {
+      const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      res.json({ success: true, config });
+    } else {
+      res.json({ success: false, error: 'No config found' });
+    }
+  } catch (error) {
+    console.error('[kDrive] Config error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// Save kDrive config (server-side)
+app.post('/api/kdrive/config', express.json(), (req, res) => {
+  try {
+    const configDir = path.join(__dirname, 'config');
+    if (!fs.existsSync(configDir)) {
+      fs.mkdirSync(configDir, { recursive: true });
+    }
+    const configPath = path.join(configDir, 'kdrive.json');
+    fs.writeFileSync(configPath, JSON.stringify(req.body, null, 2));
+    res.json({ success: true });
+  } catch (error) {
+    console.error('[kDrive] Save config error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Proxy: List files in drive root or folder
 app.get('/api/kdrive/:driveId/files/:folderId?', async (req, res) => {
   const { driveId, folderId } = req.params;

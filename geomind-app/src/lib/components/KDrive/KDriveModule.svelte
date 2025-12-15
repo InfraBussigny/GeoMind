@@ -65,9 +65,11 @@
     appPassword: ''
   };
 
-  // Load saved config on mount
-  onMount(() => {
+  // Load saved config on mount (try localStorage first, then server)
+  onMount(async () => {
     if (!browser) return;
+
+    // Try localStorage first
     const saved = localStorage.getItem('geomind-kdrive-config');
     if (saved) {
       try {
@@ -78,14 +80,31 @@
           loadFiles();
         }
       } catch (e) {
-        console.error('Error loading kDrive config:', e);
+        console.error('Error loading kDrive config from localStorage:', e);
       }
-    } else {
-      // No config saved - show config panel
-      config = { ...DEFAULT_CONFIG };
-      showConfig = true;
     }
 
+    // If no local config, try to load from server
+    if (!isConfigured) {
+      try {
+        const response = await fetch(`${API_BASE}/config`);
+        const data = await response.json();
+        if (data.success && data.config) {
+          config = data.config;
+          // Save to localStorage for faster access next time
+          saveConfig();
+          // Auto-connect with server config
+          await testConnection();
+        } else {
+          showConfig = true;
+        }
+      } catch (e) {
+        console.error('Error loading kDrive config from server:', e);
+        showConfig = true;
+      }
+    }
+
+    // Load upload history
     const history = localStorage.getItem('geomind-kdrive-history');
     if (history) {
       try {
@@ -98,7 +117,14 @@
 
   function saveConfig() {
     if (!browser) return;
+    // Save to localStorage (fast access)
     localStorage.setItem('geomind-kdrive-config', JSON.stringify(config));
+    // Also save to server (persistent across browsers/machines)
+    fetch(`${API_BASE}/config`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config)
+    }).catch(e => console.warn('Could not save config to server:', e));
   }
 
   function saveHistory() {
