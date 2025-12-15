@@ -192,9 +192,11 @@
     isLoadingFiles = true;
 
     try {
+      // Backend route: /api/kdrive/:driveId/files/:folderId?
+      // folderId is optional - omit for root, include for subfolders
       const url = currentFolderId === 1
         ? `${API_BASE}/${config.driveId}/files`
-        : `${API_BASE}/${config.driveId}/files/${currentFolderId}/files`;
+        : `${API_BASE}/${config.driveId}/files/${currentFolderId}`;
 
       const response = await fetch(url, {
         headers: {
@@ -232,6 +234,13 @@
   // Navigate to folder (using folder ID)
   function navigateTo(folder: KDriveFile) {
     if (folder.type !== 'dir') return;
+
+    // Prevent navigating to the same folder (anti-loop)
+    if (folder.id === currentFolderId) return;
+
+    // Prevent adding same folder twice in a row
+    const lastFolder = folderStack[folderStack.length - 1];
+    if (lastFolder && lastFolder.id === folder.id) return;
 
     // Add to folder stack
     folderStack = [...folderStack, { id: folder.id, name: folder.name }];
@@ -284,9 +293,9 @@
       uploadStatus = `Upload de ${file.name}...`;
 
       try {
-        // Use REST API upload endpoint with filename as query param
+        // Use REST API upload endpoint with filename and total_size as query params
         const encodedFileName = encodeURIComponent(file.name);
-        const uploadUrl = `${API_BASE}/${config.driveId}/files/${currentFolderId}/upload?file_name=${encodedFileName}`;
+        const uploadUrl = `${API_BASE}/${config.driveId}/upload?directory_id=${currentFolderId}&file_name=${encodedFileName}&total_size=${file.size}`;
 
         // Read file as ArrayBuffer for raw binary upload
         const arrayBuffer = await file.arrayBuffer();

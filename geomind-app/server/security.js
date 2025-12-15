@@ -178,6 +178,7 @@ export function isInSandbox(filePath) {
  * Vérifie si une requête SQL est dangereuse
  */
 export function isDangerousSQL(query) {
+  if (!query || typeof query !== 'string') return false;
   const upperQuery = query.toUpperCase().trim();
   return DANGEROUS_SQL.some(keyword => upperQuery.startsWith(keyword) || upperQuery.includes(` ${keyword} `));
 }
@@ -186,6 +187,7 @@ export function isDangerousSQL(query) {
  * Vérifie si une commande shell est dangereuse
  */
 export function isDangerousCommand(command) {
+  if (!command || typeof command !== 'string') return false;
   const lowerCommand = command.toLowerCase();
   return DANGEROUS_COMMANDS.some(cmd => lowerCommand.includes(cmd.toLowerCase()));
 }
@@ -194,6 +196,7 @@ export function isDangerousCommand(command) {
  * Vérifie si une commande est TOUJOURS bloquée (même en God mode)
  */
 export function isAlwaysBlocked(command) {
+  if (!command || typeof command !== 'string') return false;
   const lowerCommand = command.toLowerCase();
 
   // Vérifier les commandes textuelles

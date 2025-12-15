@@ -3638,6 +3638,67 @@ app.post('/api/kdrive/config', express.json(), (req, res) => {
   }
 });
 
+// Proxy: Upload file (new endpoint format)
+app.post('/api/kdrive/:driveId/upload', express.raw({ type: '*/*', limit: '100mb' }), async (req, res) => {
+  const { driveId } = req.params;
+  const { directory_id, file_name, total_size } = req.query;
+  const authHeader = req.headers.authorization;
+  const contentType = req.headers['content-type'];
+
+  if (!authHeader) {
+    return res.status(401).json({ success: false, error: 'Authorization header required' });
+  }
+
+  if (!file_name) {
+    return res.status(400).json({ success: false, error: 'file_name query parameter required' });
+  }
+
+  try {
+    // Try API v3 first, then v2
+    const baseUrls = [
+      `https://api.infomaniak.com/3/drive/${driveId}/upload`,
+      `https://api.infomaniak.com/2/drive/${driveId}/upload`
+    ];
+
+    let lastError = null;
+    for (const baseUrl of baseUrls) {
+      const params = new URLSearchParams();
+      if (directory_id) params.append('directory_id', directory_id);
+      params.append('file_name', file_name);
+      if (total_size) params.append('total_size', total_size);
+
+      const url = `${baseUrl}?${params.toString()}`;
+      console.log(`[kDrive] Trying upload to: ${url}`);
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': authHeader,
+          'Content-Type': contentType || 'application/octet-stream'
+        },
+        body: req.body
+      });
+
+      const data = await response.json();
+
+      if (response.ok || (data.result === 'success')) {
+        console.log(`[kDrive] Upload successful via ${baseUrl}`);
+        return res.status(response.status).json(data);
+      }
+
+      lastError = { status: response.status, data };
+      console.log(`[kDrive] Upload failed on ${baseUrl}:`, response.status, data.error?.code);
+    }
+
+    // All attempts failed
+    console.error('[kDrive] All upload attempts failed:', lastError);
+    res.status(lastError?.status || 500).json(lastError?.data || { success: false, error: 'Upload failed' });
+  } catch (error) {
+    console.error('[kDrive] Upload error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Proxy: List files in drive root or folder
 app.get('/api/kdrive/:driveId/files/:folderId?', async (req, res) => {
   const { driveId, folderId } = req.params;
