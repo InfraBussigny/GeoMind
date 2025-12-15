@@ -7,7 +7,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { readFile, writeFile, readdir, stat, mkdir } from 'fs/promises';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { homedir } from 'os';
@@ -3609,9 +3609,9 @@ const KDRIVE_API_BASE = 'https://api.infomaniak.com/2/drive';
 // Get saved kDrive config (from server-side file, not exposed in frontend code)
 app.get('/api/kdrive/config', (req, res) => {
   try {
-    const configPath = path.join(__dirname, 'config', 'kdrive.json');
-    if (fs.existsSync(configPath)) {
-      const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    const configPath = join(__dirname, 'config', 'kdrive.json');
+    if (existsSync(configPath)) {
+      const config = JSON.parse(readFileSync(configPath, 'utf8'));
       res.json({ success: true, config });
     } else {
       res.json({ success: false, error: 'No config found' });
@@ -3625,12 +3625,12 @@ app.get('/api/kdrive/config', (req, res) => {
 // Save kDrive config (server-side)
 app.post('/api/kdrive/config', express.json(), (req, res) => {
   try {
-    const configDir = path.join(__dirname, 'config');
-    if (!fs.existsSync(configDir)) {
-      fs.mkdirSync(configDir, { recursive: true });
+    const configDir = join(__dirname, 'config');
+    if (!existsSync(configDir)) {
+      mkdirSync(configDir, { recursive: true });
     }
-    const configPath = path.join(configDir, 'kdrive.json');
-    fs.writeFileSync(configPath, JSON.stringify(req.body, null, 2));
+    const configPath = join(configDir, 'kdrive.json');
+    writeFileSync(configPath, JSON.stringify(req.body, null, 2));
     res.json({ success: true });
   } catch (error) {
     console.error('[kDrive] Save config error:', error);
