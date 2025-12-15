@@ -35,8 +35,11 @@
 - `package.json` (nouvelles dependances)
 - `memory/corrections.md` (bug kdrive note)
 
-### Bug note
-- Module kDrive signale comme bugge - a investiguer
+#### 4. Audit et correction module kDrive
+- **Token API hardcode** : Supprime (securite critique)
+- **Upload casse** : Corrige FormData → ArrayBuffer + file_name query param
+- **Auto-connexion** : Desactivee si pas de config
+- **Messages d'erreur** : Ameliores (401/403/404 explicites)
 
 ---
 

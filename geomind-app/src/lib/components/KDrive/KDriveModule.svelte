@@ -58,11 +58,11 @@
   let showConfig = $state(false);
   let copiedLink = $state<string | null>(null);
 
-  // Default config for Marc (using API token)
+  // Default config (empty - user must configure)
   const DEFAULT_CONFIG: KDriveConfig = {
-    driveId: '2025713',
-    email: 'marc.zermatten@gmail.com',
-    appPassword: 'bc0-aSNG0XL0e8cnk6rEzQf_Mtiklo2EW4slw7CDfvezRDFnbsT43MKoCtUGyGSBnIdMjt9B8XbcGIGB'
+    driveId: '',
+    email: '',
+    appPassword: ''
   };
 
   // Load saved config on mount
@@ -81,10 +81,9 @@
         console.error('Error loading kDrive config:', e);
       }
     } else {
-      // Use default config if nothing saved
+      // No config saved - show config panel
       config = { ...DEFAULT_CONFIG };
-      // Auto-connect with default config
-      testConnection();
+      showConfig = true;
     }
 
     const history = localStorage.getItem('geomind-kdrive-history');
@@ -141,15 +140,20 @@
           folderStack = [{ id: 1, name: 'Racine' }];
           await loadFiles();
         } else {
-          connectionError = data.error?.description || 'Erreur inconnue';
+          connectionError = data.error?.description || 'Erreur de l\'API kDrive';
         }
       } else if (response.status === 401) {
-        connectionError = 'Token API invalide';
+        connectionError = 'Token API invalide ou expiré. Vérifiez votre mot de passe d\'application.';
+      } else if (response.status === 403) {
+        connectionError = 'Accès refusé. Vérifiez que le Drive ID est correct et que vous avez accès.';
+      } else if (response.status === 404) {
+        connectionError = 'Drive non trouvé. Vérifiez l\'ID du Drive.';
       } else {
-        connectionError = `Erreur de connexion: ${response.status}`;
+        const errorData = await response.json().catch(() => ({}));
+        connectionError = errorData.error?.description || `Erreur de connexion (${response.status})`;
       }
     } catch (err) {
-      connectionError = 'Impossible de se connecter a kDrive. Verifiez votre connexion.';
+      connectionError = 'Impossible de se connecter au serveur. Vérifiez que le backend est démarré.';
       console.error('Connection error:', err);
     } finally {
       isConnecting = false;
@@ -241,7 +245,7 @@
     }
   }
 
-  // Upload files using REST API
+  // Upload files using REST API (raw binary)
   async function uploadFiles() {
     if (selectedLocalFiles.length === 0) return;
     isUploading = true;
@@ -254,18 +258,20 @@
       uploadStatus = `Upload de ${file.name}...`;
 
       try {
-        // Use REST API upload endpoint
-        const uploadUrl = `${API_BASE}/${config.driveId}/files/${currentFolderId}/upload`;
+        // Use REST API upload endpoint with filename as query param
+        const encodedFileName = encodeURIComponent(file.name);
+        const uploadUrl = `${API_BASE}/${config.driveId}/files/${currentFolderId}/upload?file_name=${encodedFileName}`;
 
-        const formData = new FormData();
-        formData.append('file', file);
+        // Read file as ArrayBuffer for raw binary upload
+        const arrayBuffer = await file.arrayBuffer();
 
         const response = await fetch(uploadUrl, {
           method: 'POST',
           headers: {
-            'Authorization': getAuthHeader()
+            'Authorization': getAuthHeader(),
+            'Content-Type': file.type || 'application/octet-stream'
           },
-          body: formData
+          body: arrayBuffer
         });
 
         if (response.ok) {

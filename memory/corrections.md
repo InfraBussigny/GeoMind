@@ -286,10 +286,29 @@ export const visibleModules = derived([appMode, moduleConfig], ([$mode, $config]
 
 ---
 
-### 2025-12-15 | Module kDrive buggé (GeoMind)
-**Problème** : Le module kDrive est complètement buggé
-**Cause** : À investiguer
-**Impact** : Module non fonctionnel
-**Action** : Debug nécessaire - vérifier l'intégration kDrive, les endpoints API, les webviews
-**Statut** : À corriger
-**Fichiers concernés** : À identifier (probablement `src/lib/components/KDrive/` ou similaire)
+### 2025-12-15 | Module kDrive buggé (GeoMind) - CORRIGÉ
+**Problèmes identifiés et corrigés** :
+
+1. **🔴 CRITIQUE - Token API hardcodé en clair**
+   - Token de Marc exposé dans le code source (ligne 62-66)
+   - **Correction** : Supprimé le token par défaut, config vide obligeant l'utilisateur à entrer ses propres credentials
+
+2. **🔴 CRITIQUE - Upload cassé (FormData vs Raw binary)**
+   - Frontend envoyait FormData (multipart)
+   - Backend utilisait express.raw() → incompatible
+   - API Infomaniak attend du raw binary + query param `file_name`
+   - **Correction** : Frontend envoie ArrayBuffer avec Content-Type + file_name en query param
+
+3. **🟡 Auto-connexion avec config vide**
+   - Tentait de se connecter automatiquement même sans config
+   - **Correction** : Affiche le panel de config si pas de credentials sauvés
+
+4. **🟡 Messages d'erreur peu explicites**
+   - Erreurs génériques "Erreur inconnue"
+   - **Correction** : Messages spécifiques selon code HTTP (401, 403, 404)
+
+**Fichiers modifiés** :
+- `src/lib/components/KDrive/KDriveModule.svelte` (frontend)
+- `server/index.js` (backend - endpoint upload)
+
+**Statut** : ✅ Corrigé

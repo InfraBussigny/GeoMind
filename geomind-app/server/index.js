@@ -3637,24 +3637,37 @@ app.post('/api/kdrive/:driveId/files/:folderId/upload', express.raw({ type: '*/*
   const { driveId, folderId } = req.params;
   const authHeader = req.headers.authorization;
   const contentType = req.headers['content-type'];
+  const fileName = req.query.file_name;
 
   if (!authHeader) {
     return res.status(401).json({ success: false, error: 'Authorization header required' });
   }
 
+  if (!fileName) {
+    return res.status(400).json({ success: false, error: 'file_name query parameter required' });
+  }
+
   try {
-    const url = `${KDRIVE_API_BASE}/${driveId}/files/${folderId}/upload`;
+    // Build URL with file_name query param for Infomaniak API
+    const url = `${KDRIVE_API_BASE}/${driveId}/files/${folderId}/upload?file_name=${encodeURIComponent(fileName)}`;
+
+    console.log(`[kDrive] Uploading ${fileName} to folder ${folderId}, size: ${req.body?.length || 0} bytes`);
 
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Authorization': authHeader,
-        'Content-Type': contentType
+        'Content-Type': contentType || 'application/octet-stream'
       },
       body: req.body
     });
 
     const data = await response.json();
+
+    if (!response.ok) {
+      console.error('[kDrive] Upload failed:', response.status, data);
+    }
+
     res.status(response.status).json(data);
   } catch (error) {
     console.error('[kDrive] Upload error:', error);
