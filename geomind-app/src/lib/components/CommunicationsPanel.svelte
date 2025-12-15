@@ -23,8 +23,6 @@
       description: 'Emails & Calendrier Microsoft 365'
     },
     {
-    },
-    {
       id: 'whatsapp',
       name: 'WhatsApp',
       icon: '💬',

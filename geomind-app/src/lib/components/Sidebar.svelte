@@ -200,7 +200,7 @@
       </div>
     {/if}
     {#each displayedModules as module, index}
-      <button
+      <div
         class="nav-item"
         class:active={$currentModule === module.id}
         class:dragging={draggedIndex === index}
@@ -212,6 +212,7 @@
         class:carlo-hors-service={$isCarloModeActive && module.id === carloEffects.horsService}
         class:carlo-taped={$isCarloModeActive && carloEffects.taped.includes(module.id)}
         onclick={() => selectModule(module.id)}
+        onkeydown={(e) => e.key === 'Enter' && selectModule(module.id)}
         title={$sidebarCollapsed ? module.label : ''}
         draggable={editMode ? "true" : "false"}
         ondragstart={(e) => handleDragStart(e, index)}
@@ -219,6 +220,8 @@
         ondragleave={handleDragLeave}
         ondrop={(e) => handleDrop(e, index)}
         ondragend={handleDragEnd}
+        role="button"
+        tabindex="0"
       >
         <!-- Clous SVG en mode Carlo (pas sur le bouton oscillant ou scotché) -->
         {#if $isCarloModeActive && !carloEffects.taped.includes(module.id) && module.id !== carloEffects.wobbly}
@@ -486,7 +489,7 @@
         {#if $currentModule === module.id}
           <div class="active-indicator"></div>
         {/if}
-      </button>
+      </div>
     {/each}
   </nav>
 
@@ -739,6 +742,8 @@
     text-align: left;
     position: relative;
     overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   .sidebar.collapsed .nav-item {
