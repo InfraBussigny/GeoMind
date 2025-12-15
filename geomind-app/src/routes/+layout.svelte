@@ -8,6 +8,7 @@
   import { browser } from '$app/environment';
   import { onMount, onDestroy } from 'svelte';
   import { initializeMemory } from '$lib/services/memory';
+  import '$lib/stores/neonFlicker'; // Auto-activates in BFSA mode
 
   // Mode switcher modal state
   let showModeSwitcher = $state(false);

@@ -3,6 +3,7 @@
   import { providers, backendConnected, appMode, glitchSettings, moduleConfig, ALL_MODULES, type ModuleType } from '$lib/stores/app';
   import { portalConfig, type PortalConfig } from '$lib/stores/portalConfig';
   import { carloConfig, isCarloModeActive } from '$lib/stores/carloMode';
+  import { neonFlickerSettings } from '$lib/stores/neonFlicker';
   import { getProviders, saveProviderConfig } from '$lib/services/api';
   import ThemeToggle from '../ThemeToggle.svelte';
 
@@ -1141,6 +1142,52 @@
             </div>
           </div>
 
+          
+          <div class="neon-flicker-section">
+            <h4>Effet Neon Casse</h4>
+            <p class="neon-description">Le theme alterne entre clair et sombre comme un vieux neon defaillant.</p>
+            
+            <label class="effect-toggle neon-toggle">
+              <input
+                type="checkbox"
+                checked={$neonFlickerSettings.enabled}
+                onchange={() => neonFlickerSettings.update(s => ({ ...s, enabled: !s.enabled }))}
+              />
+              <span>Activer le clignotement</span>
+            </label>
+
+            <div class="neon-control" class:disabled={!$neonFlickerSettings.enabled}>
+              <label>
+                <span class="control-label">Intensite</span>
+                <select 
+                  value={$neonFlickerSettings.intensity}
+                  onchange={(e) => neonFlickerSettings.update(s => ({ ...s, intensity: e.currentTarget.value }))}
+                  disabled={!$neonFlickerSettings.enabled}
+                >
+                  <option value="low">Faible</option>
+                  <option value="medium">Moyen</option>
+                  <option value="high">Fort</option>
+                  <option value="extreme">Extreme</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="neon-control" class:disabled={!$neonFlickerSettings.enabled}>
+              <label>
+                <span class="control-label">Vitesse</span>
+                <select 
+                  value={$neonFlickerSettings.speed}
+                  onchange={(e) => neonFlickerSettings.update(s => ({ ...s, speed: e.currentTarget.value }))}
+                  disabled={!$neonFlickerSettings.enabled}
+                >
+                  <option value="slow">Lent</option>
+                  <option value="normal">Normal</option>
+                  <option value="fast">Rapide</option>
+                  <option value="chaotic">Chaotique</option>
+                </select>
+              </label>
+            </div>
+          </div>
           <div class="carlo-sound">
             <label class="sound-toggle">
               <input
@@ -3126,4 +3173,57 @@
     margin-top: 8px;
     font-style: normal;
   }
+
+  /* Neon Flicker Section */
+  .neon-flicker-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .neon-flicker-section h4 {
+    font-size: 14px;
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
+  }
+
+  .neon-description {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+  }
+
+  .neon-toggle {
+    margin-bottom: 16px;
+  }
+
+  .neon-control {
+    margin-bottom: 12px;
+  }
+
+  .neon-control.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .neon-control label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .neon-control select {
+    padding: 6px 12px;
+    background: var(--noir-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .neon-control select:hover {
+    border-color: var(--cyber-green);
+  }
+
 </style>
