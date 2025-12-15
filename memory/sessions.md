@@ -1,3 +1,45 @@
+## Session 33 - 16 decembre 2025
+**Theme** : Corrections UX + Installateur NSIS personnalise
+
+### Travail effectue
+
+#### 1. Configuration modules mode Standard
+- Mode Standard maintenant configurable dans Parametres (onglet Avance)
+- Suppression restrictions dans `app.ts` (setModulesForMode, toggleModule)
+- Ajout bouton "Standard" dans SettingsModule.svelte
+
+#### 2. Correction version "A propos"
+- Version 1.0.3 affichee correctement (etait 1.0.0)
+
+#### 3. Fix Drag & Drop Sidebar
+- Attribut `draggable={editMode}` → `draggable={editMode ? "true" : "false"}`
+- HTML requiert chaine de caracteres, pas booleen
+
+#### 4. Installateur NSIS personnalise
+- **installer-header.bmp** (150x57 px) : Logo GeoMind + bande cyber-green
+- **installer-sidebar.bmp** (164x314 px) : Logo + "Spatial Intelligence" + version
+- **tauri.conf.json** mis a jour avec config NSIS :
+  - headerImage, sidebarImage, installerIcon
+  - Langues : Francais, Anglais
+  - Selecteur de langue active
+
+#### 5. Build v1.0.3
+- Compilation Tauri reussie
+- Installateur : `GeoMind_1.0.3_x64-setup.exe` (21.5 Mo)
+
+### Fichiers modifies
+- `src/lib/stores/app.ts` (config standard)
+- `src/lib/components/Settings/SettingsModule.svelte` (version + bouton standard + fix {/if})
+- `src/lib/components/Sidebar.svelte` (fix draggable)
+- `src-tauri/tauri.conf.json` (config NSIS)
+- `src-tauri/icons/installer-header.bmp` (nouveau)
+- `src-tauri/icons/installer-sidebar.bmp` (nouveau)
+
+### Commits
+- 3e7329f : UX: Config modules Standard + Drag&Drop + NSIS personnalise
+
+---
+
 ## Session 32 - 15 decembre 2025 (soir)
 **Theme** : Module QGlS - Phases 4, 5 et chargement PostGIS
 
