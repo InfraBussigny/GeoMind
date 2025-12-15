@@ -1,7 +1,7 @@
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 
-export type ModuleType = 'chat' | 'canvas' | 'editor' | 'docgen' | 'settings' | 'connexions' | 'comm' | 'databases' | 'timepro' | 'wip' | 'cad' | 'converter' | 'wakelock' | 'kdrive' | 'intercapi';
+export type ModuleType = 'chat' | 'canvas' | 'editor' | 'docgen' | 'settings' | 'connexions' | 'comm' | 'databases' | 'timepro' | 'wip' | 'cad' | 'converter' | 'wakelock' | 'kdrive' | 'intercapi' | 'calage';
 
 export const currentModule = writable<ModuleType>('chat');
 export const sidebarCollapsed = writable(false);
@@ -244,18 +244,19 @@ export const ALL_MODULES: { id: ModuleType; label: string; description: string; 
   { id: 'settings', label: 'Parametres', description: 'Configuration', alwaysVisible: true },
   { id: 'wip', label: 'WIP', description: 'En developpement' },
   { id: 'cad', label: 'CAD', description: 'Viewer DXF/DWG' },
-  { id: 'kdrive', label: 'kDrive', description: 'Partage fichiers' }
+  { id: 'kdrive', label: 'kDrive', description: 'Partage fichiers' },
+  { id: 'calage', label: 'Calage', description: 'Géoréférencement' }
 ];
 
 // Modules par défaut pour chaque mode (excluant standard qui est fixe)
 const DEFAULT_MODULE_CONFIG: Record<string, ModuleType[]> = {
-  expert: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'connexions', 'comm', 'docgen', 'intercapi', 'settings', 'cad', 'kdrive'],
-  god: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'connexions', 'comm', 'docgen', 'intercapi', 'settings', 'wip', 'cad', 'kdrive'],
-  bfsa: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'connexions', 'comm', 'docgen', 'intercapi', 'settings', 'cad', 'kdrive']
+  expert: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'connexions', 'comm', 'docgen', 'intercapi', 'settings', 'cad', 'kdrive', 'calage'],
+  god: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'connexions', 'comm', 'docgen', 'intercapi', 'settings', 'wip', 'cad', 'kdrive', 'calage'],
+  bfsa: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'connexions', 'comm', 'docgen', 'intercapi', 'settings', 'cad', 'kdrive', 'calage']
 };
 
 // Modules fixes pour le mode standard (non modifiable)
-const STANDARD_MODULES: ModuleType[] = ['chat', 'canvas', 'databases', 'converter', 'wakelock', 'connexions', 'settings'];
+const STANDARD_MODULES: ModuleType[] = ['chat', 'canvas', 'cad', 'calage', 'databases', 'converter', 'wakelock', 'connexions', 'settings'];
 
 // Store pour la configuration personnalisée des modules par mode
 function createModuleConfigStore() {
@@ -350,13 +351,26 @@ export const moduleConfig = createModuleConfigStore();
 
 // Ordre par défaut des modules
 const DEFAULT_MODULE_ORDER: ModuleType[] = [
-  'chat', 'canvas', 'cad', 'editor', 'databases', 'converter',
+  'chat', 'canvas', 'cad', 'calage', 'editor', 'databases', 'converter',
   'connexions', 'kdrive', 'intercapi', 'wakelock', 'timepro', 'comm', 'docgen',
   'settings', 'wip'
 ];
 
 // Store pour l'ordre personnalisé des modules
+// Version de la config - incrémenter pour forcer un reset
+const MODULE_CONFIG_VERSION = 2; // v2: ajout module Calage
+
 function createModuleOrderStore() {
+  // Vérifier la version et reset si nécessaire
+  if (browser) {
+    const storedVersion = localStorage.getItem('geomind-module-version');
+    if (storedVersion !== String(MODULE_CONFIG_VERSION)) {
+      localStorage.removeItem('geomind-module-order');
+      localStorage.removeItem('geomind-module-config');
+      localStorage.setItem('geomind-module-version', String(MODULE_CONFIG_VERSION));
+    }
+  }
+
   const stored = browser ? localStorage.getItem('geomind-module-order') : null;
   let initial: ModuleType[] = stored ? JSON.parse(stored) : [...DEFAULT_MODULE_ORDER];
 

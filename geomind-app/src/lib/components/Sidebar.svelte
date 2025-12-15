@@ -30,6 +30,7 @@
     { id: 'chat', label: 'Assistant', description: 'Chat IA' },
     { id: 'canvas', label: 'Cartes', description: 'Visualisation' },
     { id: 'cad', label: 'CAD', description: 'DXF/DWG Viewer' },
+    { id: 'calage', label: 'Calage', description: 'Géoréférencement' },
     { id: 'editor', label: 'Editeur', description: 'SQL & Python' },
     { id: 'databases', label: 'Databases', description: 'Schema & ERD' },
     { id: 'converter', label: 'Convertisseur', description: 'Formats fichiers' },
@@ -225,6 +226,7 @@
             'chat': ['tl', 'tr', 'bl'],
             'canvas': ['tl', 'mr', 'br'],
             'cad': ['tl', 'tr', 'bl', 'br'],
+            'calage': ['tl', 'tr', 'bl', 'br'],
             'editor': ['tl', 'tr'],
             'databases': ['ml', 'tr', 'br'],
             'converter': ['tl', 'tr', 'bl', 'br', 'ml'],
@@ -235,6 +237,8 @@
             'comm': ['tr', 'bl', 'br'],
             'settings': ['tl', 'tr', 'bl', 'br'],
             'kdrive': ['ml', 'mr', 'bl'],
+            'intercapi': ['tl', 'tr', 'bl'],
+            'wip': ['tl', 'br'],
           }[module.id] || ['tl', 'tr']}
           {#each nailConfig as pos}
             <svg class="carlo-nail nail-{pos}" viewBox="0 0 20 30" width="10" height="15">
@@ -395,9 +399,9 @@
           <!-- Parametres / Settings -->
           {:else if module.id === 'settings'}
             <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <!-- Engrenage -->
+              <!-- Engrenage classique -->
               <circle cx="12" cy="12" r="3"/>
-              <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
             </svg>
           <!-- WIP / En developpement -->
           {:else if module.id === 'wip'}
@@ -446,6 +450,15 @@
             <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <!-- Bâtiment avec colonnes (registre foncier) -->
               <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/>
+            </svg>
+          <!-- Calage / Géoréférencement -->
+          {:else if module.id === 'calage'}
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <!-- Cible avec croix de géoréférencement -->
+              <circle cx="12" cy="12" r="10"/>
+              <circle cx="12" cy="12" r="6"/>
+              <circle cx="12" cy="12" r="2" fill="currentColor"/>
+              <path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>
             </svg>
           {/if}
         </div>

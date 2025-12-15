@@ -15,6 +15,7 @@
   import WakeLockModule from '$lib/components/WakeLock/WakeLockModule.svelte';
   import KDriveModule from '$lib/components/KDrive/KDriveModule.svelte';
   import { IntercapiModule } from '$lib/components/Intercapi';
+  import CalageModule from '$lib/components/Calage/CalageModule.svelte';
 </script>
 
 <div class="module-container">
@@ -48,6 +49,8 @@
     <KDriveModule />
   {:else if $currentModule === 'intercapi'}
     <IntercapiModule />
+  {:else if $currentModule === 'calage'}
+    <CalageModule />
   {/if}
 </div>
 

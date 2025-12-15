@@ -1,0 +1,213 @@
+{
+  "layers": [
+    {
+      "id": "bdco_parcelle",
+      "name": "Parcelles",
+      "table": "bdco.bdco_parcelle",
+      "schema": "bdco",
+      "geometryType": "polygon",
+      "geometryColumn": "geom",
+      "srid": 2056,
+      "style": {
+        "fillColor": "#000000",
+        "fillOpacity": 0,
+        "strokeColor": "#404040",
+        "strokeWidth": 0.8
+      },
+      "interactive": true,
+      "snapTypes": ["node", "intersection"],
+      "snapPriority": 10,
+      "defaultVisible": true,
+      "zIndex": 1
+    },
+    {
+      "id": "bdco_batiment",
+      "name": "Bâtiments",
+      "table": "bdco.bdco_batiment",
+      "schema": "bdco",
+      "geometryType": "polygon",
+      "geometryColumn": "geom",
+      "srid": 2056,
+      "style": {
+        "fillColor": "#D4D4D4",
+        "fillOpacity": 0.8,
+        "strokeColor": "#808080",
+        "strokeWidth": 0.5
+      },
+      "interactive": true,
+      "snapTypes": ["node", "intersection"],
+      "snapPriority": 5,
+      "defaultVisible": true,
+      "zIndex": 2
+    },
+    {
+      "id": "bdco_cs_dur",
+      "name": "Couverture sol dur",
+      "table": "bdco.bdco_cs_dur",
+      "schema": "bdco",
+      "geometryType": "polygon",
+      "geometryColumn": "geom",
+      "srid": 2056,
+      "style": {
+        "fillColor": "#E8E8E8",
+        "fillOpacity": 0.6,
+        "strokeColor": "#A0A0A0",
+        "strokeWidth": 0.3
+      },
+      "interactive": false,
+      "defaultVisible": false,
+      "zIndex": 3
+    },
+    {
+      "id": "bdco_objet_divers_surf",
+      "name": "Objets divers (surfaces)",
+      "table": "bdco.bdco_objet_divers_surf",
+      "schema": "bdco",
+      "geometryType": "polygon",
+      "geometryColumn": "geom",
+      "srid": 2056,
+      "style": {
+        "fillColor": "#F0F0F0",
+        "fillOpacity": 0.5,
+        "strokeColor": "#909090",
+        "strokeWidth": 0.3
+      },
+      "interactive": true,
+      "snapTypes": ["node", "intersection"],
+      "snapPriority": 8,
+      "defaultVisible": false,
+      "zIndex": 4
+    },
+    {
+      "id": "bdco_adresse_rue_lin",
+      "name": "Axes de rues",
+      "table": "bdco.bdco_adresse_rue_lin",
+      "schema": "bdco",
+      "geometryType": "line",
+      "geometryColumn": "geom",
+      "srid": 2056,
+      "style": {
+        "strokeColor": "#606060",
+        "strokeWidth": 1
+      },
+      "interactive": false,
+      "defaultVisible": false,
+      "zIndex": 5
+    },
+    {
+      "id": "bdco_objet_divers_lin",
+      "name": "Objets divers (lignes)",
+      "table": "bdco.bdco_objet_divers_lin",
+      "schema": "bdco",
+      "geometryType": "line",
+      "geometryColumn": "geom",
+      "srid": 2056,
+      "style": {
+        "strokeColor": "#707070",
+        "strokeWidth": 0.5
+      },
+      "interactive": true,
+      "snapTypes": ["node", "lineEnd", "intersection"],
+      "snapPriority": 7,
+      "defaultVisible": false,
+      "zIndex": 6
+    },
+    {
+      "id": "bdco_point_fixe_1",
+      "name": "Points fixes PFP1",
+      "table": "bdco.bdco_point_fixe_1",
+      "schema": "bdco",
+      "geometryType": "point",
+      "geometryColumn": "geom",
+      "srid": 2056,
+      "style": {
+        "fillColor": "#CC0000",
+        "strokeColor": "#000000",
+        "strokeWidth": 1.5,
+        "radius": 6,
+        "shape": "triangle"
+      },
+      "interactive": true,
+      "snapTypes": ["center"],
+      "snapPriority": 1,
+      "defaultVisible": true,
+      "zIndex": 100
+    },
+    {
+      "id": "bdco_point_fixe_2",
+      "name": "Points fixes PFP2",
+      "table": "bdco.bdco_point_fixe_2",
+      "schema": "bdco",
+      "geometryType": "point",
+      "geometryColumn": "geom",
+      "srid": 2056,
+      "style": {
+        "fillColor": "#CC0000",
+        "strokeColor": "#000000",
+        "strokeWidth": 1,
+        "radius": 5,
+        "shape": "triangle"
+      },
+      "interactive": true,
+      "snapTypes": ["center"],
+      "snapPriority": 2,
+      "defaultVisible": true,
+      "zIndex": 99
+    },
+    {
+      "id": "bdco_point_fixe_3",
+      "name": "Points fixes PFP3",
+      "table": "bdco.bdco_point_fixe_3",
+      "schema": "bdco",
+      "geometryType": "point",
+      "geometryColumn": "geom",
+      "srid": 2056,
+      "style": {
+        "fillColor": "#CC0000",
+        "strokeColor": "#000000",
+        "strokeWidth": 0.8,
+        "radius": 4,
+        "shape": "triangle"
+      },
+      "interactive": true,
+      "snapTypes": ["center"],
+      "snapPriority": 3,
+      "defaultVisible": true,
+      "zIndex": 98
+    },
+    {
+      "id": "bdco_point_limite",
+      "name": "Points limites",
+      "table": "bdco.bdco_point_limite",
+      "schema": "bdco",
+      "geometryType": "point",
+      "geometryColumn": "geom",
+      "srid": 2056,
+      "style": {
+        "fillColor": "#FFD700",
+        "strokeColor": "#000000",
+        "strokeWidth": 0.5,
+        "radius": 3
+      },
+      "interactive": true,
+      "snapTypes": ["center"],
+      "snapPriority": 4,
+      "defaultVisible": true,
+      "zIndex": 97
+    }
+  ],
+  "defaultCenter": {
+    "x": 2529750,
+    "y": 1156250
+  },
+  "defaultZoom": 15,
+  "crs": "EPSG:2056",
+  "communeExtent": {
+    "name": "Bussigny",
+    "minX": 2527000,
+    "minY": 1153500,
+    "maxX": 2532500,
+    "maxY": 1159000,
+    "comment": "Limites approximatives de la commune de Bussigny (MN95)"
+  }
+}

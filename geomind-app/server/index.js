@@ -3280,6 +3280,82 @@ app.get('/api/databases/:connectionId/tiles/:schema/:table/:z/:x/:y.mvt', async 
   }
 });
 
+// GeoJSON endpoint for layer data (supports bbox filter)
+app.get('/api/databases/:connectionId/geojson/:schema/:table', async (req, res) => {
+  const { connectionId, schema, table } = req.params;
+  const { bbox, limit = 5000 } = req.query;
+
+  try {
+    await connections.connect(connectionId);
+
+    // Get geometry column info
+    const geoColQuery = `
+      SELECT f_geometry_column, srid
+      FROM geometry_columns
+      WHERE f_table_schema = '${schema}' AND f_table_name = '${table}'
+      LIMIT 1
+    `;
+    const geoResult = await connections.executeSQL(connectionId, geoColQuery);
+
+    if (geoResult.rows.length === 0) {
+      return res.status(404).json({ error: `Table ${schema}.${table} has no geometry column` });
+    }
+
+    const geomCol = geoResult.rows[0].f_geometry_column;
+    const srid = geoResult.rows[0].srid;
+
+    // Build bbox filter if provided (expected format: minX,minY,maxX,maxY in table SRID)
+    let bboxFilter = '';
+    if (bbox) {
+      const [minX, minY, maxX, maxY] = bbox.split(',').map(Number);
+      bboxFilter = `AND ST_Intersects("${geomCol}", ST_MakeEnvelope(${minX}, ${minY}, ${maxX}, ${maxY}, ${srid}))`;
+    }
+
+    // Get attributes (limit to 15)
+    const attrQuery = `
+      SELECT column_name FROM information_schema.columns
+      WHERE table_schema = '${schema}' AND table_name = '${table}'
+        AND udt_name NOT IN ('geometry', 'geography')
+      ORDER BY ordinal_position LIMIT 15
+    `;
+    const attrResult = await connections.executeSQL(connectionId, attrQuery);
+    const attrs = attrResult.rows.map(r => `"${r.column_name}"`).join(', ');
+    const propsSelect = attrs ? `, ${attrs}` : '';
+
+    // Query features as GeoJSON
+    const query = `
+      SELECT jsonb_build_object(
+        'type', 'FeatureCollection',
+        'crs', jsonb_build_object('type', 'name', 'properties', jsonb_build_object('name', 'EPSG:${srid}')),
+        'features', COALESCE(jsonb_agg(
+          jsonb_build_object(
+            'type', 'Feature',
+            'geometry', ST_AsGeoJSON("${geomCol}")::jsonb,
+            'properties', to_jsonb(t) - '${geomCol}'
+          )
+        ), '[]'::jsonb)
+      ) as geojson
+      FROM (
+        SELECT "${geomCol}" ${propsSelect}
+        FROM "${schema}"."${table}"
+        WHERE "${geomCol}" IS NOT NULL ${bboxFilter}
+        LIMIT ${parseInt(limit)}
+      ) t
+    `;
+
+    const result = await connections.executeSQL(connectionId, query);
+    const geojson = result.rows[0]?.geojson || { type: 'FeatureCollection', features: [] };
+
+    res.setHeader('Content-Type', 'application/geo+json');
+    res.setHeader('Cache-Control', 'public, max-age=60');
+    res.json(geojson);
+
+  } catch (error) {
+    console.error(`[GeoJSON] Error ${schema}.${table}:`, error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ============================================
 // SERVER MANAGEMENT ENDPOINTS
 // ============================================

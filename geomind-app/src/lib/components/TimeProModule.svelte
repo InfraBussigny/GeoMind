@@ -197,6 +197,25 @@
     }
   }
 
+  // Open Time Pro - in Tauri, focus the webview; in browser, open external
+  async function openTimeProWeb() {
+    if (isTauri && currentWebview) {
+      try {
+        // Focus the main window and refresh webview if needed
+        const { getCurrentWindow } = await import('@tauri-apps/api/window');
+        const mainWindow = await getCurrentWindow();
+        await mainWindow.setFocus();
+        // Optionally navigate to ensure we're on the right page
+        await currentWebview.navigate(timeProUrl);
+      } catch (e) {
+        console.log('Error focusing webview:', e);
+        openExternal();
+      }
+    } else {
+      openExternal();
+    }
+  }
+
   function saveTimeProUrl() {
     if (browser && timeProUrl) {
       localStorage.setItem('geomind_timepro_url', timeProUrl);
@@ -649,10 +668,21 @@
           </button>
         </div>
       {:else if !isTauri && webviewReady}
+        <!-- Notice about OAuth -->
+        <div class="oauth-notice">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="16" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+          <span>L'authentification Microsoft peut ne pas fonctionner ici.</span>
+          <button class="notice-btn" onclick={openExternal}>Ouvrir dans un nouvel onglet</button>
+        </div>
         <iframe
           src={timeProUrl}
           title="Time Pro"
           class="timepro-iframe"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation"
           onload={handleIframeLoad}
           onerror={handleIframeError}
         ></iframe>
@@ -1136,8 +1166,46 @@
 
   .timepro-iframe {
     width: 100%;
-    height: 100%;
+    height: calc(100% - 36px);
     border: none;
+  }
+
+  .oauth-notice {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    background: rgba(255, 165, 0, 0.1);
+    border-bottom: 1px solid rgba(255, 165, 0, 0.3);
+    font-size: 12px;
+    color: var(--warning, #ffa500);
+  }
+
+  .oauth-notice svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  .oauth-notice span {
+    flex: 1;
+  }
+
+  .notice-btn {
+    padding: 4px 12px;
+    background: transparent;
+    border: 1px solid var(--warning, #ffa500);
+    border-radius: 4px;
+    color: var(--warning, #ffa500);
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .notice-btn:hover {
+    background: rgba(255, 165, 0, 0.2);
   }
 
   /* States */
