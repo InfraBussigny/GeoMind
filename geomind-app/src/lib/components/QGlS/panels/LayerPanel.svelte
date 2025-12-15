@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { dndzone } from 'svelte-dnd-action';
   import { flip } from 'svelte/animate';
   import {
@@ -7,8 +8,29 @@
     toggleLayerVisibility,
     removeLayer,
     setLayerOpacity,
+    addLayer,
     type QGlSLayer
   } from '$lib/stores/qgls/layerStore';
+
+  const API_BASE = 'http://localhost:3001/api';
+
+  // Types
+  interface DBConnection {
+    id: string;
+    name: string;
+    type: string;
+    host: string;
+    database: string;
+    isActive?: boolean;
+  }
+
+  interface GeoTable {
+    schema: string;
+    table: string;
+    geometry_column: string;
+    geometry_type: string;
+    srid: number;
+  }
 
   // DnD settings
   const flipDurationMs = 200;
@@ -16,6 +38,15 @@
 
   // Local copy for DnD
   let items = $state<QGlSLayer[]>([]);
+
+  // Add layer dialog state
+  let showAddDialog = $state(false);
+  let connections = $state<DBConnection[]>([]);
+  let selectedConnectionId = $state<string | null>(null);
+  let geoTables = $state<GeoTable[]>([]);
+  let loadingConnections = $state(false);
+  let loadingTables = $state(false);
+  let addLayerError = $state<string | null>(null);
 
   // Sync with store
   $effect(() => {
@@ -82,6 +113,84 @@
 
     hideContextMenu();
   }
+
+  // Add layer dialog functions
+  async function openAddDialog() {
+    showAddDialog = true;
+    addLayerError = null;
+    await loadConnections();
+  }
+
+  function closeAddDialog() {
+    showAddDialog = false;
+    selectedConnectionId = null;
+    geoTables = [];
+    addLayerError = null;
+  }
+
+  async function loadConnections() {
+    loadingConnections = true;
+    try {
+      const res = await fetch(`${API_BASE}/connections`);
+      const data = await res.json();
+      connections = data.filter((c: DBConnection) => c.type === 'postgresql');
+    } catch (err) {
+      addLayerError = 'Erreur de chargement des connexions';
+      console.error(err);
+    } finally {
+      loadingConnections = false;
+    }
+  }
+
+  async function selectConnection(connId: string) {
+    selectedConnectionId = connId;
+    loadingTables = true;
+    geoTables = [];
+    addLayerError = null;
+
+    try {
+      // Connect to the database
+      await fetch(`${API_BASE}/connections/${connId}/connect`, { method: 'POST' });
+
+      // Get geotables
+      const res = await fetch(`${API_BASE}/databases/${connId}/geotables`);
+      const data = await res.json();
+      geoTables = data;
+    } catch (err) {
+      addLayerError = 'Erreur de connexion à la base de données';
+      console.error(err);
+    } finally {
+      loadingTables = false;
+    }
+  }
+
+  function addPostGISLayer(table: GeoTable) {
+    addLayer({
+      name: table.table,
+      type: 'postgis',
+      visible: true,
+      opacity: 1,
+      source: {
+        connectionId: selectedConnectionId!,
+        schema: table.schema,
+        table: table.table,
+        geometryColumn: table.geometry_column,
+        srid: table.srid
+      },
+      editable: false
+    });
+
+    // Close dialog after adding
+    closeAddDialog();
+  }
+
+  function getGeomTypeIcon(type: string): string {
+    const t = type?.toLowerCase() || '';
+    if (t.includes('point')) return 'point';
+    if (t.includes('line')) return 'line';
+    if (t.includes('polygon')) return 'polygon';
+    return 'unknown';
+  }
 </script>
 
 <svelte:window onclick={hideContextMenu} />
@@ -90,7 +199,7 @@
   <header class="panel-header">
     <h3>Couches</h3>
     <div class="header-actions">
-      <button class="add-btn" title="Ajouter une couche">
+      <button class="add-btn" title="Ajouter une couche PostGIS" onclick={openAddDialog}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="12" y1="5" x2="12" y2="19"/>
           <line x1="5" y1="12" x2="19" y2="12"/>
@@ -224,6 +333,106 @@
       </svg>
       Supprimer
     </button>
+  </div>
+{/if}
+
+<!-- Add PostGIS Layer Dialog -->
+{#if showAddDialog}
+  <div class="dialog-overlay" onclick={closeAddDialog}>
+    <div class="dialog" onclick={(e) => e.stopPropagation()}>
+      <header class="dialog-header">
+        <h3>Ajouter une couche PostGIS</h3>
+        <button class="close-btn" onclick={closeAddDialog}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </header>
+
+      <div class="dialog-content">
+        {#if addLayerError}
+          <div class="error-message">{addLayerError}</div>
+        {/if}
+
+        <!-- Connections list -->
+        <div class="dialog-section">
+          <label>Connexion</label>
+          {#if loadingConnections}
+            <div class="loading">Chargement...</div>
+          {:else if connections.length === 0}
+            <div class="empty-msg">Aucune connexion PostgreSQL configurée</div>
+          {:else}
+            <div class="connection-list">
+              {#each connections as conn}
+                <button
+                  class="connection-item"
+                  class:active={selectedConnectionId === conn.id}
+                  onclick={() => selectConnection(conn.id)}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                  </svg>
+                  <div class="conn-info">
+                    <span class="conn-name">{conn.name}</span>
+                    <span class="conn-db">{conn.database}@{conn.host}</span>
+                  </div>
+                </button>
+              {/each}
+            </div>
+          {/if}
+        </div>
+
+        <!-- Tables list -->
+        {#if selectedConnectionId}
+          <div class="dialog-section">
+            <label>Tables géographiques</label>
+            {#if loadingTables}
+              <div class="loading">Chargement des tables...</div>
+            {:else if geoTables.length === 0}
+              <div class="empty-msg">Aucune table géographique trouvée</div>
+            {:else}
+              <div class="table-list">
+                {#each geoTables as table}
+                  <button
+                    class="table-item"
+                    onclick={() => addPostGISLayer(table)}
+                  >
+                    <span class="geom-type" data-type={getGeomTypeIcon(table.geometry_type)}>
+                      {#if getGeomTypeIcon(table.geometry_type) === 'point'}
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                          <circle cx="12" cy="12" r="4"/>
+                        </svg>
+                      {:else if getGeomTypeIcon(table.geometry_type) === 'line'}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M4 20L20 4"/>
+                        </svg>
+                      {:else}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"/>
+                        </svg>
+                      {/if}
+                    </span>
+                    <div class="table-info">
+                      <span class="table-name">{table.schema}.{table.table}</span>
+                      <span class="table-meta">
+                        {table.geometry_type} • SRID:{table.srid}
+                      </span>
+                    </div>
+                    <svg class="add-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="12" y1="5" x2="12" y2="19"/>
+                      <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                  </button>
+                {/each}
+              </div>
+            {/if}
+          </div>
+        {/if}
+      </div>
+    </div>
   </div>
 {/if}
 
@@ -467,5 +676,209 @@
     height: 1px;
     background: var(--border-color);
     margin: 4px 0;
+  }
+
+  /* Dialog overlay */
+  .dialog-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+  }
+
+  .dialog {
+    background: var(--bg-secondary, #1e1e2e);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  }
+
+  .dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .dialog-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: none;
+    border: none;
+    border-radius: 4px;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+
+  .close-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+  }
+
+  .close-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .dialog-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+  }
+
+  .dialog-section {
+    margin-bottom: 16px;
+  }
+
+  .dialog-section label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .loading, .empty-msg {
+    padding: 12px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-style: italic;
+  }
+
+  .error-message {
+    padding: 10px 12px;
+    background: rgba(255, 107, 107, 0.15);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    border-radius: 6px;
+    color: #ff6b6b;
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+
+  .connection-list, .table-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .connection-item, .table-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--bg-tertiary, rgba(0, 0, 0, 0.2));
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s ease;
+  }
+
+  .connection-item:hover, .table-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--cyber-green, #00ff88);
+  }
+
+  .connection-item.active {
+    background: rgba(0, 255, 136, 0.1);
+    border-color: var(--cyber-green, #00ff88);
+  }
+
+  .connection-item svg {
+    width: 24px;
+    height: 24px;
+    color: var(--cyber-green, #00ff88);
+    flex-shrink: 0;
+  }
+
+  .conn-info, .table-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .conn-name, .table-name {
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .conn-db, .table-meta {
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+
+  .geom-type {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  .geom-type svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .geom-type[data-type="point"] {
+    background: rgba(255, 200, 0, 0.2);
+    color: #ffc800;
+  }
+
+  .geom-type[data-type="line"] {
+    background: rgba(0, 150, 255, 0.2);
+    color: #0096ff;
+  }
+
+  .geom-type[data-type="polygon"] {
+    background: rgba(0, 255, 136, 0.2);
+    color: var(--cyber-green, #00ff88);
+  }
+
+  .geom-type[data-type="unknown"] {
+    background: var(--bg-tertiary);
+    color: var(--text-muted);
+  }
+
+  .add-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+
+  .table-item:hover .add-icon {
+    opacity: 1;
+    color: var(--cyber-green, #00ff88);
   }
 </style>

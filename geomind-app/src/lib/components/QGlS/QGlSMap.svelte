@@ -30,6 +30,9 @@
   import GeoJSON from 'ol/format/GeoJSON';
   import KML from 'ol/format/KML';
   import GPX from 'ol/format/GPX';
+  import VectorTileLayer from 'ol/layer/VectorTile';
+  import VectorTileSource from 'ol/source/VectorTile';
+  import MVT from 'ol/format/MVT';
 
   // Turf.js for geometry operations
   import * as turf from '@turf/turf';
@@ -122,9 +125,14 @@
     return createOLStyle(get(currentStyle));
   }
 
+  const API_BASE = 'http://localhost:3001/api';
+
   // Map element reference
   let mapElement: HTMLDivElement;
   let map: Map | null = null;
+
+  // PostGIS layer management
+  let postgisLayerMap = new Map<string, VectorTileLayer>();
 
   // Status
   let currentZoom = $state(12);
@@ -484,6 +492,93 @@
       map.addInteraction(snapInteraction);
     }
   });
+
+  // Watch layers store for PostGIS layers
+  $effect(() => {
+    if (!map) return;
+
+    const currentLayers = $layers;
+
+    // Get IDs of current PostGIS layers in store
+    const storeLayerIds = new Set(
+      currentLayers.filter(l => l.type === 'postgis').map(l => l.id)
+    );
+
+    // Remove layers that are no longer in store
+    postgisLayerMap.forEach((olLayer, id) => {
+      if (!storeLayerIds.has(id)) {
+        map.removeLayer(olLayer);
+        postgisLayerMap.delete(id);
+      }
+    });
+
+    // Add new layers and update existing ones
+    currentLayers.filter(l => l.type === 'postgis').forEach((layer) => {
+      if (!postgisLayerMap.has(layer.id)) {
+        // Create new MVT layer
+        const { connectionId, schema, table } = layer.source;
+        if (!connectionId || !schema || !table) return;
+
+        const tileUrl = `${API_BASE}/databases/${connectionId}/tiles/${schema}/${table}/{z}/{x}/{y}.mvt`;
+
+        // Generate color based on layer index
+        const layerColors = [
+          '#00ff88', '#ff6b6b', '#4dabf7', '#ffd43b', '#69db7c',
+          '#ff8787', '#74c0fc', '#ffe066', '#8ce99a', '#ffa8a8'
+        ];
+        const colorIndex = $layers.indexOf(layer) % layerColors.length;
+        const color = layerColors[colorIndex];
+
+        const vectorLayer = new VectorTileLayer({
+          source: new VectorTileSource({
+            format: new MVT(),
+            url: tileUrl,
+            maxZoom: 22
+          }),
+          style: new Style({
+            fill: new Fill({ color: color + '40' }), // 25% opacity
+            stroke: new Stroke({ color: color, width: 2 }),
+            image: new CircleStyle({
+              radius: 5,
+              fill: new Fill({ color: color }),
+              stroke: new Stroke({ color: '#fff', width: 1 })
+            })
+          }),
+          visible: layer.visible,
+          opacity: layer.opacity,
+          zIndex: layer.zIndex + 100 // Above basemap, below sketching
+        });
+
+        map.addLayer(vectorLayer);
+        postgisLayerMap.set(layer.id, vectorLayer);
+
+        // Try to zoom to extent
+        fetchLayerExtent(connectionId, schema, table);
+      } else {
+        // Update existing layer properties
+        const olLayer = postgisLayerMap.get(layer.id);
+        if (olLayer) {
+          olLayer.setVisible(layer.visible);
+          olLayer.setOpacity(layer.opacity);
+          olLayer.setZIndex(layer.zIndex + 100);
+        }
+      }
+    });
+  });
+
+  // Fetch and zoom to layer extent
+  async function fetchLayerExtent(connectionId: string, schema: string, table: string) {
+    try {
+      const res = await fetch(`${API_BASE}/databases/${connectionId}/extent/${schema}/${table}`);
+      const data = await res.json();
+      if (data.extent && map) {
+        const extent = data.extent as [number, number, number, number];
+        map.getView().fit(extent, { padding: [50, 50, 50, 50], duration: 500 });
+      }
+    } catch (err) {
+      console.error('Failed to fetch layer extent:', err);
+    }
+  }
 
   // Public methods
   export function zoomTo(x: number, y: number, zoom?: number) {
