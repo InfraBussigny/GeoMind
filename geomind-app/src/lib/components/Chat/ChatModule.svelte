@@ -481,9 +481,13 @@ Les accès sensibles ont été révoqués. Tu conserves les outils avancés.
       });
     }
 
-    // Sauvegarder les artifacts dans l'historique
+    // Sauvegarder les artifacts dans l'historique et auto-ouvrir le premier
     if (artifacts.length > 0) {
       artifactHistory = [...artifactHistory, ...artifacts];
+      // Auto-ouvrir le dernier artifact généré (le plus pertinent)
+      if (!currentArtifact) {
+        currentArtifact = artifacts[artifacts.length - 1];
+      }
     }
   }
 
@@ -815,7 +819,28 @@ Les accès sensibles ont été révoqués. Tu conserves les outils avancés.
     <!-- Barre d'artifacts récents -->
     {#if artifactHistory.length > 0 || streamingArtifact}
       <div class="artifacts-bar">
-        <span class="artifacts-label">Canevas</span>
+        <button
+          class="toggle-canvas-btn"
+          class:active={currentArtifact !== null}
+          onclick={() => {
+            if (currentArtifact) {
+              currentArtifact = null;
+            } else if (artifactHistory.length > 0) {
+              currentArtifact = artifactHistory[artifactHistory.length - 1];
+            }
+          }}
+          title={currentArtifact ? 'Masquer le canevas' : 'Afficher le canevas'}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            {#if currentArtifact}
+              <path d="M18 6L6 18M6 6l12 12"/>
+            {:else}
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <path d="M9 3v18M3 9h18"/>
+            {/if}
+          </svg>
+          <span>Canevas</span>
+        </button>
         <div class="artifacts-list">
           {#if streamingArtifact}
             <button
@@ -1428,6 +1453,42 @@ Les accès sensibles ont été révoqués. Tu conserves les outils avancés.
     border-radius: 4px;
     text-transform: uppercase;
     letter-spacing: 1px;
+  }
+
+  .toggle-canvas-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--noir-card);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+  }
+
+  .toggle-canvas-btn:hover {
+    border-color: var(--cyber-green);
+    color: var(--cyber-green);
+    background: var(--cyber-green-glow);
+  }
+
+  .toggle-canvas-btn.active {
+    background: var(--cyber-green);
+    border-color: var(--cyber-green);
+    color: var(--noir-bg);
+  }
+
+  .toggle-canvas-btn.active:hover {
+    background: var(--cyber-green-bright);
+  }
+
+  .toggle-canvas-btn svg {
+    flex-shrink: 0;
   }
 
   .artifacts-list {
