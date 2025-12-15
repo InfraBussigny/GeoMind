@@ -213,7 +213,7 @@
         class:carlo-taped={$isCarloModeActive && carloEffects.taped.includes(module.id)}
         onclick={() => selectModule(module.id)}
         title={$sidebarCollapsed ? module.label : ''}
-        draggable={editMode}
+        draggable={editMode ? "true" : "false"}
         ondragstart={(e) => handleDragStart(e, index)}
         ondragover={(e) => handleDragOver(e, index)}
         ondragleave={handleDragLeave}

@@ -249,15 +249,13 @@ export const ALL_MODULES: { id: ModuleType; label: string; description: string; 
   { id: 'calage', label: 'Calage', description: 'Géoréférencement' }
 ];
 
-// Modules par défaut pour chaque mode (excluant standard qui est fixe)
+// Modules par défaut pour chaque mode (tous configurables maintenant)
 const DEFAULT_MODULE_CONFIG: Record<string, ModuleType[]> = {
+  standard: ['chat', 'canvas', 'qgls', 'cad', 'calage', 'databases', 'converter', 'wakelock', 'connexions', 'settings'],
   expert: ['chat', 'canvas', 'qgls', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'connexions', 'comm', 'docgen', 'intercapi', 'settings', 'cad', 'kdrive', 'calage'],
   god: ['chat', 'canvas', 'qgls', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'connexions', 'comm', 'docgen', 'intercapi', 'settings', 'wip', 'cad', 'kdrive', 'calage'],
   bfsa: ['chat', 'canvas', 'qgls', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'connexions', 'comm', 'docgen', 'intercapi', 'settings', 'cad', 'kdrive', 'calage']
 };
-
-// Modules fixes pour le mode standard (non modifiable)
-const STANDARD_MODULES: ModuleType[] = ['chat', 'canvas', 'qgls', 'cad', 'calage', 'databases', 'converter', 'wakelock', 'connexions', 'settings'];
 
 // Store pour la configuration personnalisée des modules par mode
 function createModuleConfigStore() {
@@ -296,7 +294,6 @@ function createModuleConfigStore() {
   return {
     subscribe,
     setModulesForMode: (mode: string, modules: ModuleType[]) => {
-      if (mode === 'standard') return; // Standard n'est pas modifiable
       update(config => {
         // S'assurer que chat et settings sont toujours inclus
         const safeModules = [...new Set([...modules, 'chat', 'settings'])] as ModuleType[];
@@ -308,7 +305,6 @@ function createModuleConfigStore() {
       });
     },
     toggleModule: (mode: string, moduleId: ModuleType) => {
-      if (mode === 'standard') return;
       // Chat et settings ne peuvent pas être désactivés
       if (moduleId === 'chat' || moduleId === 'settings') return;
 
@@ -441,12 +437,8 @@ const visibleModulesUnordered = derived([appMode, moduleConfig], ([$mode, $confi
     .filter(m => m.alwaysVisible)
     .map(m => m.id);
 
-  if ($mode === 'standard') {
-    // Mode standard: modules fixes + alwaysVisible
-    return [...new Set([...STANDARD_MODULES, ...alwaysVisibleModules])];
-  }
-  // Modes expert/god/bfsa: utiliser la configuration personnalisée + alwaysVisible
-  const configModules = $config[$mode] || DEFAULT_MODULE_CONFIG[$mode] || DEFAULT_MODULE_CONFIG.expert;
+  // Tous les modes utilisent maintenant la configuration personnalisée + alwaysVisible
+  const configModules = $config[$mode] || DEFAULT_MODULE_CONFIG[$mode] || DEFAULT_MODULE_CONFIG.standard;
   return [...new Set([...configModules, ...alwaysVisibleModules])];
 });
 

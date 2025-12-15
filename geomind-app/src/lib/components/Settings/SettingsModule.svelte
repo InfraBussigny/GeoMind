@@ -479,7 +479,7 @@
           {:else}
             <h3>GeoMind</h3>
             <p class="about-subtitle">Spatial Intelligence</p>
-            <p class="about-version">Version 1.0.0</p>
+            <p class="about-version">Version 1.0.3</p>
             <p class="about-description">
               Assistant IA specialise en geodonnees et systemes d'information du territoire (SIT).
             </p>
@@ -903,16 +903,20 @@
     <!-- ONGLET AVANCÉ -->
     <!-- ================================================ -->
     {#if activeTab === 'advanced'}
-    <!-- Module Visibility Configuration - Expert/God/BFSA only -->
-    {#if $appMode !== 'standard'}
+    <!-- Module Visibility Configuration - All modes -->
       <section class="settings-section modules-config-section">
         <h2>Modules visibles par mode</h2>
         <p class="section-description">
           Configurez quels modules sont disponibles dans chaque mode d'utilisation.
-          Le mode Standard (professionnel) a des modules fixes et ne peut pas etre modifie.
+          Chat et Parametres sont toujours visibles.
         </p>
 
         <div class="mode-selector">
+          <button
+            class="mode-btn"
+            class:active={configMode === 'standard'}
+            onclick={() => configMode = 'standard'}
+          >Standard</button>
           <button
             class="mode-btn"
             class:active={configMode === 'expert'}
@@ -1316,7 +1320,6 @@
         </div>
       </div>
     </section>
-    {/if}
 
     <!-- Connection Form Modal (outside tabs) -->
     {#if showConnectionForm}
