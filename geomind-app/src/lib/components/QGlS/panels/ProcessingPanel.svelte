@@ -1,8 +1,26 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { currentStyle } from '$lib/stores/qgls/styleStore';
+  import pyqgis from '$lib/services/pyqgis';
 
   // Props - map reference will be passed from parent
   let { onProcess = (op: string, params: any) => {} }: { onProcess?: (op: string, params: any) => void } = $props();
+
+  // Python status
+  let pythonAvailable = $state(false);
+  let pythonChecking = $state(true);
+  let pythonVersion = $state<string | null>(null);
+
+  onMount(async () => {
+    try {
+      const status = await pyqgis.getStatus();
+      pythonAvailable = status.available && status.dependencies?.installed === true;
+      pythonVersion = status.version || null;
+    } catch {
+      pythonAvailable = false;
+    }
+    pythonChecking = false;
+  });
 
   // Processing tools definition
   interface ProcessingTool {
@@ -10,11 +28,12 @@
     name: string;
     description: string;
     icon: string;
-    category: 'geometry' | 'analysis' | 'transform';
+    category: 'geometry' | 'analysis' | 'transform' | 'python';
     requiresSelection: boolean;
     minFeatures: number;
     maxFeatures: number | null;
-    params?: { name: string; type: 'number' | 'select'; default: any; options?: string[] }[];
+    requiresPython?: boolean;
+    params?: { name: string; type: 'number' | 'select'; default: any; options?: string[]; label?: string }[];
   }
 
   const tools: ProcessingTool[] = [
@@ -122,6 +141,45 @@
       requiresSelection: true,
       minFeatures: 2,
       maxFeatures: null
+    },
+    // Python-powered tools
+    {
+      id: 'voronoi',
+      name: 'Voronoï',
+      description: 'Créer des polygones de Voronoï depuis des points',
+      icon: 'M12 2L4 7v10l8 5 8-5V7l-8-5zm0 2.5L18 8v8l-6 3.5L6 16V8l6-3.5z',
+      category: 'python',
+      requiresSelection: true,
+      requiresPython: true,
+      minFeatures: 3,
+      maxFeatures: null
+    },
+    {
+      id: 'grid',
+      name: 'Grille',
+      description: 'Générer une grille régulière ou hexagonale',
+      icon: 'M4 4h4v4H4V4zm6 0h4v4h-4V4zm6 0h4v4h-4V4zM4 10h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4zM4 16h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4z',
+      category: 'python',
+      requiresSelection: false,
+      requiresPython: true,
+      minFeatures: 0,
+      maxFeatures: null,
+      params: [
+        { name: 'cell_size', type: 'number', default: 100, label: 'Taille cellule' },
+        { name: 'grid_type', type: 'select', default: 'square', options: ['square', 'hexagon'], label: 'Type' }
+      ]
+    },
+    {
+      id: 'py_simplify',
+      name: 'Simplifier (Py)',
+      description: 'Simplification Douglas-Peucker avec statistiques',
+      icon: 'M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2z',
+      category: 'python',
+      requiresSelection: true,
+      requiresPython: true,
+      minFeatures: 1,
+      maxFeatures: null,
+      params: [{ name: 'tolerance', type: 'number', default: 1, label: 'Tolérance' }]
     }
   ];
 
@@ -129,6 +187,7 @@
   const geometryTools = tools.filter(t => t.category === 'geometry');
   const analysisTools = tools.filter(t => t.category === 'analysis');
   const transformTools = tools.filter(t => t.category === 'transform');
+  const pythonTools = tools.filter(t => t.category === 'python');
 
   // Selected tool and params
   let selectedTool = $state<ProcessingTool | null>(null);
@@ -192,6 +251,34 @@
       <div class="tool-grid">
         {#each transformTools as tool}
           <button class="tool-btn" onclick={() => selectTool(tool)} title={tool.description}>
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d={tool.icon}/>
+            </svg>
+            <span>{tool.name}</span>
+          </button>
+        {/each}
+      </div>
+    </div>
+
+    <div class="tool-section">
+      <div class="section-header python-header">
+        <span>Python</span>
+        {#if pythonChecking}
+          <span class="python-status checking">...</span>
+        {:else if pythonAvailable}
+          <span class="python-status available" title={pythonVersion || 'Python disponible'}>OK</span>
+        {:else}
+          <span class="python-status unavailable" title="Python non installé">OFF</span>
+        {/if}
+      </div>
+      <div class="tool-grid">
+        {#each pythonTools as tool}
+          <button
+            class="tool-btn"
+            class:disabled={!pythonAvailable}
+            onclick={() => pythonAvailable && selectTool(tool)}
+            title={pythonAvailable ? tool.description : 'Python requis - non disponible'}
+          >
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path d={tool.icon}/>
             </svg>
@@ -490,5 +577,40 @@
   .btn-execute svg {
     width: 14px;
     height: 14px;
+  }
+
+  /* Python section styles */
+  .python-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .python-status {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+
+  .python-status.checking {
+    background: rgba(255, 200, 0, 0.2);
+    color: #ffc800;
+  }
+
+  .python-status.available {
+    background: rgba(0, 255, 136, 0.2);
+    color: var(--cyber-green);
+  }
+
+  .python-status.unavailable {
+    background: rgba(255, 100, 100, 0.2);
+    color: #ff6464;
+  }
+
+  .tool-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
   }
 </style>

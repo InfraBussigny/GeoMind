@@ -1,0 +1,14 @@
+# QGlS Python Dependencies
+# Core requirements for geoprocessing algorithms
+
+# Geometry operations (required)
+shapely>=2.0.0
+
+# Numerical operations
+numpy>=1.24.0
+
+# Optional: Raster processing (requires GDAL)
+# rasterio>=1.3.0
+
+# Optional: Full QGIS Processing integration
+# Install PyQGIS separately with QGIS installation

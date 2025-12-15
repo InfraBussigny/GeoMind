@@ -17,6 +17,16 @@
           "name": "node",
           "cmd": "node",
           "args": true
+        },
+        {
+          "name": "python",
+          "cmd": "python",
+          "args": true
+        },
+        {
+          "name": "python3",
+          "cmd": "python3",
+          "args": true
         }
       ]
     }
@@ -49,7 +59,8 @@
       "icons/icon.ico"
     ],
     "resources": [
-      "../server/**/*"
+      "../server/**/*",
+      "../python/**/*"
     ],
     "windows": {
       "certificateThumbprint": null,

@@ -4133,6 +4133,105 @@ function dxfEntityToFeature(type, entity) {
 }
 
 // ============================================
+// PYQGIS GEOPROCESSING
+// ============================================
+
+import { createRequire } from 'module';
+const requireCjs = createRequire(import.meta.url);
+let pyqgisBridge = null;
+
+// Lazy load pyqgis-bridge (CommonJS module)
+function getPyqgisBridge() {
+  if (!pyqgisBridge) {
+    try {
+      pyqgisBridge = requireCjs('./pyqgis-bridge.js');
+    } catch (err) {
+      console.error('[PyQGIS] Failed to load bridge:', err.message);
+      return null;
+    }
+  }
+  return pyqgisBridge;
+}
+
+// Get PyQGIS status
+app.get('/api/pyqgis/status', async (req, res) => {
+  const bridge = getPyqgisBridge();
+  if (!bridge) {
+    return res.json({
+      available: false,
+      error: 'PyQGIS bridge not loaded'
+    });
+  }
+
+  try {
+    const status = await bridge.getStatus();
+    res.json(status);
+  } catch (err) {
+    res.json({
+      available: false,
+      error: err.message
+    });
+  }
+});
+
+// List available algorithms
+app.get('/api/pyqgis/algorithms', async (req, res) => {
+  const bridge = getPyqgisBridge();
+  if (!bridge) {
+    return res.status(500).json({ error: 'PyQGIS bridge not loaded' });
+  }
+
+  try {
+    const algorithms = await bridge.listAlgorithms();
+    res.json({ algorithms });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Install Python dependencies
+app.post('/api/pyqgis/install', async (req, res) => {
+  const bridge = getPyqgisBridge();
+  if (!bridge) {
+    return res.status(500).json({ error: 'PyQGIS bridge not loaded' });
+  }
+
+  try {
+    const result = await bridge.installDependencies();
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+});
+
+// Run geoprocessing algorithm
+app.post('/api/pyqgis/process', async (req, res) => {
+  const bridge = getPyqgisBridge();
+  if (!bridge) {
+    return res.status(500).json({ error: 'PyQGIS bridge not loaded' });
+  }
+
+  const { algorithm, params, inputGeoJSON } = req.body;
+
+  if (!algorithm) {
+    return res.status(400).json({ error: 'Algorithm name required' });
+  }
+
+  try {
+    const result = await bridge.runAlgorithm(algorithm, params || {}, inputGeoJSON);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+});
+
+// ============================================
 // START SERVER
 // ============================================
 
