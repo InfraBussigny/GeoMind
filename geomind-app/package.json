@@ -39,11 +39,13 @@
 		"fabric": "^6.9.0",
 		"highlight.js": "^11.11.1",
 		"html-to-image": "^1.11.13",
+		"jspdf": "^3.0.4",
 		"leaflet": "^1.9.4",
 		"ml-matrix": "^6.12.1",
 		"monaco-editor": "^0.55.1",
 		"ol": "^10.7.0",
 		"pdfjs-dist": "^5.4.449",
-		"proj4": "^2.20.2"
+		"proj4": "^2.20.2",
+		"svg2pdf.js": "^2.6.0"
 	}
 }

@@ -283,3 +283,13 @@ export const visibleModules = derived([appMode, moduleConfig], ([$mode, $config]
 **Impact** : Aucun (cosmétique uniquement)
 **Action** : Ignorer silencieusement, vérifier si corrigé lors des futures mises à jour de Claude Code
 **Statut** : En attente de correctif Anthropic
+
+---
+
+### 2025-12-15 | Module kDrive buggé (GeoMind)
+**Problème** : Le module kDrive est complètement buggé
+**Cause** : À investiguer
+**Impact** : Module non fonctionnel
+**Action** : Debug nécessaire - vérifier l'intégration kDrive, les endpoints API, les webviews
+**Statut** : À corriger
+**Fichiers concernés** : À identifier (probablement `src/lib/components/KDrive/` ou similaire)

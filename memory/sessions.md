@@ -1,3 +1,45 @@
+## Session 31 - 15 decembre 2025
+**Theme** : Module CAD Phase 2 - Exports (GeoJSON, SVG, PDF)
+
+### Travail effectue
+
+#### 1. Nouveaux formats d'export CAD
+- **exportGeoJSON()** : Conversion entites vers GeoJSON FeatureCollection
+  - Support LINE, LWPOLYLINE, POLYLINE, CIRCLE, POINT
+  - Polylignes fermees converties en Polygon
+  - Cercles approximes avec 64 points
+  - CRS EPSG:2056 dans les metadata
+  - Properties : type, layer, color, handle
+
+- **exportSVG()** : Export vectoriel via Fabric.js toSVG()
+  - Metadata SVG (title, desc)
+  - Mention EPSG:2056 et nombre d'entites
+
+- **exportPDF()** : Export PDF vectorise via jsPDF + svg2pdf.js
+  - Format A4 paysage
+  - Header : titre, commune, date, projection
+  - Footer : infos generation
+  - Contenu vectoriel (pas raster)
+
+#### 2. Interface utilisateur
+- 3 nouveaux boutons dans la toolbar Export/Print
+- Icones SVG distinctes pour chaque format
+- Tooltips explicites
+
+#### 3. Dependances ajoutees
+- `jspdf` : Generation PDF
+- `svg2pdf.js` : Conversion SVG vers PDF vectoriel
+
+### Fichiers modifies
+- `src/lib/components/CAD/CADModule.svelte` (fonctions + boutons)
+- `package.json` (nouvelles dependances)
+- `memory/corrections.md` (bug kdrive note)
+
+### Bug note
+- Module kDrive signale comme bugge - a investiguer
+
+---
+
 ## Session 30 - 14 decembre 2025 (soir)
 **Theme** : Integration modules dans GeoMind (Intercapi, TimePro, VPN)
 

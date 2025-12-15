@@ -6,6 +6,8 @@
   import * as pdfjsLib from 'pdfjs-dist';
   import { Matrix } from 'ml-matrix';
   import { DxfWriter, point3d } from '@tarikjabiri/dxf';
+  import { jsPDF } from 'jspdf';
+  import 'svg2pdf.js';
 
   // Configure pdf.js worker (use unpkg which has all npm versions)
   if (typeof window !== 'undefined') {
@@ -2296,6 +2298,254 @@ ${F.toFixed(2)}`;
   }
 
   // ============================================
+  // EXPORT GEOJSON
+  // ============================================
+  function exportGeoJSON() {
+    if (entities.length === 0) {
+      alert('Aucune entité à exporter');
+      return;
+    }
+
+    const features: any[] = [];
+
+    for (const entity of entities) {
+      const layer = layerMap.get(entity.layer);
+      if (layer && !layer.visible) continue;
+
+      const data = entity.data;
+      if (!data) continue;
+
+      let geometry: any = null;
+      const properties: any = {
+        type: entity.type,
+        layer: entity.layer,
+        color: entity.color,
+        handle: entity.handle
+      };
+
+      try {
+        switch (entity.type) {
+          case 'LINE':
+            if (data.startPoint && data.endPoint) {
+              geometry = {
+                type: 'LineString',
+                coordinates: [
+                  [data.startPoint.x, data.startPoint.y],
+                  [data.endPoint.x, data.endPoint.y]
+                ]
+              };
+            }
+            break;
+
+          case 'LWPOLYLINE':
+          case 'POLYLINE':
+            if (data.vertices && data.vertices.length >= 2) {
+              const coords = data.vertices.map((v: any) => [v.x, v.y]);
+              if (data.closed && coords.length >= 3) {
+                // Fermer le polygone
+                coords.push(coords[0]);
+                geometry = {
+                  type: 'Polygon',
+                  coordinates: [coords]
+                };
+              } else {
+                geometry = {
+                  type: 'LineString',
+                  coordinates: coords
+                };
+              }
+            }
+            break;
+
+          case 'CIRCLE':
+            if (data.center && data.radius) {
+              // Approximer le cercle avec 64 points
+              const points = 64;
+              const coords = [];
+              for (let i = 0; i <= points; i++) {
+                const angle = (i / points) * 2 * Math.PI;
+                coords.push([
+                  data.center.x + data.radius * Math.cos(angle),
+                  data.center.y + data.radius * Math.sin(angle)
+                ]);
+              }
+              geometry = {
+                type: 'Polygon',
+                coordinates: [coords]
+              };
+              properties.radius = data.radius;
+            }
+            break;
+
+          case 'POINT':
+            if (data.position) {
+              geometry = {
+                type: 'Point',
+                coordinates: [data.position.x, data.position.y]
+              };
+            }
+            break;
+        }
+
+        if (geometry) {
+          features.push({
+            type: 'Feature',
+            geometry,
+            properties
+          });
+        }
+      } catch (err) {
+        console.warn('Error converting entity to GeoJSON:', entity.type, err);
+      }
+    }
+
+    const geojson = {
+      type: 'FeatureCollection',
+      name: fileName || 'export',
+      crs: {
+        type: 'name',
+        properties: { name: 'urn:ogc:def:crs:EPSG::2056' }
+      },
+      features
+    };
+
+    const blob = new Blob([JSON.stringify(geojson, null, 2)], { type: 'application/geo+json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${fileName || 'export'}_${new Date().toISOString().slice(0, 10)}.geojson`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ============================================
+  // EXPORT SVG
+  // ============================================
+  function exportSVG() {
+    if (!fabricCanvas) return;
+
+    const svg = fabricCanvas.toSVG({
+      width: fabricCanvas.width,
+      height: fabricCanvas.height,
+      viewBox: {
+        x: 0,
+        y: 0,
+        width: fabricCanvas.width,
+        height: fabricCanvas.height
+      }
+    });
+
+    // Ajouter metadata et titre
+    const title = fileName || 'Plan CAD';
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const svgWithMeta = svg.replace(
+      '<svg ',
+      `<svg xmlns:dc="http://purl.org/dc/elements/1.1/" `
+    ).replace(
+      '</defs>',
+      `</defs>
+      <title>${title} - ${dateStr}</title>
+      <desc>Exporté depuis GeoMind CAD - EPSG:2056 - ${entities.length} entités</desc>`
+    );
+
+    const blob = new Blob([svgWithMeta], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${fileName || 'export'}_${dateStr}.svg`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ============================================
+  // EXPORT PDF VECTORISE
+  // ============================================
+  function exportPDF() {
+    if (!fabricCanvas) return;
+
+    // Obtenir le SVG du canvas
+    const svg = fabricCanvas.toSVG({
+      width: fabricCanvas.width,
+      height: fabricCanvas.height
+    });
+
+    // Créer un élément SVG temporaire
+    const parser = new DOMParser();
+    const svgDoc = parser.parseFromString(svg, 'image/svg+xml');
+    const svgElement = svgDoc.documentElement;
+
+    // Calculer les dimensions pour A4 paysage
+    const pageWidth = 297; // mm
+    const pageHeight = 210; // mm
+    const margin = 10; // mm
+    const contentWidth = pageWidth - 2 * margin;
+    const contentHeight = pageHeight - 2 * margin - 20; // 20mm pour header/footer
+
+    // Ratio du canvas
+    const canvasRatio = fabricCanvas.width / fabricCanvas.height;
+    let svgWidth = contentWidth;
+    let svgHeight = contentWidth / canvasRatio;
+
+    if (svgHeight > contentHeight) {
+      svgHeight = contentHeight;
+      svgWidth = contentHeight * canvasRatio;
+    }
+
+    // Créer le PDF
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    // Header
+    const title = fileName || 'Plan CAD';
+    const dateStr = new Date().toLocaleDateString('fr-CH');
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(title, margin, margin + 5);
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Commune de Bussigny - ${dateStr}`, pageWidth / 2, margin + 5, { align: 'center' });
+    pdf.text('EPSG:2056 (MN95)', pageWidth - margin, margin + 5, { align: 'right' });
+
+    // Ligne de séparation
+    pdf.setDrawColor(100);
+    pdf.line(margin, margin + 8, pageWidth - margin, margin + 8);
+
+    // Centrer le SVG
+    const xOffset = margin + (contentWidth - svgWidth) / 2;
+    const yOffset = margin + 12;
+
+    // Ajouter le SVG au PDF
+    svgElement.setAttribute('width', String(svgWidth));
+    svgElement.setAttribute('height', String(svgHeight));
+
+    pdf.svg(svgElement, {
+      x: xOffset,
+      y: yOffset,
+      width: svgWidth,
+      height: svgHeight
+    }).then(() => {
+      // Footer
+      pdf.setFontSize(8);
+      pdf.setTextColor(100);
+      pdf.text(
+        `Généré par GeoMind - Module CAD | ${entities.length} entités | Zoom: ${zoom}%`,
+        pageWidth / 2,
+        pageHeight - margin,
+        { align: 'center' }
+      );
+
+      // Télécharger
+      pdf.save(`${fileName || 'export'}_${new Date().toISOString().slice(0, 10)}.pdf`);
+    }).catch((err: any) => {
+      console.error('Erreur export PDF:', err);
+      alert('Erreur lors de l\'export PDF. Essayez l\'export PNG.');
+    });
+  }
+
+  // ============================================
   // DELETE SELECTED ENTITIES
   // ============================================
   function deleteSelected() {
@@ -2452,6 +2702,28 @@ ${F.toFixed(2)}`;
           <polyline points="6 9 6 2 18 2 18 9"/>
           <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
           <rect x="6" y="14" width="12" height="8"/>
+        </svg>
+      </button>
+      <button class="toolbar-btn" onclick={exportGeoJSON} title="Exporter GeoJSON">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+      </button>
+      <button class="toolbar-btn" onclick={exportSVG} title="Exporter SVG">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <path d="M7 8h2l2 4-2 4H7"/>
+          <path d="M15 8h2l-2 4 2 4h-2"/>
+        </svg>
+      </button>
+      <button class="toolbar-btn" onclick={exportPDF} title="Exporter PDF vectorisé">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <path d="M9 15h6"/>
+          <path d="M9 11h6"/>
         </svg>
       </button>
     </div>
