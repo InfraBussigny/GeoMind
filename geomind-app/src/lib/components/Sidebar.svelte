@@ -39,7 +39,7 @@
     { id: 'connexions', label: 'Connexions', description: 'VPN & Serveurs DB' },
     { id: 'comm', label: 'Communications', description: 'Outlook, Teams, 3CX' },
     { id: 'docgen', label: 'Documents', description: 'Generation PDF' },
-    { id: 'intercapi', label: 'Intercapi', description: 'Registre Foncier' },
+    { id: 'intercapi', label: 'Intercapi', description: 'Dev. suspendu' },
     { id: 'settings', label: 'Parametres', description: 'Configuration' },
     { id: 'wip', label: 'WIP', description: 'En developpement' },
     { id: 'kdrive', label: 'kDrive', description: 'Partage fichiers' },
@@ -466,6 +466,9 @@
           <div class="nav-content">
             <span class="nav-label">{module.label}</span>
             <span class="nav-description">{module.description}</span>
+            {#if module.id === 'intercapi'}
+              <span class="suspended-badge">Suspendu</span>
+            {/if}
           </div>
         {/if}
         {#if $currentModule === module.id}
@@ -811,6 +814,20 @@
     white-space: nowrap;
   }
 
+  .suspended-badge {
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    font-size: 8px;
+    padding: 2px 6px;
+    background: linear-gradient(135deg, #ff6b35, #f7931e);
+    color: white;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
   .active-indicator {
     position: absolute;
     right: 0;
