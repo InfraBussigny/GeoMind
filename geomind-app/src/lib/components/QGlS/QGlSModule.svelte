@@ -7,6 +7,7 @@
   import ProcessingPanel from './panels/ProcessingPanel.svelte';
   import ImportExportPanel from './panels/ImportExportPanel.svelte';
   import AttributePanel from './panels/AttributePanel.svelte';
+  import PrintPanel from './panels/PrintPanel.svelte';
   import { layers, selectedLayerId } from '$lib/stores/qgls/layerStore';
   import { currentTool } from '$lib/stores/qgls/toolStore';
 
@@ -16,7 +17,7 @@
   }
 
   // Panel state
-  type PanelType = 'layers' | 'style' | 'processing' | 'attributes' | 'export';
+  type PanelType = 'layers' | 'style' | 'processing' | 'attributes' | 'export' | 'print';
   let activePanel = $state<PanelType>('layers');
   let panelCollapsed = $state(false);
 
@@ -30,6 +31,7 @@
     { id: 'processing', label: 'Analyse', icon: 'settings' },
     { id: 'attributes', label: 'Table', icon: 'table' },
     { id: 'export', label: 'I/O', icon: 'export' },
+    { id: 'print', label: 'Print', icon: 'print' },
   ];
 
   function togglePanel() {
@@ -103,6 +105,12 @@
                 <polyline points="17 8 12 3 7 8"/>
                 <line x1="12" y1="3" x2="12" y2="15"/>
               </svg>
+            {:else if panel.id === 'print'}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 6 2 18 2 18 9"/>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                <rect x="6" y="14" width="12" height="8"/>
+              </svg>
             {/if}
             <span class="tab-label">{panel.label}</span>
           </button>
@@ -120,6 +128,8 @@
           <AttributePanel mapRef={mapComponent} />
         {:else if activePanel === 'export'}
           <ImportExportPanel mapRef={mapComponent} />
+        {:else if activePanel === 'print'}
+          <PrintPanel mapRef={mapComponent} />
         {/if}
       </div>
 

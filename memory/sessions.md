@@ -1,5 +1,5 @@
 ## Session 32 - 15 decembre 2025 (soir)
-**Theme** : Module QGlS - Phases 4 et 5 (Geoprocessing + Import/Export)
+**Theme** : Module QGlS - Phases 4, 5 et chargement PostGIS
 
 ### Travail effectue
 
@@ -32,20 +32,44 @@
   - Checkbox selection uniquement
   - Messages de statut
 
-#### 3. Integration module
-- Nouveau tab "I/O" dans QGlSModule remplace "Attributs"
-- Label "Analyse" pour le tab Processing (etait "sketching")
+#### 3. Table attributaire (Phase 5 complete)
+- **AttributePanel.svelte** : Table des entites sketching
+  - Colonnes : ID, Type, Surface (m²), Longueur (m), proprietes custom
+  - Edition inline double-clic
+  - Ajout colonnes dynamiques
+  - Export CSV
+  - Zoom sur entite
+  - Pagination (25 par page)
+  - Suppression selection
+
+#### 4. Chargement couches PostGIS
+- **LayerPanel.svelte** : Dialog ajout couche
+  - Liste connexions PostgreSQL configurees
+  - Liste tables geographiques avec type geometrie
+  - Icones par type (point/ligne/polygone)
+- **QGlSMap.svelte** : Integration MVT
+  - Creation automatique VectorTileLayer
+  - Couleurs distinctes par couche (palette 10 couleurs)
+  - Zoom automatique sur extent
+  - Synchro visibilite/opacite depuis layerStore
+
+#### 5. Integration module
+- 5 tabs : Couches, Style, Analyse, Table, I/O
+- Module complet et fonctionnel
 
 ### Fichiers crees
 - `src/lib/components/QGlS/panels/ImportExportPanel.svelte`
+- `src/lib/components/QGlS/panels/AttributePanel.svelte`
 
 ### Fichiers modifies
-- `src/lib/components/QGlS/QGlSMap.svelte` (formats KML/GPX, fonctions import/export)
-- `src/lib/components/QGlS/QGlSModule.svelte` (integration panel I/O)
+- `src/lib/components/QGlS/QGlSMap.svelte` (formats, import/export, MVT PostGIS)
+- `src/lib/components/QGlS/QGlSModule.svelte` (5 tabs)
+- `src/lib/components/QGlS/panels/LayerPanel.svelte` (dialog PostGIS)
 
 ### Notes techniques
 - Unites SI obligatoires : toujours m et m² (jamais km ou ha)
 - Formats OpenLayers : GeoJSON, KML, GPX natifs
+- MVT tiles via API backend existante
 - Conversion polygone→ligne pour GPX (ne supporte pas polygones)
 
 ---
