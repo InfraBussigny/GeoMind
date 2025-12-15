@@ -1,9 +1,11 @@
 use tauri::Manager;
-use tauri_plugin_shell::ShellExt;
 use std::sync::Mutex;
+use std::process::{Command, Child, Stdio};
+use std::io::{BufRead, BufReader};
+use std::thread;
 
 // Store the backend process handle
-struct BackendProcess(Mutex<Option<tauri_plugin_shell::process::CommandChild>>);
+struct BackendProcess(Mutex<Option<Child>>);
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -27,41 +29,41 @@ pub fn run() {
 
             println!("Starting backend server from: {:?}", server_path);
 
-            // Start the backend server using node
-            let shell = app.shell();
-            let node_command = shell.command("node")
-                .arg(server_path.to_string_lossy().to_string());
+            // Start the backend server using node (std::process)
+            let mut child = Command::new("node")
+                .arg(server_path.to_string_lossy().to_string())
+                .stdout(Stdio::piped())
+                .stderr(Stdio::piped())
+                .spawn()
+                .expect("Failed to spawn backend server. Make sure Node.js is installed.");
 
-            let (mut rx, child) = node_command.spawn().expect("Failed to spawn backend server. Make sure Node.js is installed.");
+            // Log stdout in a separate thread
+            if let Some(stdout) = child.stdout.take() {
+                thread::spawn(move || {
+                    let reader = BufReader::new(stdout);
+                    for line in reader.lines() {
+                        if let Ok(line) = line {
+                            println!("[Backend] {}", line);
+                        }
+                    }
+                });
+            }
+
+            // Log stderr in a separate thread
+            if let Some(stderr) = child.stderr.take() {
+                thread::spawn(move || {
+                    let reader = BufReader::new(stderr);
+                    for line in reader.lines() {
+                        if let Ok(line) = line {
+                            eprintln!("[Backend Error] {}", line);
+                        }
+                    }
+                });
+            }
 
             // Store the child process handle
             let backend_state = app.state::<BackendProcess>();
             *backend_state.0.lock().unwrap() = Some(child);
-
-            // Log backend output in a separate thread
-            tauri::async_runtime::spawn(async move {
-                use tauri_plugin_shell::process::CommandEvent;
-                while let Some(event) = rx.recv().await {
-                    match event {
-                        CommandEvent::Stdout(line) => {
-                            let line_str = String::from_utf8_lossy(&line);
-                            println!("[Backend] {}", line_str);
-                        }
-                        CommandEvent::Stderr(line) => {
-                            let line_str = String::from_utf8_lossy(&line);
-                            eprintln!("[Backend Error] {}", line_str);
-                        }
-                        CommandEvent::Error(err) => {
-                            eprintln!("[Backend] Error: {}", err);
-                        }
-                        CommandEvent::Terminated(payload) => {
-                            println!("[Backend] Process terminated with code: {:?}", payload.code);
-                            break;
-                        }
-                        _ => {}
-                    }
-                }
-            });
 
             println!("GeoMind backend server started");
             Ok(())
@@ -72,7 +74,7 @@ pub fn run() {
                 let app = window.app_handle();
                 if let Some(backend_state) = app.try_state::<BackendProcess>() {
                     if let Ok(mut guard) = backend_state.0.lock() {
-                        if let Some(child) = guard.take() {
+                        if let Some(mut child) = guard.take() {
                             println!("Stopping backend server...");
                             let _ = child.kill();
                         }
