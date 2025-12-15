@@ -348,14 +348,14 @@ export const moduleConfig = createModuleConfigStore();
 
 // Ordre par défaut des modules
 const DEFAULT_MODULE_ORDER: ModuleType[] = [
-  'chat', 'canvas', 'cad', 'calage', 'editor', 'databases', 'converter',
+  'chat', 'canvas', 'qgls', 'cad', 'calage', 'editor', 'databases', 'converter',
   'connexions', 'kdrive', 'intercapi', 'wakelock', 'timepro', 'comm', 'docgen',
   'settings', 'wip'
 ];
 
 // Store pour l'ordre personnalisé des modules
 // Version de la config - incrémenter pour forcer un reset
-const MODULE_CONFIG_VERSION = 2; // v2: ajout module Calage
+const MODULE_CONFIG_VERSION = 3; // v3: ajout QGlS dans l'ordre des modules
 
 function createModuleOrderStore() {
   // Vérifier la version et reset si nécessaire

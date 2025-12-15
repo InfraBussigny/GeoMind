@@ -33,6 +33,8 @@
   import VectorTileLayer from 'ol/layer/VectorTile';
   import VectorTileSource from 'ol/source/VectorTile';
   import MVT from 'ol/format/MVT';
+  import XYZ from 'ol/source/XYZ';
+  import TileGrid from 'ol/tilegrid/TileGrid';
 
   // Turf.js for geometry operations
   import * as turf from '@turf/turf';
@@ -127,9 +129,38 @@
 
   const API_BASE = 'http://localhost:3001/api';
 
+  // Basemap configurations
+  interface BasemapConfig {
+    id: string;
+    name: string;
+    shortName: string;
+    type: 'wmts' | 'xyz';
+    url: string;
+    layer?: string;
+    matrixSet?: string;
+    category: 'asit' | 'swisstopo';
+    color: string;  // Color for the icon
+    icon: string;   // Icon type: 'map', 'grid', 'satellite'
+  }
+
+  const basemaps: BasemapConfig[] = [
+    // ASIT-VD en EPSG:2056
+    { id: 'asit-couleur', name: 'ASIT Couleur', shortName: 'Couleur', category: 'asit', type: 'wmts', url: 'https://wmts.asit-asso.ch/wmts', layer: 'asitvd.fond_couleur', matrixSet: '2056', color: '#4CAF50', icon: 'map' },
+    { id: 'asit-gris', name: 'ASIT Gris', shortName: 'Gris', category: 'asit', type: 'wmts', url: 'https://wmts.asit-asso.ch/wmts', layer: 'asitvd.fond_gris', matrixSet: '2056', color: '#9E9E9E', icon: 'map' },
+    { id: 'asit-cadastral', name: 'ASIT Cadastral', shortName: 'Cadastre', category: 'asit', type: 'wmts', url: 'https://wmts.asit-asso.ch/wmts', layer: 'asitvd.fond_cadastral', matrixSet: '2056', color: '#FF9800', icon: 'grid' },
+    // Swisstopo en EPSG:2056 (XYZ)
+    { id: 'swisstopo-couleur', name: 'Swisstopo Couleur', shortName: 'Topo', category: 'swisstopo', type: 'xyz', url: 'https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/2056/{z}/{x}/{y}.jpeg', color: '#2196F3', icon: 'map' },
+    { id: 'swisstopo-gris', name: 'Swisstopo Gris', shortName: 'Topo Gris', category: 'swisstopo', type: 'xyz', url: 'https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-grau/default/current/2056/{z}/{x}/{y}.jpeg', color: '#607D8B', icon: 'map' },
+    { id: 'ortho', name: 'Orthophoto', shortName: 'Ortho', category: 'swisstopo', type: 'xyz', url: 'https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/2056/{z}/{x}/{y}.jpeg', color: '#795548', icon: 'satellite' },
+  ];
+
+  let selectedBasemapId = $state('asit-gris');
+  let basemapSelectorOpen = $state(false);
+
   // Map element reference
   let mapElement: HTMLDivElement;
   let map: Map | null = null;
+  let basemapLayer: TileLayer | null = null;
 
   // PostGIS layer management
   let postgisLayerMap = new Map<string, VectorTileLayer>();
@@ -216,6 +247,66 @@
     return `${area.toFixed(2)} m²`;
   }
 
+  // Create basemap layer from config
+  function createBasemapLayer(config: BasemapConfig): TileLayer {
+    if (config.type === 'wmts') {
+      return new TileLayer({
+        source: new WMTS({
+          url: config.url,
+          layer: config.layer!,
+          matrixSet: config.matrixSet!,
+          format: 'image/png',
+          projection: getProjection('EPSG:2056')!,
+          tileGrid: new WMTSTileGrid({
+            origin: [2420000, 1350000],
+            resolutions: resolutions,
+            matrixIds: matrixIds
+          }),
+          style: 'default'
+        }),
+        zIndex: 0
+      });
+    } else {
+      // XYZ source for Swisstopo
+      return new TileLayer({
+        source: new XYZ({
+          url: config.url,
+          projection: 'EPSG:2056',
+          tileGrid: new TileGrid({
+            origin: [2420000, 1350000],
+            resolutions: resolutions
+          })
+        }),
+        zIndex: 0
+      });
+    }
+  }
+
+  // Change basemap
+  function changeBasemap(basemapId: string) {
+    if (!map) return;
+
+    const config = basemaps.find(b => b.id === basemapId);
+    if (!config) return;
+
+    // Remove current basemap
+    if (basemapLayer) {
+      map.removeLayer(basemapLayer);
+    }
+
+    // Create and add new basemap
+    basemapLayer = createBasemapLayer(config);
+    map.getLayers().insertAt(0, basemapLayer);
+
+    selectedBasemapId = basemapId;
+    basemapSelectorOpen = false;
+  }
+
+  // Get selected basemap config
+  function getSelectedBasemap(): BasemapConfig {
+    return basemaps.find(b => b.id === selectedBasemapId) || basemaps[1];
+  }
+
   onMount(() => {
     if (!browser || !mapElement) return;
 
@@ -235,28 +326,14 @@
       zIndex: 1001
     });
 
-    // Create basemap layer (ASIT-VD fond gris)
-    const basemap = new TileLayer({
-      source: new WMTS({
-        url: 'https://wmts.asit-asso.ch/wmts',
-        layer: 'asitvd.fond_gris',
-        matrixSet: '2056',
-        format: 'image/png',
-        projection: getProjection('EPSG:2056')!,
-        tileGrid: new WMTSTileGrid({
-          origin: [2420000, 1350000],
-          resolutions: resolutions,
-          matrixIds: matrixIds
-        }),
-        style: 'default'
-      }),
-      zIndex: 0
-    });
+    // Create basemap layer from selected config
+    const initialBasemap = basemaps.find(b => b.id === selectedBasemapId) || basemaps[1];
+    basemapLayer = createBasemapLayer(initialBasemap);
 
     // Create map
     map = new Map({
       target: mapElement,
-      layers: [basemap, sketchLayer, measureLayer],
+      layers: [basemapLayer, sketchLayer, measureLayer],
       view: new View({
         projection: 'EPSG:2056',
         center: currentCenter,
@@ -1176,6 +1253,112 @@
 
 <div class="qgls-map" bind:this={mapElement}></div>
 
+<!-- Basemap selector -->
+<div class="basemap-selector" class:open={basemapSelectorOpen}>
+  <button
+    class="basemap-current"
+    onclick={() => basemapSelectorOpen = !basemapSelectorOpen}
+    title="Changer le fond de plan"
+  >
+    <div class="basemap-icon" style="background-color: {getSelectedBasemap().color}">
+      {#if getSelectedBasemap().icon === 'satellite'}
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M2 12h20M12 2v20" stroke="#000" stroke-width="1" opacity="0.3"/>
+        </svg>
+      {:else if getSelectedBasemap().icon === 'grid'}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18"/>
+          <line x1="3" y1="9" x2="21" y2="9"/>
+          <line x1="3" y1="15" x2="21" y2="15"/>
+          <line x1="9" y1="3" x2="9" y2="21"/>
+          <line x1="15" y1="3" x2="15" y2="21"/>
+        </svg>
+      {:else}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+      {/if}
+    </div>
+    <span class="basemap-name">{getSelectedBasemap().shortName}</span>
+    <svg class="basemap-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+  </button>
+
+  {#if basemapSelectorOpen}
+    <div class="basemap-dropdown">
+      <div class="basemap-category">
+        <span class="category-label">ASIT-VD</span>
+        {#each basemaps.filter(b => b.category === 'asit') as bm}
+          <button
+            class="basemap-option"
+            class:selected={selectedBasemapId === bm.id}
+            onclick={() => changeBasemap(bm.id)}
+          >
+            <div class="option-icon" style="background-color: {bm.color}">
+              {#if bm.icon === 'grid'}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18"/>
+                  <line x1="3" y1="9" x2="21" y2="9"/>
+                  <line x1="3" y1="15" x2="21" y2="15"/>
+                  <line x1="9" y1="3" x2="9" y2="21"/>
+                  <line x1="15" y1="3" x2="15" y2="21"/>
+                </svg>
+              {:else}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                  <path d="M2 17l10 5 10-5"/>
+                  <path d="M2 12l10 5 10-5"/>
+                </svg>
+              {/if}
+            </div>
+            <span class="option-name">{bm.name}</span>
+            {#if selectedBasemapId === bm.id}
+              <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            {/if}
+          </button>
+        {/each}
+      </div>
+      <div class="basemap-category">
+        <span class="category-label">Swisstopo</span>
+        {#each basemaps.filter(b => b.category === 'swisstopo') as bm}
+          <button
+            class="basemap-option"
+            class:selected={selectedBasemapId === bm.id}
+            onclick={() => changeBasemap(bm.id)}
+          >
+            <div class="option-icon" style="background-color: {bm.color}">
+              {#if bm.icon === 'satellite'}
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M2 12h20M12 2v20" stroke="#000" stroke-width="1" opacity="0.3"/>
+                </svg>
+              {:else}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                  <path d="M2 17l10 5 10-5"/>
+                  <path d="M2 12l10 5 10-5"/>
+                </svg>
+              {/if}
+            </div>
+            <span class="option-name">{bm.name}</span>
+            {#if selectedBasemapId === bm.id}
+              <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            {/if}
+          </button>
+        {/each}
+      </div>
+    </div>
+  {/if}
+</div>
+
 <!-- Status bar -->
 <div class="map-status">
   <span class="status-item projection">EPSG:2056</span>
@@ -1265,5 +1448,149 @@
     padding: 2px 8px;
     border-radius: 4px;
     border: 1px solid rgba(255, 200, 0, 0.3);
+  }
+
+  /* Basemap selector */
+  .basemap-selector {
+    position: absolute;
+    bottom: 40px;
+    right: 12px;
+    z-index: 100;
+  }
+
+  .basemap-current {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: var(--bg-secondary, rgba(0,0,0,0.85));
+    border: 1px solid var(--border-color, #333);
+    border-radius: 6px;
+    color: var(--text-primary, #fff);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 12px;
+    font-family: var(--font-mono, monospace);
+  }
+
+  .basemap-current:hover {
+    background: var(--bg-tertiary, rgba(0,0,0,0.95));
+    border-color: var(--cyber-green, #00ff88);
+  }
+
+  .basemap-selector.open .basemap-current {
+    border-color: var(--cyber-green, #00ff88);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .basemap-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .basemap-icon svg {
+    width: 16px;
+    height: 16px;
+    color: white;
+  }
+
+  .basemap-name {
+    min-width: 50px;
+  }
+
+  .basemap-arrow {
+    width: 14px;
+    height: 14px;
+    color: var(--text-muted, #888);
+    transition: transform 0.15s ease;
+  }
+
+  .basemap-selector.open .basemap-arrow {
+    transform: rotate(180deg);
+  }
+
+  .basemap-dropdown {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    min-width: 200px;
+    background: var(--bg-secondary, rgba(0,0,0,0.95));
+    border: 1px solid var(--cyber-green, #00ff88);
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    overflow: hidden;
+  }
+
+  .basemap-category {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color, #333);
+  }
+
+  .basemap-category:last-child {
+    border-bottom: none;
+  }
+
+  .category-label {
+    display: block;
+    padding: 4px 12px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted, #888);
+  }
+
+  .basemap-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    color: var(--text-primary, #fff);
+    cursor: pointer;
+    transition: background 0.1s ease;
+    font-size: 12px;
+    text-align: left;
+  }
+
+  .basemap-option:hover {
+    background: rgba(255,255,255,0.08);
+  }
+
+  .basemap-option.selected {
+    background: rgba(0, 255, 136, 0.15);
+  }
+
+  .option-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .option-icon svg {
+    width: 18px;
+    height: 18px;
+    color: white;
+  }
+
+  .option-name {
+    flex: 1;
+  }
+
+  .check-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--cyber-green, #00ff88);
   }
 </style>
