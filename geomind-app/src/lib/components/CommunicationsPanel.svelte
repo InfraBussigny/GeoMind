@@ -23,12 +23,6 @@
       description: 'Emails & Calendrier Microsoft 365'
     },
     {
-      id: 'calendar',
-      name: 'Calendrier',
-      icon: '📅',
-      url: 'https://outlook.office.com/calendar/',
-      color: '#0078d4',
-      description: 'Calendrier Outlook'
     },
     {
       id: 'whatsapp',
@@ -156,7 +150,7 @@
   // Create Tauri webview
   async function createTauriWebview(service: CommunicationService) {
     try {
-      const { Webview } = await import('@tauri-apps/api/webview');
+      const { WebviewWindow } = await import('@tauri-apps/api/webviewWindow');
       const { getCurrentWindow } = await import('@tauri-apps/api/window');
 
       const bounds = getContainerBounds();
@@ -166,23 +160,7 @@
         return;
       }
 
-      const mainWindow = await getCurrentWindow();
-
-      // Create webview as child of main window
-      currentWebview = await Webview.create(mainWindow, `webview-${service.id}`, {
-        url: service.url,
-        x: bounds.x,
-        y: bounds.y,
-        width: bounds.width,
-        height: bounds.height,
-        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-      });
-
-      webviewReady = true;
-      isLoading = false;
-
-      // Setup resize observer to keep webview in sync
-      setupResizeObserver();
+const mainWindow = await getCurrentWindow();      const mainPos = await mainWindow.outerPosition();      const absoluteX = mainPos.x + bounds.x;      const absoluteY = mainPos.y + bounds.y;      console.log("[Comm] Creating webview at:", absoluteX, absoluteY);      const webviewLabel = `comm-${service.id}-${Date.now()}`;      currentWebview = new WebviewWindow(webviewLabel, {        url: service.url,        x: absoluteX,        y: absoluteY,        width: bounds.width,        height: bounds.height,        decorations: false,        skipTaskbar: true,        focus: true,        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"      });      currentWebview.once("tauri://created", () => {        console.log("[Comm] Webview created");        webviewReady = true;        isLoading = false;        setupResizeObserver();      });      currentWebview.once("tauri://error", (e: any) => {        console.error("[Comm] Webview error:", e);        isLoading = false;        webviewReady = true;      });
 
     } catch (e) {
       console.error('Error creating Tauri webview:', e);
@@ -203,7 +181,9 @@
         const bounds = getContainerBounds();
         if (bounds) {
           try {
-            await currentWebview.setPosition({ x: bounds.x, y: bounds.y });
+            const mainWindow = await getCurrentWindow();
+          const mainPos = await mainWindow.outerPosition();
+          await currentWebview.setPosition({ x: mainPos.x + bounds.x, y: mainPos.y + bounds.y });
             await currentWebview.setSize({ width: bounds.width, height: bounds.height });
           } catch (e) {
             console.log('Error resizing webview:', e);
