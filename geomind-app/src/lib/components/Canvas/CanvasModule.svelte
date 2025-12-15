@@ -80,14 +80,15 @@
 
   // Configuration des cartes disponibles
   const maps = [
-    {
-      id: 'postgis',
-      name: 'PostGIS',
-      url: '',
-      icon: 'database',
-      hasLogin: false,
-      isComponent: true
-    },
+    // PostGIS - EN RESERVE (à réimplémenter plus tard)
+    // {
+    //   id: 'postgis',
+    //   name: 'PostGIS',
+    //   url: '',
+    //   icon: 'database',
+    //   hasLogin: false,
+    //   isComponent: true
+    // },
     {
       id: 'geoportail',
       name: 'Géoportail Bussigny',
@@ -131,20 +132,7 @@
       icon: 'document',
       hasLogin: false
     },
-    {
-      id: 'rf',
-      name: 'Registre foncier',
-      url: 'https://www.intercapi.ch',
-      icon: 'building',
-      hasLogin: false
-    },
-    {
-      id: 'capitastra',
-      name: 'Capitastra VD',
-      url: 'https://www.capitastra.vd.ch',
-      icon: 'file-text',
-      hasLogin: false
-    },
+    // Registre foncier et Capitastra - Supprimés (utilisent Intercapi qui bloque les iframes)
   ];
 
   type MapId = typeof maps[number]['id'];

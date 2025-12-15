@@ -190,7 +190,7 @@
   <nav class="sidebar-nav" class:edit-mode={editMode}>
     {#if editMode && !$sidebarCollapsed}
       <div class="edit-mode-hint">
-        <span>Glisser pour reorganiser</span>
+        <span>Utiliser ▲▼ pour reorganiser</span>
         <button class="reset-order-btn" onclick={resetOrder} title="Reinitialiser l'ordre">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
@@ -486,8 +486,33 @@
             {/if}
           </div>
         {/if}
-        {#if $currentModule === module.id}
+        {#if $currentModule === module.id && !editMode}
           <div class="active-indicator"></div>
+        {/if}
+        <!-- Boutons de réordonnancement en mode édition -->
+        {#if editMode}
+          <div class="reorder-buttons">
+            <button
+              class="reorder-btn"
+              onclick={(e) => { e.stopPropagation(); moveModule(module.id, 'up'); }}
+              disabled={index === 0}
+              title="Monter"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="18 15 12 9 6 15"/>
+              </svg>
+            </button>
+            <button
+              class="reorder-btn"
+              onclick={(e) => { e.stopPropagation(); moveModule(module.id, 'down'); }}
+              disabled={index === displayedModules.length - 1}
+              title="Descendre"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+          </div>
         {/if}
       </div>
     {/each}
@@ -1014,12 +1039,54 @@
 
   /* Drag & drop styles */
   .nav-item.edit-mode {
-    cursor: grab;
+    cursor: default;
     border: 1px dashed var(--border-color);
+    padding-right: 50px;
   }
 
-  .nav-item.edit-mode:active {
-    cursor: grabbing;
+  /* Boutons de réordonnancement */
+  .reorder-buttons {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .reorder-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+    padding: 0;
+  }
+
+  .reorder-btn:hover:not(:disabled) {
+    background: var(--cyber-green);
+    border-color: var(--cyber-green);
+    color: #000;
+  }
+
+  .reorder-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .reorder-btn:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+
+  .sidebar.collapsed .reorder-buttons {
+    display: none;
   }
 
   .nav-item.dragging {
