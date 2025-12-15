@@ -531,6 +531,62 @@
 }
 
 /* ========================================
+   BFSA DARK - Néon éteint (vraiment sombre)
+   ======================================== */
+[data-theme="bfsa-dark"] {
+  --bfsa-red: #4a0a0f;
+  --bfsa-red-dark: #2d0509;
+  --bfsa-blue: #0a1a3d;
+
+  --primary: var(--bfsa-red);
+  --primary-glow: transparent;
+
+  --bg-primary: #030304;
+  --bg-secondary: #050507;
+  --bg-tertiary: #080809;
+  --bg-sidebar: #020203;
+  --bg-hover: #0a0a0c;
+  --bg-active: #0c0c0f;
+
+  --text-primary: #3a3a42;
+  --text-secondary: #252528;
+  --text-muted: #1a1a1c;
+  --text-accent: #4a0a0f;
+  --text-bright: #404048;
+
+  --border-color: #101014;
+  --border-focus: #4a0a0f;
+
+  --shadow-glow: none;
+  --cyber-green: #4a0a0f;
+  --cyber-green-glow: transparent;
+  --noir-profond: #030304;
+  --noir-surface: #050507;
+  --noir-card: #080809;
+  --border-glow: transparent;
+}
+
+[data-theme="bfsa-dark"] .sidebar {
+  background: #020203;
+  border-right: 1px solid #0a0a0c;
+}
+
+[data-theme="bfsa-dark"] .active-indicator {
+  background: #3a0a0f;
+  box-shadow: none;
+}
+
+[data-theme="bfsa-dark"] .mode-badge.bfsa {
+  background: #2d0509 !important;
+  box-shadow: none;
+  opacity: 0.5;
+}
+
+[data-theme="bfsa-dark"], [data-theme="bfsa"] {
+  transition: all 0.02s linear;
+}
+
+/* ========================================
    GOD MODE - Effets glitch CSS de base
    (Les effets aléatoires sont gérés par JS)
    ======================================== */
