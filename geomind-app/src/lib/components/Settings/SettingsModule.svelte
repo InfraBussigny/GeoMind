@@ -491,6 +491,61 @@
       </div>
     </section>
 
+    
+    <!-- Neon Flicker Section - BFK mode only -->
+    {#if $appMode === 'bfsa'}
+      <section class="settings-section neon-section">
+        <div class="section-header">
+          <h2>Effet Néon Cassé</h2>
+          <span class="neon-badge">BFK</span>
+        </div>
+
+        <p class="section-description">
+          Le thème alterne entre clair et sombre comme un vieux néon défaillant.
+        </p>
+
+        <div class="neon-controls">
+          <label class="toggle-control">
+            <input
+              type="checkbox"
+              checked={$neonFlickerSettings.enabled}
+              onchange={() => neonFlickerSettings.update(s => ({ ...s, enabled: !s.enabled }))}
+            />
+            <span class="toggle-label">Activer le clignotement</span>
+          </label>
+
+          <div class="neon-setting" class:disabled={!$neonFlickerSettings.enabled}>
+            <span class="setting-label">Intensité</span>
+            <select
+              value={$neonFlickerSettings.intensity}
+              onchange={(e) => neonFlickerSettings.update(s => ({ ...s, intensity: e.currentTarget.value }))}
+              disabled={!$neonFlickerSettings.enabled}
+            >
+              <option value="low">Faible</option>
+              <option value="medium">Moyen</option>
+              <option value="high">Fort</option>
+              <option value="extreme">Extrême</option>
+            </select>
+          </div>
+
+          <div class="neon-setting" class:disabled={!$neonFlickerSettings.enabled}>
+            <span class="setting-label">Pause entre séries</span>
+            <select
+              value={$neonFlickerSettings.speed}
+              onchange={(e) => neonFlickerSettings.update(s => ({ ...s, speed: e.currentTarget.value }))}
+              disabled={!$neonFlickerSettings.enabled}
+            >
+              <option value="slow">Longue (8-20 sec)</option>
+              <option value="normal">Normale (3-15 sec)</option>
+              <option value="fast">Courte (1.5-6 sec)</option>
+              <option value="chaotic">Minimale</option>
+            </select>
+          </div>
+        </div>
+      </section>
+    {/if}
+
+
     <!-- Mode Section - Sélecteur de mode sécurisé -->
     <section class="settings-section mode-section">
       <h2>Mode de l'application</h2>
@@ -3224,6 +3279,81 @@
 
   .neon-control select:hover {
     border-color: var(--cyber-green);
+  }
+
+
+  /* Neon Section Styles */
+  .neon-section {
+    border: 1px solid rgba(227, 6, 19, 0.3);
+    background: linear-gradient(135deg, rgba(227, 6, 19, 0.05), rgba(24, 99, 220, 0.05));
+  }
+
+  .neon-badge {
+    padding: 4px 12px;
+    background: linear-gradient(135deg, #e30613, #1863DC);
+    color: white;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .neon-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .toggle-control {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+  }
+
+  .toggle-control input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #e30613;
+  }
+
+  .toggle-label {
+    font-size: 14px;
+    color: var(--text-primary);
+  }
+
+  .neon-setting {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: var(--noir-surface);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+  }
+
+  .neon-setting.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .setting-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .neon-setting select {
+    padding: 8px 12px;
+    background: var(--noir-card);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .neon-setting select:hover:not(:disabled) {
+    border-color: #e30613;
   }
 
 </style>

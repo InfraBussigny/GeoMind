@@ -9,6 +9,18 @@
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build"
   },
+  "plugins": {
+    "shell": {
+      "open": true,
+      "scope": [
+        {
+          "name": "node",
+          "cmd": "node",
+          "args": true
+        }
+      ]
+    }
+  },
   "app": {
     "windows": [
       {
@@ -35,6 +47,9 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
+    ],
+    "resources": [
+      "../server/**/*"
     ],
     "windows": {
       "certificateThumbprint": null,

@@ -1,7 +1,7 @@
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 
-export type ModuleType = 'chat' | 'canvas' | 'editor' | 'docgen' | 'settings' | 'connexions' | 'comm' | 'databases' | 'timepro' | 'wip' | 'cad' | 'converter' | 'wakelock' | 'kdrive' | 'intercapi' | 'calage';
+export type ModuleType = 'chat' | 'canvas' | 'qgls' | 'editor' | 'docgen' | 'settings' | 'connexions' | 'comm' | 'databases' | 'timepro' | 'wip' | 'cad' | 'converter' | 'wakelock' | 'kdrive' | 'intercapi' | 'calage';
 
 export const currentModule = writable<ModuleType>('chat');
 export const sidebarCollapsed = writable(false);
@@ -232,6 +232,7 @@ export const appMode = createAppModeStore();
 export const ALL_MODULES: { id: ModuleType; label: string; description: string; alwaysVisible?: boolean }[] = [
   { id: 'chat', label: 'Assistant', description: 'Chat IA', alwaysVisible: true },
   { id: 'canvas', label: 'Cartes', description: 'Visualisation carto' },
+  { id: 'qgls', label: 'QGlS', description: 'SKETCHY SKETCHING' },
   { id: 'editor', label: 'Editeur', description: 'SQL & Python' },
   { id: 'databases', label: 'Databases', description: 'Schema & ERD' },
   { id: 'converter', label: 'Convertisseur', description: 'Conversion fichiers', alwaysVisible: true },
@@ -250,13 +251,13 @@ export const ALL_MODULES: { id: ModuleType; label: string; description: string; 
 
 // Modules par défaut pour chaque mode (excluant standard qui est fixe)
 const DEFAULT_MODULE_CONFIG: Record<string, ModuleType[]> = {
-  expert: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'connexions', 'comm', 'docgen', 'intercapi', 'settings', 'cad', 'kdrive', 'calage'],
-  god: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'connexions', 'comm', 'docgen', 'intercapi', 'settings', 'wip', 'cad', 'kdrive', 'calage'],
-  bfsa: ['chat', 'canvas', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'connexions', 'comm', 'docgen', 'intercapi', 'settings', 'cad', 'kdrive', 'calage']
+  expert: ['chat', 'canvas', 'qgls', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'connexions', 'comm', 'docgen', 'intercapi', 'settings', 'cad', 'kdrive', 'calage'],
+  god: ['chat', 'canvas', 'qgls', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'connexions', 'comm', 'docgen', 'intercapi', 'settings', 'wip', 'cad', 'kdrive', 'calage'],
+  bfsa: ['chat', 'canvas', 'qgls', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'connexions', 'comm', 'docgen', 'intercapi', 'settings', 'cad', 'kdrive', 'calage']
 };
 
 // Modules fixes pour le mode standard (non modifiable)
-const STANDARD_MODULES: ModuleType[] = ['chat', 'canvas', 'cad', 'calage', 'databases', 'converter', 'wakelock', 'connexions', 'settings'];
+const STANDARD_MODULES: ModuleType[] = ['chat', 'canvas', 'qgls', 'cad', 'calage', 'databases', 'converter', 'wakelock', 'connexions', 'settings'];
 
 // Store pour la configuration personnalisée des modules par mode
 function createModuleConfigStore() {

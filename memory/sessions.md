@@ -1,3 +1,55 @@
+## Session 32 - 15 decembre 2025 (soir)
+**Theme** : Module QGlS - Phases 4 et 5 (Geoprocessing + Import/Export)
+
+### Travail effectue
+
+#### 1. Phase 4 - Geoprocessing (Turf.js)
+- **ProcessingPanel.svelte** : Panel avec 10 outils geoprocessing
+  - Geometrie : Buffer, Centroid, Convex Hull, Bounding Box
+  - Analyse : Union, Intersection, Difference, Symmetric Difference
+  - Transform : Simplify, Dissolve
+- **runProcessing()** : Implementation dans QGlSMap.svelte
+  - Toutes les operations utilisent Turf.js cote client
+  - Resultats ajoutes a la carte avec style courant
+  - Integration historique undo/redo
+
+#### 2. Phase 5 - Import/Export
+- **Import fichiers** (importFile dans QGlSMap.svelte)
+  - GeoJSON (.geojson, .json)
+  - KML (.kml, .kmz) - Google Earth
+  - GPX (.gpx) - GPS Exchange
+  - Reprojection automatique WGS84 → EPSG:2056
+
+- **Export fichiers** (exportFeatures dans QGlSMap.svelte)
+  - GeoJSON : Format standard web
+  - KML : Compatible Google Earth
+  - GPX : Compatible GPS (polygones → lignes)
+  - Option export selection uniquement
+
+- **ImportExportPanel.svelte** : Interface utilisateur
+  - Zone de drop pour import
+  - Selection format export
+  - Checkbox selection uniquement
+  - Messages de statut
+
+#### 3. Integration module
+- Nouveau tab "I/O" dans QGlSModule remplace "Attributs"
+- Label "Analyse" pour le tab Processing (etait "sketching")
+
+### Fichiers crees
+- `src/lib/components/QGlS/panels/ImportExportPanel.svelte`
+
+### Fichiers modifies
+- `src/lib/components/QGlS/QGlSMap.svelte` (formats KML/GPX, fonctions import/export)
+- `src/lib/components/QGlS/QGlSModule.svelte` (integration panel I/O)
+
+### Notes techniques
+- Unites SI obligatoires : toujours m et m² (jamais km ou ha)
+- Formats OpenLayers : GeoJSON, KML, GPX natifs
+- Conversion polygone→ligne pour GPX (ne supporte pas polygones)
+
+---
+
 ## Session 31 - 15 decembre 2025
 **Theme** : Module CAD Phase 2 - Exports (GeoJSON, SVG, PDF)
 

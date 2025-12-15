@@ -20,5 +20,8 @@
     "postgres": "^3.4.5",
     "ssh2": "^1.17.0",
     "tough-cookie": "^6.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.27.1"
   }
 }

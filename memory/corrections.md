@@ -9,28 +9,44 @@
 - [ ] **NE JAMAIS utiliser** `powershell.exe Stop-Process -Force` sur tous les processus Node - PROVOQUE UN CRASH
 - [ ] **NE JAMAIS utiliser** `taskkill /F /IM node.exe` sans filtrage - TUE CLAUDE CODE AUSSI
 - [ ] **TOUJOURS utiliser** la méthode ciblée par PID : `netstat -ano | findstr :<PORT>` puis `taskkill /F /PID <pid>`
+- [ ] **TOUJOURS utiliser les unités SI** : mètres (m) pour les longueurs, mètres carrés (m²) pour les surfaces - JAMAIS km, ha, ou autres conversions automatiques
 
 ## CHECKLIST - Ajout d'un nouveau module
 > **OBLIGATOIRE** : Suivre TOUTES ces étapes lors de la création d'un nouveau module
+> **ÉCHEC RÉCENT** : QGlS (15/12/2025) - module invisible car manquait dans 4 endroits
+
+### Étapes obligatoires (dans l'ordre)
 
 1. **Créer le composant** : `src/lib/components/[NomModule]/[NomModule]Module.svelte`
-2. **app.ts** - Ajouter le module :
-   - `ModuleType` : ajouter `'nommodule'` au type union (ligne ~4)
-   - `ALL_MODULES` : ajouter `{ id: 'nommodule', label: 'Label', description: 'Desc' }` (ligne ~232)
-   - `DEFAULT_MODULE_CONFIG` : ajouter aux modes expert/god/bfsa (ligne ~249)
-3. **+page.svelte** - Ajouter le rendu :
-   - Import : `import NomModuleModule from '$lib/components/[NomModule]/[NomModule]Module.svelte';`
-   - Condition : `{:else if $currentModule === 'nommodule'}<NomModuleModule />`
-4. **Sidebar.svelte** - Ajouter l'icône :
-   - `allModules` : ajouter `{ id: 'nommodule', label: 'Label', description: 'Desc' }` (ligne ~6)
-   - Template : ajouter `{:else if module.id === 'nommodule'}` avec l'icône SVG (ligne ~280+)
+
+2. **app.ts** - **4 ENDROITS À MODIFIER** :
+   - [ ] `ModuleType` (ligne ~4) : ajouter `'nommodule'` au type union
+   - [ ] `ALL_MODULES` (ligne ~232) : ajouter `{ id: 'nommodule', label: 'Label', description: 'Desc' }`
+   - [ ] `DEFAULT_MODULE_CONFIG` (ligne ~253) : ajouter `'nommodule'` aux tableaux expert/god/bfsa
+   - [ ] `STANDARD_MODULES` (ligne ~259) : ajouter `'nommodule'` si visible en mode standard
+
+3. **+page.svelte** - 2 endroits :
+   - [ ] Import : `import NomModuleModule from '$lib/components/[NomModule]/[NomModule]Module.svelte';`
+   - [ ] Condition : `{:else if $currentModule === 'nommodule'}<NomModuleModule />`
+
+4. **Sidebar.svelte** - 2 endroits :
+   - [ ] `allModules` (ligne ~29) : ajouter `{ id: 'nommodule', label: 'Label', description: 'Desc' }`
+   - [ ] Template SVG (ligne ~350+) : ajouter `{:else if module.id === 'nommodule'}` avec l'icône SVG
+
 5. **Backend** (si nécessaire) : Ajouter les endpoints API dans `server/index.js`
 
-**Fichiers à modifier (résumé) :**
-- `src/lib/stores/app.ts` (3 endroits)
-- `src/routes/+page.svelte` (2 endroits)
-- `src/lib/components/Sidebar.svelte` (2 endroits)
-- `server/index.js` (si API backend)
+### Fichiers à modifier (résumé)
+| Fichier | Nombre d'endroits | Obligatoire |
+|---------|-------------------|-------------|
+| `src/lib/stores/app.ts` | **4** | Oui |
+| `src/routes/+page.svelte` | 2 | Oui |
+| `src/lib/components/Sidebar.svelte` | 2 | Oui |
+| `server/index.js` | 1+ | Si API |
+
+### Erreurs fréquentes
+- **Module invisible** : Manque dans `ALL_MODULES`, `DEFAULT_MODULE_CONFIG` ou `STANDARD_MODULES`
+- **Pas d'icône** : Manque le bloc `{:else if module.id === 'xxx'}` dans Sidebar.svelte
+- **Build échoue** : Import manquant dans +page.svelte
 
 ## À TOUJOURS FAIRE (prévention crashs)
 > Actions obligatoires AVANT toute opération risquée

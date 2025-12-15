@@ -2,6 +2,7 @@
   import { currentModule } from '$lib/stores/app';
   import ChatModule from '$lib/components/Chat/ChatModule.svelte';
   import CanvasModule from '$lib/components/Canvas/CanvasModule.svelte';
+  import QGlSModule from '$lib/components/QGlS/QGlSModule.svelte';
   import CADModule from '$lib/components/CAD/CADModule.svelte';
   import EditorModule from '$lib/components/Editor/EditorModule.svelte';
   import DocGenModule from '$lib/components/DocGen/DocGenModule.svelte';
@@ -23,6 +24,8 @@
     <ChatModule />
   {:else if $currentModule === 'canvas'}
     <CanvasModule />
+  {:else if $currentModule === 'qgls'}
+    <QGlSModule />
   {:else if $currentModule === 'editor'}
     <EditorModule />
   {:else if $currentModule === 'databases'}

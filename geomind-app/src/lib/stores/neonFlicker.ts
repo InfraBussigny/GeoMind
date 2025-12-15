@@ -47,19 +47,20 @@ export const isFlickerActive = derived(
 );
 
 // Timing configurations based on speed
+// Clignotements rapides avec pauses de repos entre les séries
 const speedConfigs = {
-  slow: { minDelay: 3000, maxDelay: 8000, flickerDuration: 150 },
-  normal: { minDelay: 1500, maxDelay: 5000, flickerDuration: 100 },
-  fast: { minDelay: 500, maxDelay: 2000, flickerDuration: 60 },
-  chaotic: { minDelay: 100, maxDelay: 800, flickerDuration: 30 }
+  slow: { flickerDelay: 150, flickerDuration: 120, restMin: 8000, restMax: 20000 },
+  normal: { flickerDelay: 100, flickerDuration: 80, restMin: 3000, restMax: 15000 },
+  fast: { flickerDelay: 60, flickerDuration: 50, restMin: 1500, restMax: 6000 },
+  chaotic: { flickerDelay: 40, flickerDuration: 30, restMin: 500, restMax: 2000 }
 };
 
-// Intensity configurations (probability of multi-flicker)
+// Intensity configurations - nombre de flickers par série
 const intensityConfigs = {
-  low: { multiFlickerChance: 0.1, maxFlickers: 2 },
-  medium: { multiFlickerChance: 0.3, maxFlickers: 4 },
-  high: { multiFlickerChance: 0.5, maxFlickers: 6 },
-  extreme: { multiFlickerChance: 0.7, maxFlickers: 10 }
+  low: { maxFlickers: 2 },
+  medium: { maxFlickers: 4 },
+  high: { maxFlickers: 6 },
+  extreme: { maxFlickers: 10 }
 };
 
 // Flicker controller class
@@ -71,7 +72,7 @@ class NeonFlickerController {
   start() {
     if (this.isRunning || !browser) return;
     this.isRunning = true;
-    this.scheduleNextFlicker();
+    this.scheduleFlickerBurst();
     console.log('[NeonFlicker] Started');
   }
 
@@ -96,53 +97,69 @@ class NeonFlickerController {
     this.setTheme(this.currentTheme === 'bfsa' ? 'bfsa-dark' : 'bfsa');
   }
 
-  private scheduleNextFlicker() {
+  // Programme une série de clignotements
+  private scheduleFlickerBurst() {
     if (!this.isRunning) return;
 
     const settings = get(neonFlickerSettings);
     const speedConfig = speedConfigs[settings.speed];
     const intensityConfig = intensityConfigs[settings.intensity];
 
-    // Random delay before next flicker event
-    const delay = speedConfig.minDelay + Math.random() * (speedConfig.maxDelay - speedConfig.minDelay);
+    // Nombre de clignotements dans cette série (selon l'intensité)
+    const burstCount = 1 + Math.floor(Math.random() * intensityConfig.maxFlickers);
 
-    this.timeoutId = setTimeout(() => {
+    // Exécuter la série de clignotements rapides
+    this.doFlickerBurst(burstCount, speedConfig, () => {
       if (!this.isRunning) return;
 
-      // Decide if we do a single flicker or multiple rapid flickers
-      const doMultiFlicker = Math.random() < intensityConfig.multiFlickerChance;
+      // Pause de repos entre 3-15 sec (selon la vitesse)
+      const restDuration = speedConfig.restMin + Math.random() * (speedConfig.restMax - speedConfig.restMin);
 
-      if (doMultiFlicker) {
-        // Multiple rapid flickers (like a dying neon)
-        const flickerCount = 2 + Math.floor(Math.random() * (intensityConfig.maxFlickers - 1));
-        this.doRapidFlickers(flickerCount, speedConfig.flickerDuration);
-      } else {
-        // Single flicker
-        this.doSingleFlicker(speedConfig.flickerDuration);
+      this.timeoutId = setTimeout(() => {
+        this.scheduleFlickerBurst();
+      }, restDuration);
+    });
+  }
+
+  // Série de clignotements rapides
+  private doFlickerBurst(count: number, config: typeof speedConfigs.normal, onComplete: () => void) {
+    let i = 0;
+
+    const flicker = () => {
+      if (!this.isRunning) return;
+
+      if (i >= count) {
+        // S'assurer qu'on termine en mode clair
+        if (this.currentTheme === 'bfsa-dark') {
+          this.setTheme('bfsa');
+        }
+        onComplete();
+        return;
       }
 
-      // Schedule next flicker event
-      this.scheduleNextFlicker();
-    }, delay);
-  }
+      // Passer en dark (néon éteint)
+      this.setTheme('bfsa-dark');
 
-  private doSingleFlicker(duration: number) {
-    this.toggleTheme();
-    setTimeout(() => {
-      if (this.isRunning) this.toggleTheme();
-    }, duration + Math.random() * duration);
-  }
+      // Durée du flash sombre (irrégulière pour réalisme)
+      const darkDuration = config.flickerDuration * (0.5 + Math.random());
 
-  private doRapidFlickers(count: number, baseDuration: number) {
-    let i = 0;
-    const flicker = () => {
-      if (!this.isRunning || i >= count) return;
-      this.toggleTheme();
-      i++;
-      // Irregular timing for realistic effect
-      const nextDelay = baseDuration * (0.5 + Math.random());
-      setTimeout(flicker, nextDelay);
+      setTimeout(() => {
+        if (!this.isRunning) return;
+
+        // Revenir en clair (néon allumé)
+        this.setTheme('bfsa');
+        i++;
+
+        // Petit délai avant le prochain flash (si pas le dernier)
+        if (i < count) {
+          const gap = config.flickerDelay * (0.3 + Math.random() * 0.7);
+          setTimeout(flicker, gap);
+        } else {
+          onComplete();
+        }
+      }, darkDuration);
     };
+
     flicker();
   }
 }

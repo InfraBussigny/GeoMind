@@ -29,6 +29,7 @@
   const allModules: { id: ModuleType; label: string; description: string }[] = [
     { id: 'chat', label: 'Assistant', description: 'Chat IA' },
     { id: 'canvas', label: 'Cartes', description: 'Visualisation' },
+    { id: 'qgls', label: 'QGlS', description: 'SKETCHY SKETCHING' },
     { id: 'cad', label: 'CAD', description: 'DXF/DWG Viewer' },
     { id: 'calage', label: 'Calage', description: 'Géoréférencement' },
     { id: 'editor', label: 'Editeur', description: 'SQL & Python' },
@@ -344,6 +345,17 @@
               <line x1="12" y1="3" x2="12" y2="21"/>
               <path d="M3.5 9h17M3.5 15h17"/>
               <circle cx="16" cy="7" r="2" fill="currentColor" stroke="none"/>
+            </svg>
+          <!-- QGlS / sketching GIS -->
+          {:else if module.id === 'qgls'}
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <!-- Sketching: couches + crayon -->
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+              <!-- Crayon diagonal -->
+              <path d="M16 3l5 5-8 8-5 0 0-5 8-8z" fill="currentColor" stroke="none" opacity="0.3"/>
+              <path d="M16 3l5 5-8 8-5 0 0-5 8-8z"/>
             </svg>
           <!-- Editeur -->
           {:else if module.id === 'editor'}

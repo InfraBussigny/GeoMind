@@ -140,12 +140,11 @@ ORDER BY nb DESC;`,
   {
     id: 'sql_surface_calc',
     name: 'Calcul de surface',
-    description: 'Calculer la surface des polygones',
+    description: 'Calculer la surface des polygones en m²',
     language: 'sql',
     tags: ['postgis', 'area', 'surface'],
     content: `SELECT id, nom,
-  ST_Area(${'{geom_column}'}::geography) AS surface_m2,
-  ST_Area(${'{geom_column}'}::geography) / 10000 AS surface_ha
+  ST_Area(${'{geom_column}'}::geography) AS surface_m2
 FROM ${'{schema}'}.${'{table}'}
 WHERE ${'{condition}'}
 ORDER BY surface_m2 DESC;`,
