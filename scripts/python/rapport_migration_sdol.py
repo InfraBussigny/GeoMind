@@ -260,6 +260,7 @@ def create_rapport():
         ["divers", "by_transport_public_l", "20", "tp_bus_l", "BASSE"],
         ["divers", "by_ouvrage_speciaux_l", "14", "oa_ouvart_s", "BASSE"],
         ["nature", "by_nat_parcours_nature", "6", "mob_chem_ped_l ?", "BASSE"],
+        ["fibre_optique", "by_fo_* (?)", "?", "fo_* (?)", "A INVENTORIER"],
         ["route", "8 tables", "0", "-", "AUCUNE"],
     ]
     elements.append(create_table(vol_data, [2.5*cm, 3.5*cm, 1.5*cm, 4*cm, 2*cm]))
@@ -400,7 +401,7 @@ def create_rapport():
 
     # === 7. POINTS SENSIBLES DIVERS/NATURE/POI ===
     elements.append(Paragraph("7. Points sensibles - Divers/Nature/POI", styles['BH1']))
-    elements.append(Paragraph("4 points necessitant validation", styles['BSubtitle']))
+    elements.append(Paragraph("5 points necessitant validation", styles['BSubtitle']))
 
     divers_data = [
         ["#", "Schema", "Point", "Description", "Decision"],
@@ -408,6 +409,7 @@ def create_rapport():
         ["21", "Nature", "Arbres/vergers", "4 champs BY vs 40 champs SDOL", "Migration partielle"],
         ["22", "Pts_interet", "POI", "Pas de table POI dans SDOL", "BLOQUANT"],
         ["23", "Global", "Architecture multi-schema", "Impossible voir format autres communes", "Contacter HKD"],
+        ["24", "Fibre optique", "Tables FO", "Schema a inventorier, tables cibles SDOL ?", "A INVENTORIER"],
     ]
     elements.append(create_table(divers_data, [0.8*cm, 2*cm, 3*cm, 5*cm, 3.7*cm]))
 

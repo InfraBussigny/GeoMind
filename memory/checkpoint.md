@@ -1,5 +1,16 @@
 # GeoBrain Checkpoints
 
+## CP-20251216-1430
+```
+S:35|P:MIGRATION-SDOL|T:Rapport-PDF-Validation
+F:rapport_migration_sdol.py,mapping_eu_chambre.csv,00_scope_migration.md,sessions.md
+W:Analyse complete migration BY→SDOL|Architecture multi-schemas decouverte|24 points sensibles documentes|Rapport PDF genere (v2)|Fibre optique ajoutee au scope
+N:Discussion chefs BY|Reunion HKD/SDOL|Inventaire fibre optique
+X:by_fme_w=406 tables back_hkd_databy|~30'000 objets 97% assainissement|2 bloquants (#13 arrets TP, #22 POI)
+```
+
+---
+
 ## CP-20251214-2330
 ```
 S:30-FIN|P:CONNEXIONS-MODULE|T:Layout-Gauche-Droite

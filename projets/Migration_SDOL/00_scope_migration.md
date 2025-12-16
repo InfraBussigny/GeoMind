@@ -32,8 +32,12 @@
 | `divers` | 12 | Ouvrages spéciaux, transports publics |
 | `nature` | 3 | Arbres, vergers, parcours nature |
 | `pts_interet` | 3 | Points d'intérêt |
+| `fibre_optique` | ? | **À INVENTORIER** - Réseau fibre optique |
 
-**Total : ~57 tables à migrer**
+**Total : ~57+ tables à migrer**
+
+### ⚠️ À VÉRIFIER
+- **Fibre optique** : Identifier les tables dans la base Bussigny et vérifier si SDOL a une structure cible correspondante
 
 ---
 
