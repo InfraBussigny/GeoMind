@@ -64,6 +64,20 @@
 
 ## Historique des corrections
 
+### 2025-12-16 | PuTTY freeze sur "Passphrase for key" (RÉSOLU)
+**Problème** : PuTTY se fige (fenêtre "inactive") après affichage "Passphrase for key rsa-key-XXXXXXXX" - impossible de taper quoi que ce soit
+**Cause** : La session PuTTY avait un chemin vers un fichier `.ppk` sur OneDrive configuré dans Connection → SSH → Auth → Credentials. Même si Pageant avait une clé chargée, PuTTY essayait d'utiliser le fichier directement (potentiellement inaccessible/cloud-only).
+**Solution** :
+1. Ouvrir PuTTY → charger la session
+2. Connection → SSH → Auth → Credentials
+3. **Supprimer** le chemin dans "Private key file for authentication"
+4. Sauvegarder la session
+5. PuTTY utilise maintenant Pageant automatiquement
+**Fichier concerné** : `C:\Users\zema\OneDrive - bussigny.ch\Documents\PuTTY\putty_private_zema.ppk`
+**Session** : `geo.bussigny.ch`
+
+---
+
 ### 2025-12-09 & 2025-12-13 | Crash Claude Code lors de Stop-Process Node
 **Problème** : Claude Code se ferme brutalement (sans message d'erreur) lors de l'exécution de commandes PowerShell pour tuer les processus Node
 **Contexte** :

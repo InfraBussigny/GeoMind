@@ -2622,9 +2622,9 @@ app.post('/api/connections/:id/connect', async (req, res) => {
 });
 
 // Se déconnecte d'un serveur
-app.post('/api/connections/:id/disconnect', (req, res) => {
+app.post('/api/connections/:id/disconnect', async (req, res) => {
   try {
-    const result = connections.disconnect(req.params.id);
+    const result = await connections.disconnect(req.params.id);
     res.json(result);
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });

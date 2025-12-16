@@ -1,0 +1,70 @@
+source_schema;source_table;source_column;source_type;target_schema;target_table;target_column;target_type;transformation;obligatoire;notes
+assainissement;by_ass_chambre;gid;integer;back_hkd_databy;eu_chambre;gid;integer;DIRECT;OUI;Clé primaire - conserver ou régénérer selon stratégie
+assainissement;by_ass_chambre;fid;integer;back_hkd_databy;eu_chambre;-;-;IGNORER;NON;Pas d'équivalent SDOL
+assainissement;by_ass_chambre;designation;varchar;back_hkd_databy;eu_chambre;no_obj;char;DIRECT;OUI;Identifiant de la chambre
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;no_obj_2;char;VIDE;NON;Pas de source - laisser NULL
+assainissement;by_ass_chambre;fonction_hydro;varchar;back_hkd_databy;eu_chambre;contenu;char;MAPPING_VALEURS;OUI;Mapper les valeurs EU/EC/MX/EP
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;utilisat;char;VIDE;NON;Usage - pas de source
+assainissement;by_ass_chambre;proprietaire;varchar;back_hkd_databy;eu_chambre;proprio;char;MAPPING_VALEURS;OUI;Mapper vers codes SDOL
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;nom_comm;char;FIXE:'Bussigny';OUI;Nom commune
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;no_comm;char;FIXE:'5624';OUI;No OFS Bussigny
+assainissement;by_ass_chambre;geom;geometry;back_hkd_databy;eu_chambre;coord_nord;double;ST_Y(geom);OUI;Extraire Y de la géométrie
+assainissement;by_ass_chambre;geom;geometry;back_hkd_databy;eu_chambre;coord_est;double;ST_X(geom);OUI;Extraire X de la géométrie
+assainissement;by_ass_chambre;determination_plani;varchar;back_hkd_databy;eu_chambre;mode_acqui;char;MAPPING_VALEURS;NON;Mode acquisition
+assainissement;by_ass_chambre;precision_alti;varchar;back_hkd_databy;eu_chambre;precis_pl;char;MAPPING_VALEURS;NON;Précision planimétrique
+assainissement;by_ass_chambre;fonction_chambre;varchar;back_hkd_databy;eu_chambre;fonction;char;MAPPING_VALEURS;OUI;Fonction de la chambre
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;hierarchie;char;VIDE;NON;Pas de source
+assainissement;by_ass_chambre;acces;varchar;back_hkd_databy;eu_chambre;accessibilite;char;MAPPING_VALEURS;NON;Accessibilité
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;proprio_chgt;boolean;FIXE:false;NON;Changement propriétaire
+assainissement;by_ass_chambre;chambre_double;varchar;back_hkd_databy;eu_chambre;ch_dbl_on;boolean;CASE_BOOLEAN;NON;Convertir 'Oui'/'Non' en true/false
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;alt_couv;double;VIDE;NON;Altitude couvercle - calculer si possible
+assainissement;by_ass_chambre;cote_radier;double;back_hkd_databy;eu_chambre;alt_radi;double;DIRECT;OUI;Altitude radier
+assainissement;by_ass_chambre;profondeur;double;back_hkd_databy;eu_chambre;profondeur;double;DIRECT;OUI;Profondeur
+assainissement;by_ass_chambre;materiau_chambre;varchar;back_hkd_databy;eu_chambre;fond_mtx;char;MAPPING_VALEURS;NON;Matériau fond
+assainissement;by_ass_chambre;materiau_chambre;varchar;back_hkd_databy;eu_chambre;cheminee_mtx;char;MAPPING_VALEURS;NON;Matériau cheminée (même source)
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;contenu_fut;char;VIDE;NON;Contenu futur
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;ref_dossier;char;VIDE;NON;Référence dossier
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;ref_plan;char;VIDE;NON;Référence plan
+assainissement;by_ass_chambre;annee_construction;date;back_hkd_databy;eu_chambre;constr_an;integer;EXTRACT_YEAR;OUI;Extraire année de la date
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;insp_date;date;VIDE;NON;Date inspection
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;insp_interv;double;VIDE;NON;Intervalle inspection
+assainissement;by_ass_chambre;etat;varchar;back_hkd_databy;eu_chambre;etat_constr;char;MAPPING_VALEURS;OUI;État construction
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;necess_ass;char;VIDE;NON;Nécessité assainissement
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;curage_date;date;VIDE;NON;Date curage
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;curage_int;double;VIDE;NON;Intervalle curage
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;curage_on;boolean;VIDE;NON;Curage activé
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;sct_interv;char;VIDE;NON;Secteur intervention
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;diam_couv;double;VIDE;NON;Diamètre couvercle
+assainissement;by_ass_chambre;dimension_1;double;back_hkd_databy;eu_chambre;diam_chambre;double;DIRECT;NON;Diamètre chambre
+assainissement;by_ass_chambre;remarque;text;back_hkd_databy;eu_chambre;remarque;char;DIRECT;NON;Remarques
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;an_rem_proj;char;VIDE;NON;Année remplacement projeté
+assainissement;by_ass_chambre;genre_chambre;varchar;back_hkd_databy;eu_chambre;type_ouvr;char;MAPPING_VALEURS;OUI;Type d'ouvrage
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;type_couv;char;VIDE;NON;Type couvercle
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;crea_date;date;FIXE:CURRENT_DATE;OUI;Date création enregistrement
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;releve_date;date;VIDE;NON;Date relevé
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;releve_geom_date;date;VIDE;NON;Date relevé géométrie
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;releve_tech_date;date;VIDE;NON;Date relevé technique
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;rempl_proj_an;integer;VIDE;NON;Année remplacement projeté
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;maj_aut;varchar;FIXE:'Migration BY';NON;Auteur mise à jour
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;crea_fiche_aut;varchar;FIXE:'Migration BY';NON;Auteur création fiche
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;crea_fiche_date;date;FIXE:CURRENT_DATE;NON;Date création fiche
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;estim_date;date;VIDE;NON;Date estimation
+assainissement;by_ass_chambre;dimension_1;double;back_hkd_databy;eu_chambre;dim_ch;varchar;CONCAT_DIM;NON;Concaténer dim_1 x dim_2
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;couv_mtx;varchar;VIDE;NON;Matériau couvercle
+assainissement;by_ass_chambre;materiau_chambre;varchar;back_hkd_databy;eu_chambre;chem_mtx;varchar;MAPPING_VALEURS;NON;Matériau cheminée
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;maj_date;date;FIXE:CURRENT_DATE;NON;Date mise à jour
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;file1;char;VIDE;NON;Fichier 1
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;lien1qgis;char;VIDE;NON;Lien QGIS 1
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;lien1gmf;char;VIDE;NON;Lien GMF 1
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;file2;char;VIDE;NON;Fichier 2
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;lien2qgis;char;VIDE;NON;Lien QGIS 2
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;lien2gmf;char;VIDE;NON;Lien GMF 2
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;file3;char;VIDE;NON;Fichier 3
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;lien3qgis;char;VIDE;NON;Lien QGIS 3
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;lien3gmf;char;VIDE;NON;Lien GMF 3
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;file4;char;VIDE;NON;Fichier 4
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;lien4qgis;char;VIDE;NON;Lien QGIS 4
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;lien4gmf;char;VIDE;NON;Lien GMF 4
+assainissement;by_ass_chambre;geom;geometry;back_hkd_databy;eu_chambre;geom;geometry;DIRECT;OUI;Géométrie point
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;pk_uuid;uuid;GENERATE_UUID;OUI;Générer UUID
+assainissement;by_ass_chambre;-;-;back_hkd_databy;eu_chambre;data_owner;varchar;FIXE:'by';OUI;Identifiant commune

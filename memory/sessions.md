@@ -1,3 +1,39 @@
+## Session 35 - 16 decembre 2025 (suite)
+**Theme** : Bug fix GeoMind + Migration SDOL - Rapport complet
+
+### Travail effectue
+
+#### 1. Bug fix - Bouton deconnexion GeoMind
+- **Symptome** : Le bouton de deconnexion du module Connexions ne fonctionnait pas
+- **Correction** : Ajout `async` et `await` sur l'endpoint disconnect
+
+#### 2. Migration SDOL - Analyse complete
+- **Architecture decouverte** : SDOL utilise un schema par commune (back_hkd_databy = Bussigny)
+- **Volumetrie** : ~30'000 objets a migrer (97% assainissement)
+- **Mapping detaille** : eu_chambre complete (70 colonnes)
+- **Points sensibles** : 23 identifies, documentes dans le rapport
+
+#### 3. Rapport PDF genere
+- **Fichier** : `projets/Migration_SDOL/2025-12-16_Rapport_Migration_SDOL_v2.pdf`
+- **Script** : `scripts/python/rapport_migration_sdol.py`
+- **Contenu** :
+  - Contexte et objectifs
+  - Architecture multi-schemas SDOL
+  - Volumetrie par table
+  - 23 points sensibles avec decideur (HKD/SDOL vs Bussigny)
+  - Synthese des decisions a prendre
+  - Prochaines etapes priorisees
+
+### Points sensibles majeurs (extrait)
+1. **Bloquants** : Pas de table SDOL pour arrets TP (#13) et POI (#22)
+2. **A valider HKD** : Mapping domaines (fonction, etat, materiau), CFF → SDOL
+3. **A valider interne** : Statut SDA, etat troncon, genre_chambre vs type_ouvr
+
+### Prochaine etape
+Discussion avec chefs Bussigny sur base du rapport, puis questions a HKD/SDOL
+
+---
+
 ## Session 34 - 16 decembre 2025 (nuit)
 **Theme** : QGlS - Fix ordering + Basemap selector
 

@@ -14,13 +14,14 @@
 >
 > Marc n'a pas les droits admin directs sur son poste. Procédure à suivre :
 >
-> 1. **Copier l'installateur** dans `C:\Temp\`
+> 1. **Copier l'installateur** dans `C:\Users\Public\Downloads\` (accessible à tous les comptes)
 > 2. **Shift + clic droit** sur l'exécutable → "Exécuter en tant qu'autre utilisateur"
 > 3. **Compte** : `admin_user_zema`
 > 4. **Mot de passe** : Demander à Marc au moment de l'installation (NE JAMAIS STOCKER)
 >
 > **Comportement GeoBrain :**
-> - Copier automatiquement l'installateur dans C:\Temp
+> - Copier automatiquement l'installateur dans `C:\Users\Public\Downloads\` (PAS C:\Temp - problèmes de permissions)
+> - Débloquer le fichier avec `Unblock-File` si nécessaire
 > - Informer Marc de faire Shift+clic droit → Exécuter en tant qu'autre utilisateur
 > - Lui demander son mot de passe pour admin_user_zema (usage unique, non stocké)
 > - Guider l'installation étape par étape
