@@ -1,3 +1,55 @@
+## Session 36 - 17 décembre 2025
+**Thème** : Maynord Calculator - Finalisation v1.0.0
+
+### Travail effectué
+
+#### 1. Corrections UI/UX
+- **Graphiques** : Étendue dynamique pour voir les courbes entièrement
+- **Onglet Comparaison** : Panel de résumé (min/max D30/D50, masse moyenne)
+- **Table comparaison** : Couleurs adaptées selon thème (clair/sombre)
+- **Persistance graphiques** : Charts redessinés lors du changement de thème
+- **Suppression scénarios** : Bouton pour supprimer individuellement
+- **Sidebar scrollable** : QScrollArea pour éviter éléments illisibles quand fenêtre réduite
+- **Menu bar** : Style corrigé en mode clair (fond bleu, texte blanc)
+- **En-tête** : Suppression "[Sans titre]"
+
+#### 2. Branding
+- Remplacement de "GeoBrain" par "GeoMind" dans tout le projet
+- Manuel PDF régénéré avec nouveau branding
+
+#### 3. Export PDF
+- Nouvelle fonction `generate_clean_chart_for_pdf()` pour graphiques propres
+- Correction alignement unités dans tableau résultats (colonnes valeur/unité séparées)
+- Format masse adaptatif : kg ou tonnes selon grandeur
+
+#### 4. GitHub Release v1.0.0
+- Repository public : https://github.com/MarcZermatten/maynord-calculator
+- Instructions d'installation détaillées pour débutants :
+  - Commande `cd` explicite pour navigation
+  - Procédure ouverture terminal Windows
+  - Activation venv avec indicateur `(venv)`
+- Manuel PDF joint à la release
+
+### Fichiers modifiés
+- `src/ui/comparison_tab.py` (refait - theme support, summary, delete)
+- `src/ui/widgets/chart_widget.py` (étendue dynamique, persistance thème)
+- `src/ui/calculator_tab.py` (sidebar scrollable)
+- `src/data/export.py` (PDF clean chart, units alignment)
+- `src/app.py` (styles QMenuBar, QScrollArea, sans titre supprimé)
+- `src/main.py`, `src/ui/settings_dialog.py` (GeoBrain → GeoMind)
+- `docs/generate_manual_pdf.py` (branding GeoMind)
+
+### Commits
+- 55f55d6 : Fix: Align units in PDF export results table
+- 5811979 : Fix: Update manual PDF and sidebar styling
+- afb1cea : Fix: Sidebar scrollable when window is reduced
+
+### Liens
+- **Release** : https://github.com/MarcZermatten/maynord-calculator/releases/tag/v1.0.0
+- **Repository** : https://github.com/MarcZermatten/maynord-calculator
+
+---
+
 ## Session 35 - 16 decembre 2025 (suite)
 **Theme** : Bug fix GeoMind + Migration SDOL - Rapport complet
 
