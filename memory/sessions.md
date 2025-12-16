@@ -1,3 +1,36 @@
+## Session 34 - 16 decembre 2025 (nuit)
+**Theme** : QGlS - Fix ordering + Basemap selector
+
+### Travail effectue
+
+#### 1. Fix module QGlS non deplacable dans sidebar
+- **Cause** : 'qgls' manquait dans `DEFAULT_MODULE_ORDER` (app.ts)
+- **Solution** : Ajoute entre 'canvas' et 'cad'
+- **MODULE_CONFIG_VERSION** incremente a v3 (force reset localStorage)
+
+#### 2. Selecteur de fonds de plan QGlS
+- 6 basemaps avec icones colorees :
+  - ASIT-VD : Couleur (vert), Gris (gris), Cadastral (orange)
+  - Swisstopo : Couleur (bleu), Gris (gris fonce), Ortho (brun)
+- Dropdown organise par provider
+- Position : bas-droite de la carte
+
+#### 3. Release v1.0.4
+- Build Tauri : `GeoMind_1.0.4_x64-setup.exe`
+- Upload sur GitHub releases
+- Email envoye a mzermatten@bussigny.ch
+
+### Fichiers modifies
+- `src/lib/stores/app.ts` (DEFAULT_MODULE_ORDER + version)
+- `src/lib/components/QGlS/QGlSMap.svelte` (basemap selector)
+- `package.json` + `tauri.conf.json` (version 1.0.4)
+
+### Commits
+- 8ce707a : QGlS: Fix module ordering + basemap selector (6 options)
+- 8011a6a : Bump version to 1.0.4
+
+---
+
 ## Session 33 - 16 decembre 2025
 **Theme** : Corrections UX + Installateur NSIS personnalise
 
