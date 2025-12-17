@@ -121,6 +121,24 @@
 - **MAJ quotidienne** : Oracle → PostgreSQL (Bussigny) via FME sur SRV-FME
 - **MAJ ponctuelle** : PostgreSQL (SDOL) → PostgreSQL (Bussigny) via FME
 
+### Connexions bases de données
+
+**PostgreSQL Bussigny (srv-fme)**
+- Host: `srv-fme`
+- Port: `5432`
+- Database: `Prod`
+- User: `postgres`
+- Schéma données: `assainissement`, `bdco`, `route`, `divers`, `nature`, `pts_interet`
+
+**PostgreSQL SDOL (HKD)** - Accès depuis srv-fme uniquement
+- Host: `postgres.hkd-geomatique.com`
+- Port: `5432`
+- Database: `sdol`
+- Schéma Bussigny: `back_hkd_databy`
+- User lecture: `by_lgr` (ATTENTION: pas de droit LOGIN actuellement)
+- User écriture: `by_fme_w`
+- Note: Connexion whitelistée sur IP srv-fme
+
 ### Outils de mise à jour
 | Outil | Données gérées |
 |-------|----------------|
@@ -399,3 +417,32 @@ npm install @turf/turf          # (Optionnel) Validation géométries
 ### Copies locales (GeoMind App)
 - `geomind-app/static/images/logo_bussigny_neg.png`
 - `geomind-app/static/images/logo_bussigny_pos.png`
+
+### Template PDF Bussigny (OBLIGATOIRE)
+**Module** : `scripts/python/bussigny_pdf.py`
+
+**RÈGLES** :
+- À chaque demande de génération de PDF, TOUJOURS utiliser ce module !
+- PAS DE SIGNATURE en fin de document (pas de "Marc Zermatten, Responsable...")
+
+**Composants** :
+- `BussignyDocTemplate` : Classe document avec en-tête (logo + ligne bleue) et pied de page (nom fichier + page)
+- `get_styles()` : Styles officiels (BTitle, BSubtitle, BH1, BH2, BBody, BBullet, BCode, Alert, Info, Success)
+- `create_table()` : Tableaux avec Paragraph dans les cellules (évite dépassements)
+- `create_result_box()` : Encadré résultat mis en évidence
+- `create_metadata_table()` : Métadonnées (date, auteur, service)
+- `format_date()`, `format_number()` : Formatage suisse
+
+**Couleurs officielles** :
+- `BLEU_BUSSIGNY` : #366092
+- `GRIS_FONCE` : #444444
+- `GRIS_MOYEN` : #666666
+
+**Exemple d'usage** :
+```python
+from bussigny_pdf import BussignyDocTemplate, get_styles, create_table
+doc = BussignyDocTemplate("fichier.pdf", doc_description="Note technique")
+styles = get_styles()
+elements = [Paragraph("Titre", styles['BTitle'])]
+doc.build(elements)
+```

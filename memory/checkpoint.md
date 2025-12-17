@@ -1,5 +1,16 @@
 # GeoBrain Checkpoints
 
+## CP-20251217-1500
+```
+S:36|P:MIGRATION-SDOL+NOTES|T:Rapports-PDF-Mail
+F:rapport_migration_sdol_complet.py,note_chambres_assainissement.py,mapping_bussigny_sdol.md
+W:Rapport migration SDOL complet (16 pages)|Note chambres corrigée (KeepTogether, résultat en haut, section 4 supprimée)|Mail RH télétravail rédigé
+N:Validation mapping HKD|Workbench FME migration|Signature convention télétravail
+X:1269 chambres publiques|KeepTogether=jamais couper tableaux|Période essai 3 mois terminée
+```
+
+---
+
 ## CP-20251216-1430
 ```
 S:35|P:MIGRATION-SDOL|T:Rapport-PDF-Validation
