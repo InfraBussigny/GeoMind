@@ -1,3 +1,32 @@
+## Session 37 - 18 décembre 2025
+**Thème** : Correction fichiers settings Claude Code
+
+### Travail effectué
+
+#### 1. Diagnostic erreurs settings au démarrage
+- `.claude/settings.json` : JSON invalide (BOM UTF-8 + backslashes non échappés)
+- `.claude/settings.local.json` : ~207 patterns Bash malformés (commandes complètes au lieu de patterns)
+
+#### 2. Corrections appliquées
+- **settings.json** : Supprimé BOM, échappé backslashes (`C:\` → `C:\\`)
+- **settings.local.json** : Nettoyé 207 → 60 patterns génériques (`Bash(git:*)`, `Bash(python:*)`, etc.)
+
+#### 3. Git
+- Commit `6d4473c` : fix settings.json
+- Remote URL mis à jour : `InfraBussigny/GeoMind.git` (ancien: geobrain-bussigny)
+
+### Rappel optimisation Claude Code (session précédente)
+Commit `e51643d` contenait :
+- 3 agents spécialisés : `spatial-analyst`, `fme-specialist`, `qgis-automation`
+- MCP servers : `postgres-bussigny`, `filesystem`
+- Slash commands : `/checkpoint`, `/memorise`, `/recap`
+- Documentation : `docs/CLAUDE_CODE_OPTIMISATION.md`
+
+### Prochaine étape
+Relancer Claude Code et tester que les erreurs settings sont résolues.
+
+---
+
 ## Session 36 - 17 décembre 2025
 **Thème** : Maynord Calculator - Finalisation v1.0.0
 
