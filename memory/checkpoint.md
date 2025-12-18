@@ -1,5 +1,27 @@
 # GeoBrain Checkpoints
 
+## CP-20251218-1130
+```
+S:37|P:OPTIMISATION-CLAUDE-CODE|T:Config-Agents-MCP-Contexte
+F:CLAUDE.md,.claude/settings.json,.claude/agents/*,.claude/commands/*,.claude/rules/*,.mcp.json,docs/CLAUDE_CODE_OPTIMISATION.md
+W:Recherche optimisation CC complète|Structure .claude/ créée (agents,commands,rules)|3 agents spécialisés (spatial-analyst,fme-specialist,qgis-automation)|MCP config (postgres,filesystem)|CLAUDE.md enrichi maximisation contexte|Rapport optimisation 200 lignes
+N:Tester agents personnalisés|Configurer MCP avec vrais credentials|Mapper fibre_optique→tc_* (migration SDOL)|Contacter HKD POI+domaines
+X:Contexte max=délégation agents+compression+checkpoints|Agents=Haiku(Explore)/Sonnet(Plan,custom)|MCP=requêtes BDD directes|Migration SDOL checkpointée (CP-20251218-1045)
+```
+
+---
+
+## CP-20251218-1045
+```
+S:37|P:MIGRATION-SDOL|T:Mapping-Exhaustif-Complet
+F:02_mapping_exhaustif.md,03_mapping_complet_final.md,PR24-0281-contenu-geoportail.xlsx,9 projets QGIS
+W:Mapping exhaustif BY→SDOL créé|Excel SDOL analysé (thèmes/groupes/couches)|9 projets QGIS analysés|Fibre optique découverte dans PostgreSQL (pas Oracle!)|Fibre→tc_* (télécommunications)|POI=BLOQUANT (pas de table SDOL)
+N:Mapper colonnes fibre_optique→tc_*|Contacter HKD pour POI+domaines|Mapper routes/nature/TP/ouvrages|Workbenches FME
+X:fibre_optique=12 vues/tables|~40'000 objets total|6 thématiques à migrer|1 bloquant (POI)|tc_conduite+tc_elemontage=cibles fibre
+```
+
+---
+
 ## CP-20251217-1500
 ```
 S:36|P:MIGRATION-SDOL+NOTES|T:Rapports-PDF-Mail

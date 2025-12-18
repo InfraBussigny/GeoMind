@@ -1,6 +1,6 @@
-Lis les fichiers suivants et fais un résumé structuré :
-1. memory/context.md - Ce que tu sais sur le propriétaire
-2. memory/personality.md - Qui tu es et ton évolution
-3. memory/sessions.md - Historique des conversations récentes
+﻿Fais un recapitulatif complet du contexte actuel en lisant :
+1. memory/context.md
+2. memory/sessions.md (5 dernieres)
+3. memory/checkpoint.md
 
-Présente le tout de manière claire et concise.
+Presente un resume structure avec : Contexte actuel, Derniers travaux, Etat actuel, Prochaines etapes.

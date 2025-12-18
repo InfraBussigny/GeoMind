@@ -1,0 +1,33 @@
+﻿{
+  "model": "claude-opus-4-5-20251101",
+  "permissions": {
+    "allow": [
+      "Bash(git:*)",
+      "Bash(python:*)",
+      "Bash(pip:*)",
+      "Bash(powershell:*)",
+      "Read(scripts/**)",
+      "Read(memory/**)",
+      "Read(projets/**)",
+      "Read(docs/**)",
+      "Edit(scripts/**)",
+      "Edit(memory/**)",
+      "Edit(projets/**)",
+      "Write(scripts/**)",
+      "Write(memory/**)",
+      "Write(projets/**)",
+      "Write(docs/**)"
+    ],
+    "deny": [
+      "Read(.env*)",
+      "Read(**/secrets/**)",
+      "Bash(rm -rf:*)"
+    ]
+  },
+  "env": {
+    "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "16000",
+    "MAX_MCP_OUTPUT_TOKENS": "100000",
+    "GDAL_DATA": "C:\OSGeo4W\share\gdal",
+    "QGIS_PREFIX_PATH": "C:\Program Files\QGIS 3.34"
+  }
+}

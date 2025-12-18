@@ -117,17 +117,57 @@ Pour optimiser les réponses et gérer le contexte, utiliser des agents spécial
 
 | Agent | Usage | Quand l'utiliser |
 |-------|-------|------------------|
-| **Explore** | Recherche codebase | Comprendre structure, trouver fichiers, analyser patterns |
-| **Plan** | Planification | Tâches complexes, multi-fichiers, architecture |
-| **general-purpose** | Recherche approfondie | Questions ouvertes, exploration multi-sources |
+| **Explore** | Recherche codebase (Haiku, rapide) | Comprendre structure, trouver fichiers, analyser patterns |
+| **Plan** | Planification (Sonnet) | Tâches complexes, multi-fichiers, architecture |
+| **general-purpose** | Recherche approfondie (Sonnet) | Questions ouvertes, exploration multi-sources |
+| **spatial-analyst** | PostGIS/géodonnées | Requêtes SQL spatiales, SRID, validations géométriques |
+| **fme-specialist** | ETL/FME | Créer/modifier workbenches, pipelines de données |
+| **qgis-automation** | PyQGIS | Scripts d'automatisation QGIS |
 
 ### Workflow recommandé
 1. **Tâche simple** → Exécution directe
 2. **Tâche moyenne** → Explore d'abord si contexte manquant
 3. **Tâche complexe** → Plan → validation Marc → exécution
-4. **Incertitude** → Poser 1-2 questions MAX, puis proposer
+4. **Tâche géospatiale** → spatial-analyst pour PostGIS/projections
+5. **Incertitude** → Poser 1-2 questions MAX, puis proposer
 
-### Gestion du contexte
-- **Compression proactive** : Résumer les longs outputs avant de continuer
-- **Checkpoint régulier** : Sauvegarder l'état avant que le contexte sature
-- **Délégation** : Utiliser des sub-agents pour les recherches lourdes
+### MAXIMISATION DU CONTEXTE (PRIORITÉ)
+
+#### Règles d'or
+1. **Déléguer aux agents** : Toute recherche > 5 fichiers → Agent Explore
+2. **Compression proactive** : Résumer les résultats longs AVANT de continuer
+3. **Checkpoints fréquents** : Sauvegarder toutes les 30min ou après phase majeure
+4. **Parallélisation** : Lancer plusieurs Task tools dans un seul message quand possible
+
+#### Optimisation quotidienne
+- **Début session** : Lire memory/, saluer Marc avec contexte
+- **Pendant** : `/checkpoint` régulier, compression des outputs
+- **Fin** : Checkpoint final, mise à jour sessions.md
+
+#### Éviter la saturation
+- Ne PAS lire des fichiers entiers si grep/glob suffit
+- Résumer les recherches avant de passer à la suite
+- Utiliser background agents pour tâches longues (run_in_background=true)
+- Désactiver MCP servers non utilisés (`/mcp` pour voir le statut)
+
+### Structure .claude/ (configuration)
+```
+.claude/
+├── settings.json        # Config projet
+├── agents/              # Agents personnalisés
+│   ├── spatial-analyst.md
+│   ├── fme-specialist.md
+│   └── qgis-automation.md
+├── commands/            # Slash commands
+│   ├── checkpoint.md
+│   ├── memorise.md
+│   └── recap.md
+└── rules/               # Standards techniques
+    ├── postgis-standards.md
+    └── security.md
+```
+
+### MCP Servers disponibles
+Voir `.mcp.json` pour la configuration. Utiliser `/mcp` pour voir le statut.
+- **postgres-bussigny** : Requêtes directes sur la base PostgreSQL
+- **filesystem** : Navigation avancée système de fichiers
