@@ -215,7 +215,7 @@ def get_styles():
         spaceAfter=20
     ))
 
-    # Titre section H1
+    # Titre section H1 (keepWithNext évite les titres orphelins en bas de page)
     styles.add(ParagraphStyle(
         'BH1',
         parent=styles['Heading1'],
@@ -223,10 +223,11 @@ def get_styles():
         textColor=BLEU_BUSSIGNY,
         fontName='Helvetica-Bold',
         spaceBefore=16,
-        spaceAfter=8
+        spaceAfter=8,
+        keepWithNext=True
     ))
 
-    # Titre section H2
+    # Titre section H2 (keepWithNext évite les titres orphelins en bas de page)
     styles.add(ParagraphStyle(
         'BH2',
         parent=styles['Heading2'],
@@ -234,7 +235,8 @@ def get_styles():
         textColor=GRIS_FONCE,
         fontName='Helvetica-Bold',
         spaceBefore=10,
-        spaceAfter=6
+        spaceAfter=6,
+        keepWithNext=True
     ))
 
     # Texte courant

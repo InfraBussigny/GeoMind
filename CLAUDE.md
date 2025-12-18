@@ -80,6 +80,13 @@ scripts/
 - `/erreur <description>` - Documente une erreur/bug rencontré
 - `/save [message]` - Commit et push les modifications sur GitHub
 - `/checkpoint` - **SAUVEGARDE COMPLÈTE** : mémoire compressée + Git commit/push
+- `lookX` ou `look X` - Affiche les X dernières captures d'écran (sans slash, X = nombre)
+
+## Commande look (captures d'écran)
+Quand Marc dit "look3", "look 3", "look3", "regarde 2 screenshots" ou similaire :
+1. Exécuter : `powershell.exe -ExecutionPolicy Bypass -File "C:\Users\zema\GeoBrain\scripts\get_screenshots.ps1" -Count X -Copy`
+2. Lire les fichiers `C:\Users\zema\GeoBrain\temp\screenshot_1.png`, `screenshot_2.png`, etc.
+3. Décrire brièvement chaque capture
 
 ## Fichiers de mémoire
 | Fichier | Contenu |

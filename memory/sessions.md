@@ -1,3 +1,59 @@
+## Session 38 - 18 décembre 2025
+**Thème** : Migration SDOL - Analyse fichier Excel HKD + Corrections mappings
+
+### Travail effectué
+
+#### 1. Convention télétravail
+- Création demande PDF avec template Bussigny
+- Signature intégrée, format professionnel
+
+#### 2. Commande /look screenshots
+- Script PowerShell `scripts/get_screenshots.ps1`
+- Copie dernières captures dans `temp/`
+- Commande sans slash : `look1`, `look 2`, etc.
+
+#### 3. Migration SDOL - Analyse complète
+- **Fichier Excel source** : `docs/Mapping/Copie de PR24-0281-contenu-geoportail.xlsx`
+- **Découverte majeure** : Tables tc_swisscom_* réservées à Swisscom !
+- **Fibre optique BLOQUÉE** : Pas de table pour fibre communale
+- **POI BLOQUÉ** : Pas de table pti_* existante
+
+#### 4. Documents créés/mis à jour
+- `00_reference_sdol_excel.md` : Extraction complète Excel HKD (tables, domaines)
+- `RAPPORT_MIGRATION_SDOL.md` : Corrigé avec vraies infos SDOL
+- `RAPPORT_MIGRATION_SDOL_v2.pdf` : PDF corrigé avec annexes
+
+#### 5. Corrections mappings
+- Fibre optique : Marquée BLOQUÉE (demander tc_fo_conduite, tc_fo_elemontage)
+- Volumétrie : Séparée migrable (~32'650) vs en attente (~5'200)
+- Questions HKD : Ajout question prioritaire création tables fibre
+
+### Fichiers créés
+- `projets/Migration_SDOL/00_reference_sdol_excel.md`
+- `projets/Migration_SDOL/RAPPORT_MIGRATION_SDOL_v2.pdf`
+- `scripts/get_screenshots.ps1`
+
+### Fichiers modifiés
+- `projets/Migration_SDOL/RAPPORT_MIGRATION_SDOL.md`
+- `scripts/python/generate_rapport_sdol.py`
+- `CLAUDE.md` (commande look)
+
+### Points sensibles identifiés
+| Thématique | Statut | Action |
+|------------|--------|--------|
+| Assainissement | ✅ OK | 23+ tables EU disponibles |
+| Routes | ✅ OK | 14 tables MOB disponibles |
+| Nature | ✅ OK | 10 tables EN disponibles |
+| TP | ✅ OK | 4 tables TP disponibles |
+| Ouvrages | ✅ OK | 2 tables OA disponibles |
+| **Fibre optique** | ⚠️ BLOQUÉ | Demander création tc_fo_* |
+| **POI** | ⚠️ BLOQUÉ | Demander création pti_* |
+
+### Prochaine étape
+Envoyer rapport à HKD pour obtenir création des tables manquantes
+
+---
+
 ## Session 37 - 18 décembre 2025
 **Thème** : Correction fichiers settings Claude Code
 
