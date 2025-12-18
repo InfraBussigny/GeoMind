@@ -1,5 +1,16 @@
 # GeoBrain Checkpoints
 
+## CP-20251218-1430
+```
+S:38|P:MIGRATION-SDOL|T:Analyse-Excel-HKD-Corrections
+F:00_reference_sdol_excel.md,RAPPORT_v2.pdf,06_routes.md,07_tp.md,08_ouvrages.md,generate_rapport_sdol.py,get_screenshots.ps1
+W:Excel HKD analysé|tc_*=Swisscom(pas fibre communale!)|Fibre BLOQUÉE|POI BLOQUÉ|Rapport PDF corrigé|Volumétrie séparée(migrable/bloqué)|Commande look screenshots
+N:Envoyer rapport HKD|Demander création tc_fo_conduite+tc_fo_elemontage|Demander création pti_*
+X:23 tables EU|14 tables MOB|10 tables EN|4 tables TP|2 tables OA|~32'650 migrables|~5'200 bloqués|Git a72cbc1
+```
+
+---
+
 ## CP-20251218-1130
 ```
 S:37|P:OPTIMISATION-CLAUDE-CODE|T:Config-Agents-MCP-Contexte

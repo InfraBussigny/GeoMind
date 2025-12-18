@@ -13,7 +13,30 @@ from reportlab.platypus import Paragraph, Spacer, Table, TableStyle, KeepTogethe
 from reportlab.lib.units import cm
 from reportlab.lib import colors
 
-OUTPUT_PATH = r"C:\Users\zema\GeoBrain\projets\Migration_SDOL\RAPPORT_MIGRATION_SDOL_v2.pdf"
+OUTPUT_PATH = r"C:\Users\zema\GeoBrain\projets\Migration_SDOL\RAPPORT_MIGRATION_SDOL_v5.pdf"
+
+def create_annexe_table(data, colWidths):
+    """Crée un tableau d'annexe avec style standard"""
+    t = Table(data, colWidths=colWidths)
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), BLEU_BUSSIGNY),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+    ]))
+    return t
+
+def create_annexe_section(styles, title, subtitle, data, colWidths=[5*cm, 4*cm, 6*cm]):
+    """Crée une section d'annexe complète avec KeepTogether pour éviter les coupures"""
+    section_elements = [
+        Paragraph(title, styles['BH1']),
+        Paragraph(subtitle, styles['BBody']),
+        create_annexe_table(data, colWidths),
+        Spacer(1, 0.4 * cm)
+    ]
+    return KeepTogether(section_elements)
 
 def generate():
     doc = BussignyDocTemplate(
@@ -155,40 +178,48 @@ def generate():
     elements.append(t_vol)
     elements.append(Spacer(1, 0.3 * cm))
 
-    # Section 5 - Questions
+    # Section 5 - Points clarifiés
     elements.append(PageBreak())
-    elements.append(Paragraph("5. Questions à clarifier", styles['BH1']))
+    elements.append(Paragraph("5. Points clarifiés", styles['BH1']))
 
-    elements.append(Paragraph("<b>Structures et domaines :</b>", styles['BBody']))
-    elements.append(Paragraph("1. Structure exacte des tables SDOL (colonnes, types, contraintes) ?", styles['BBullet']))
-    elements.append(Paragraph("2. Liste exhaustive des valeurs de domaines acceptées ?", styles['BBullet']))
-    elements.append(Paragraph("3. Valeur data_owner : 'BY' ou 'Bussigny' ou code OFS ?", styles['BBullet']))
+    elements.append(Paragraph("<b>✓ Informations extraites du fichier Excel SDOL :</b>", styles['BBody']))
+    elements.append(Paragraph("• <b>data_owner</b> = 'by' (minuscules, 2 lettres - pattern des schémas)", styles['BBullet']))
+    elements.append(Paragraph("• <b>Domaines</b> : Liste complète extraite avec occurrences réelles", styles['BBullet']))
+    elements.append(Paragraph("• <b>Structure tables</b> : Colonnes documentées (voir annexe)", styles['BBullet']))
     elements.append(Spacer(1, 0.2 * cm))
 
+    elements.append(Paragraph("<b>Principales valeurs de domaines (basées sur données réelles) :</b>", styles['BBody']))
+    elements.append(Paragraph("• eu_chambre.accessibilite : 'accessible' (majoritaire), 'enterré'", styles['BBullet']))
+    elements.append(Paragraph("• eu_collecteur.fonction : 'collecteur', 'caniveau', 'drainage'", styles['BBullet']))
+    elements.append(Paragraph("• eu_collecteur.ecoulem : 'gravitaire', 'libre' (majoritaires)", styles['BBullet']))
+    elements.append(Paragraph("• eu_collecteur.precis_pl : 'approximatif', 'supposé', 'relevé'", styles['BBullet']))
+    elements.append(Spacer(1, 0.3 * cm))
+
+    elements.append(Paragraph("6. Points à clarifier", styles['BH1']))
+
     elements.append(Paragraph("<b>Conversions géométriques :</b>", styles['BBody']))
-    elements.append(Paragraph("4. Ouvrages Point/Ligne → Polygon via ST_Buffer : acceptable ?", styles['BBullet']))
-    elements.append(Paragraph("5. Parcours nature : table en_nat_liaison ou mob_chem_ped_l ?", styles['BBullet']))
+    elements.append(Paragraph("1. Ouvrages Point/Ligne → Polygon via ST_Buffer : acceptable ?", styles['BBullet']))
+    elements.append(Paragraph("2. Parcours nature : table en_nat_liaison ou mob_chem_ped_l ?", styles['BBullet']))
     elements.append(Spacer(1, 0.2 * cm))
 
     elements.append(Paragraph("<b>Tables manquantes (PRIORITAIRE) :</b>", styles['BBody']))
-    elements.append(Paragraph("6. Création de tables tc_fo_conduite et tc_fo_elemontage pour la fibre communale ?", styles['BBullet']))
-    elements.append(Paragraph("7. Création d'une table pti_* pour les points d'intérêt ?", styles['BBullet']))
-    elements.append(Paragraph("8. Colonnes BY sans équivalent SDOL : ignorer ou stocker dans remarque ?", styles['BBullet']))
+    elements.append(Paragraph("3. <b>Création tables tc_fo_conduite et tc_fo_elemontage</b> pour la fibre communale ?", styles['BBullet']))
+    elements.append(Paragraph("4. <b>Création table pti_*</b> pour les points d'intérêt ?", styles['BBullet']))
+    elements.append(Paragraph("5. Colonnes BY sans équivalent SDOL : ignorer ou stocker dans remarque ?", styles['BBullet']))
     elements.append(Spacer(1, 0.2 * cm))
 
     elements.append(Paragraph("<b>Processus :</b>", styles['BBody']))
-    elements.append(Paragraph("9. Fréquence de synchronisation : one-shot ou périodique ?", styles['BBullet']))
-    elements.append(Paragraph("10. Qui valide après migration ?", styles['BBullet']))
-    elements.append(Paragraph("11. Procédure de test/recette ?", styles['BBullet']))
+    elements.append(Paragraph("6. Fréquence de synchronisation : one-shot ou périodique ?", styles['BBullet']))
+    elements.append(Paragraph("7. Critères de validation des données migrées ?", styles['BBullet']))
+    elements.append(Paragraph("8. Procédure de test/recette ?", styles['BBullet']))
     elements.append(Spacer(1, 0.3 * cm))
 
-    # Section 6 - Prochaines étapes
-    elements.append(Paragraph("6. Prochaines étapes", styles['BH1']))
+    # Section 7 - Prochaines étapes
+    elements.append(Paragraph("7. Prochaines étapes", styles['BH1']))
 
-    elements.append(Paragraph("<b>Phase 1 - Validation</b>", styles['BBody']))
-    elements.append(Paragraph("• Obtenir réponses aux questions ci-dessus", styles['BBullet']))
-    elements.append(Paragraph("• Valider domaines de valeurs avec HKD", styles['BBullet']))
-    elements.append(Paragraph("• Confirmer création table POI", styles['BBullet']))
+    elements.append(Paragraph("<b>Phase 1 - Clarification</b>", styles['BBody']))
+    elements.append(Paragraph("• Clarifier les 8 points ci-dessus", styles['BBullet']))
+    elements.append(Paragraph("• Demander création tables fibre (tc_fo_*) et POI (pti_*)", styles['BBullet']))
     elements.append(Spacer(1, 0.2 * cm))
 
     elements.append(Paragraph("<b>Phase 2 - Développement</b>", styles['BBody']))
@@ -197,22 +228,22 @@ def generate():
     elements.append(Paragraph("• Tester sur échantillons (10 objets par type)", styles['BBullet']))
     elements.append(Spacer(1, 0.2 * cm))
 
-    elements.append(Paragraph("<b>Phase 3 - Migration</b>", styles['BBody']))
+    elements.append(Paragraph("<b>Phase 3 - Migration et validation</b>", styles['BBody']))
     elements.append(Paragraph("• Migration données de test", styles['BBullet']))
     elements.append(Paragraph("• Validation visuelle dans Carto Ouest", styles['BBullet']))
-    elements.append(Paragraph("• Migration complète", styles['BBullet']))
-    elements.append(Paragraph("• Documentation post-migration", styles['BBullet']))
+    elements.append(Paragraph("• Migration complète (~32'650 objets)", styles['BBullet']))
     elements.append(Spacer(1, 0.5 * cm))
 
-    # Section 7 - Fichiers
+    # Section 8 - Fichiers
     elements.append(create_separator())
     elements.append(Spacer(1, 0.3 * cm))
-    elements.append(Paragraph("7. Fichiers de référence", styles['BH1']))
+    elements.append(Paragraph("8. Fichiers de référence", styles['BH1']))
 
     data_files = [
         ["Fichier", "Contenu"],
-        ["00_reference_sdol_excel.md", "Tables et domaines SDOL (extrait Excel HKD)"],
-        ["mapping_bussigny_sdol.md", "Assainissement (détaillé avec domaines)"],
+        ["00_reference_sdol_excel.md", "Tables et domaines SDOL (extrait Excel)"],
+        ["09_reponses_questions.md", "Points clarifiés (auto-découverts)"],
+        ["mapping_bussigny_sdol.md", "Assainissement (détaillé)"],
         ["04_mapping_fibre_optique.md", "Fibre optique (BLOQUÉ)"],
         ["05_mapping_nature.md", "Nature (arbres, parcours)"],
         ["06_mapping_routes.md", "Routes et mobilité"],
@@ -236,8 +267,6 @@ def generate():
     elements.append(Spacer(1, 0.5 * cm))
 
     # A1 - Assainissement Chambres
-    elements.append(Paragraph("A1. Assainissement - Chambres", styles['BH1']))
-    elements.append(Paragraph("<b>by_ass_chambre → eu_chambre</b>", styles['BBody']))
     data_ass_ch = [
         ["Source BY", "Cible SDOL", "Transformation"],
         ["designation", "no_obj", "Direct"],
@@ -264,21 +293,10 @@ def generate():
         ["-", "coord_est", "ST_X(geom)"],
         ["-", "data_owner", "'by'"],
     ]
-    t = Table(data_ass_ch, colWidths=[5*cm, 4*cm, 6*cm])
-    t.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), BLEU_BUSSIGNY),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-    ]))
-    elements.append(t)
-    elements.append(Spacer(1, 0.4 * cm))
+    elements.append(create_annexe_section(styles, "A1. Assainissement - Chambres",
+                                          "<b>by_ass_chambre → eu_chambre</b>", data_ass_ch))
 
     # A2 - Assainissement Collecteurs
-    elements.append(Paragraph("A2. Assainissement - Collecteurs", styles['BH1']))
-    elements.append(Paragraph("<b>by_ass_collecteur → eu_collecteur</b>", styles['BBody']))
     data_ass_col = [
         ["Source BY", "Cible SDOL", "Transformation"],
         ["materiau", "materiau", "Domaine"],
@@ -301,22 +319,11 @@ def generate():
         ["-", "length", "ST_Length(geom)"],
         ["-", "data_owner", "'by'"],
     ]
-    t = Table(data_ass_col, colWidths=[5*cm, 4*cm, 6*cm])
-    t.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), BLEU_BUSSIGNY),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-    ]))
-    elements.append(t)
-    elements.append(Spacer(1, 0.4 * cm))
+    elements.append(create_annexe_section(styles, "A2. Assainissement - Collecteurs",
+                                          "<b>by_ass_collecteur → eu_collecteur</b>", data_ass_col))
 
     # A3 - Fibre optique linéaires
     elements.append(PageBreak())
-    elements.append(Paragraph("A3. Fibre optique - Conduites", styles['BH1']))
-    elements.append(Paragraph("<b>fo_segment, fo_tube_geo, fo_cable_geo → tc_conduite</b>", styles['BBody']))
     data_fo_lin = [
         ["Source BY", "Cible SDOL", "Transformation"],
         ["numero", "no_obj", "Direct"],
@@ -336,21 +343,11 @@ def generate():
         ["-", "pk_uuid", "gen_random_uuid()"],
         ["-", "data_owner", "'BY'"],
     ]
-    t = Table(data_fo_lin, colWidths=[5.5*cm, 4*cm, 5.5*cm])
-    t.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), BLEU_BUSSIGNY),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-    ]))
-    elements.append(t)
-    elements.append(Spacer(1, 0.4 * cm))
+    elements.append(create_annexe_section(styles, "A3. Fibre optique - Conduites (BLOQUÉ)",
+                                          "<b>fo_segment, fo_tube_geo, fo_cable_geo → tc_fo_conduite</b>",
+                                          data_fo_lin, [5.5*cm, 4*cm, 5.5*cm]))
 
     # A4 - Fibre optique ponctuels
-    elements.append(Paragraph("A4. Fibre optique - Éléments de montage", styles['BH1']))
-    elements.append(Paragraph("<b>fo_chambre, fo_armoire, fo_manchon, fo_point_livraison → tc_elemontage</b>", styles['BBody']))
     data_fo_pt = [
         ["Source BY", "Cible SDOL", "Transformation"],
         ["numero", "no_obj", "Direct"],
@@ -367,21 +364,11 @@ def generate():
         ["-", "pk_uuid", "gen_random_uuid()"],
         ["-", "data_owner", "'BY'"],
     ]
-    t = Table(data_fo_pt, colWidths=[5.5*cm, 4*cm, 5.5*cm])
-    t.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), BLEU_BUSSIGNY),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-    ]))
-    elements.append(t)
-    elements.append(Spacer(1, 0.4 * cm))
+    elements.append(create_annexe_section(styles, "A4. Fibre optique - Éléments (BLOQUÉ)",
+                                          "<b>fo_chambre, fo_armoire, fo_manchon, fo_point_livraison → tc_fo_elemontage</b>",
+                                          data_fo_pt, [5.5*cm, 4*cm, 5.5*cm]))
 
-    # A5 - Nature
-    elements.append(Paragraph("A5. Nature", styles['BH1']))
-    elements.append(Paragraph("<b>by_nat_arbre_vergers → en_arbre_p</b>", styles['BBody']))
+    # A5 - Nature (2 sous-sections)
     data_nat_arbre = [
         ["Source BY", "Cible SDOL", "Transformation"],
         ["numero", "no_obj", "Direct"],
@@ -394,18 +381,9 @@ def generate():
         ["-", "pk_uuid", "gen_random_uuid()"],
         ["-", "data_owner", "'BY'"],
     ]
-    t = Table(data_nat_arbre, colWidths=[5*cm, 4*cm, 6*cm])
-    t.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), BLEU_BUSSIGNY),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-    ]))
-    elements.append(t)
-    elements.append(Spacer(1, 0.3 * cm))
+    elements.append(create_annexe_section(styles, "A5. Nature - Arbres",
+                                          "<b>by_nat_arbre_vergers → en_arbre_p</b>", data_nat_arbre))
 
-    elements.append(Paragraph("<b>by_nat_parcours_nature → en_nat_liaison</b>", styles['BBody']))
     data_nat_parc = [
         ["Source BY", "Cible SDOL", "Transformation"],
         ["gid", "no_obj", "Cast texte"],
@@ -417,21 +395,11 @@ def generate():
         ["-", "pk_uuid", "gen_random_uuid()"],
         ["-", "data_owner", "'BY'"],
     ]
-    t = Table(data_nat_parc, colWidths=[5*cm, 4*cm, 6*cm])
-    t.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), BLEU_BUSSIGNY),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-    ]))
-    elements.append(t)
-    elements.append(Spacer(1, 0.4 * cm))
+    elements.append(create_annexe_section(styles, "A5b. Nature - Parcours",
+                                          "<b>by_nat_parcours_nature → en_nat_liaison</b>", data_nat_parc))
 
-    # A6 - Routes
+    # A6 - Routes (3 sous-sections)
     elements.append(PageBreak())
-    elements.append(Paragraph("A6. Routes", styles['BH1']))
-    elements.append(Paragraph("<b>by_rte_troncon → mob_rte_classe_tr</b>", styles['BBody']))
     data_rte = [
         ["Source BY", "Cible SDOL", "Transformation"],
         ["gid", "no_obj", "Cast texte"],
@@ -449,18 +417,9 @@ def generate():
         ["-", "pk_uuid", "gen_random_uuid()"],
         ["-", "data_owner", "'BY'"],
     ]
-    t = Table(data_rte, colWidths=[5*cm, 4*cm, 6*cm])
-    t.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), BLEU_BUSSIGNY),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-    ]))
-    elements.append(t)
-    elements.append(Spacer(1, 0.3 * cm))
+    elements.append(create_annexe_section(styles, "A6. Routes - Classification",
+                                          "<b>by_rte_troncon → mob_rte_classe_tr</b>", data_rte))
 
-    elements.append(Paragraph("<b>by_rte_troncon → mob_rte_etat_tr</b>", styles['BBody']))
     data_rte_etat = [
         ["Source BY", "Cible SDOL", "Transformation"],
         ["gid", "no_obj", "Cast texte"],
@@ -472,18 +431,9 @@ def generate():
         ["geom", "geom", "Direct (LineString)"],
         ["-", "data_owner", "'BY'"],
     ]
-    t = Table(data_rte_etat, colWidths=[5*cm, 4*cm, 6*cm])
-    t.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), BLEU_BUSSIGNY),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-    ]))
-    elements.append(t)
-    elements.append(Spacer(1, 0.3 * cm))
+    elements.append(create_annexe_section(styles, "A6b. Routes - État",
+                                          "<b>by_rte_troncon → mob_rte_etat_tr</b>", data_rte_etat))
 
-    elements.append(Paragraph("<b>by_rte_vitesse → mob_rte_restri_tr</b>", styles['BBody']))
     data_rte_vit = [
         ["Source BY", "Cible SDOL", "Transformation"],
         ["gid", "no_obj", "Cast texte"],
@@ -493,20 +443,10 @@ def generate():
         ["geom", "geom", "Direct (LineString)"],
         ["-", "data_owner", "'BY'"],
     ]
-    t = Table(data_rte_vit, colWidths=[5*cm, 4*cm, 6*cm])
-    t.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), BLEU_BUSSIGNY),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-    ]))
-    elements.append(t)
-    elements.append(Spacer(1, 0.4 * cm))
+    elements.append(create_annexe_section(styles, "A6c. Routes - Restrictions vitesse",
+                                          "<b>by_rte_vitesse → mob_rte_restri_tr</b>", data_rte_vit))
 
     # A7 - Transports publics
-    elements.append(Paragraph("A7. Transports publics", styles['BH1']))
-    elements.append(Paragraph("<b>by_transport_public_a → tp_bus_s</b>", styles['BBody']))
     data_tp = [
         ["Source BY", "Cible SDOL", "Transformation"],
         ["gid", "no_obj", "Cast texte"],
@@ -517,20 +457,10 @@ def generate():
         ["-", "pk_uuid", "gen_random_uuid()"],
         ["-", "data_owner", "'BY'"],
     ]
-    t = Table(data_tp, colWidths=[5*cm, 4*cm, 6*cm])
-    t.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), BLEU_BUSSIGNY),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-    ]))
-    elements.append(t)
-    elements.append(Spacer(1, 0.4 * cm))
+    elements.append(create_annexe_section(styles, "A7. Transports publics",
+                                          "<b>by_transport_public_a → tp_bus_s</b>", data_tp))
 
     # A8 - Ouvrages d'art
-    elements.append(Paragraph("A8. Ouvrages d'art", styles['BH1']))
-    elements.append(Paragraph("<b>by_ouvrages_speciaux_* → oa_ouvart_s</b>", styles['BBody']))
     data_oa = [
         ["Source BY", "Cible SDOL", "Transformation"],
         ["gid", "no_obj", "Cast texte"],
@@ -546,15 +476,8 @@ def generate():
         ["-", "pk_uuid", "gen_random_uuid()"],
         ["-", "data_owner", "'BY'"],
     ]
-    t = Table(data_oa, colWidths=[5*cm, 4*cm, 6*cm])
-    t.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), BLEU_BUSSIGNY),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-    ]))
-    elements.append(t)
+    elements.append(create_annexe_section(styles, "A8. Ouvrages d'art",
+                                          "<b>by_ouvrages_speciaux_* → oa_ouvart_s</b>", data_oa))
 
     # Générer
     doc.build(elements)

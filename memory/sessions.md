@@ -1,5 +1,30 @@
-## Session 38 - 18 décembre 2025
-**Thème** : Migration SDOL - Analyse fichier Excel HKD + Corrections mappings
+## Session 38 (en cours) - 18 décembre 2025
+**Thème** : Migration SDOL - Analyse complète
+
+### EN SUSPENS - À reprendre
+
+#### Question ouverte : Type d'eau pour les chambres
+- `by_ass_collecteur.genre_utilisation` → mapping direct vers `contenu` SDOL ✅
+- `by_ass_chambre` → **PAS d'attribut direct** pour le type d'eau ⚠️
+- `no_troncon_entree/sortie` = compteurs, pas des FK
+
+**Options à explorer :**
+1. Jointure spatiale chambre ↔ collecteur (ST_Intersects)
+2. Valeur par défaut selon `genre_chambre`
+3. Regarder comment c'est fait dans les workbenches FME existants
+
+#### Valeurs découvertes (base Prod srv-fme)
+| Table | Attribut | Valeurs |
+|-------|----------|---------|
+| by_ass_collecteur | genre_utilisation | Eaux claires (9818), Eaux usées (5062), Eaux mixtes (151) |
+| by_ass_chambre | fonction_hydro | (vide) 6801, Collecte eaux surface 1213 |
+| by_ass_chambre | genre_chambre | Chambre visite 3872, Cheneau 1923, Sac-Grille 1709... |
+
+#### Rapport PDF
+- Version actuelle : **v5** (sans mentions HKD)
+- KeepTogether sur tableaux annexe ✅
+
+---
 
 ### Travail effectué
 
