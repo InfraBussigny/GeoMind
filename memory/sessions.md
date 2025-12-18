@@ -28,6 +28,28 @@
 
 ### Travail effectué
 
+#### 0. Projet QGIS Inspection Collecteurs (après-midi)
+**Problème** : Dates d'inspection sans ordre garanti (date_2 pas toujours > date_1), formules QGIS complexes avec if imbriqués.
+
+**Solution** : Vue PostgreSQL `assainissement.v_ass_collecteur_inspection`
+- Champs calculés : `date_derniere_inspection`, `nb_inspections`, `jours_depuis_inspection`, `annee_derniere_inspection`
+- Projet QGIS v2 modifié pour utiliser la vue
+- 20 collecteurs avec dates inversées corrigés automatiquement
+
+**Documents générés** :
+| Document | Version | Contenu |
+|----------|---------|---------|
+| Rapport statistiques | v7 | Graphiques bar charts cohérents, mise en page structurée |
+| Documentation utilisateur | v3 | Guide pour non-spécialistes |
+| Note technique | v3 | Explication du problème (formules if imbriquées) |
+
+**Scripts créés** :
+- `scripts/python/generate_rapport_inspection.py`
+- `scripts/python/generate_doc_qgis_inspection.py`
+- `scripts/python/generate_note_technique_qgis.py`
+
+**Stats clés** : 70.71 km réseau total, 38.19 km inspectés (54%), 308 collecteurs avec 2 inspections
+
 #### 1. Convention télétravail
 - Création demande PDF avec template Bussigny
 - Signature intégrée, format professionnel

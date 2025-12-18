@@ -106,6 +106,15 @@ S:[session]|P:[phase]|T:[theme]
 F:[fichiers]|W:[work]|N:[next]|X:[extra]
 ```
 
+### Procédure checkpoint COMPLÈTE
+À chaque `/checkpoint`, mettre à jour **TOUS** les fichiers mémoire :
+
+1. **checkpoint.md** : Ajouter nouveau CP-* en format compact
+2. **sessions.md** : Ajouter/compléter les travaux de la session en cours
+3. **context.md** : Ajouter infos techniques réutilisables (vues SQL, procédures, stats)
+4. **corrections.md** : Documenter erreurs/bugs rencontrés (si applicable)
+5. **Git** : `git add -A && git commit -m "checkpoint: [theme]" && git push`
+
 ### Sauvegarde automatique
 - **Manuelle** : `/checkpoint` à tout moment
 - **Auto** : Toutes les 30 min de travail actif OU après chaque phase majeure

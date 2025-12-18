@@ -400,6 +400,25 @@ npm install @turf/turf          # (Optionnel) Validation géométries
 - Fabric.js docs : https://fabricjs.com/docs/
 - DXF writer : https://dxf.vercel.app/
 
+## Vues PostgreSQL utiles
+
+### Vue inspection collecteurs
+**Vue** : `assainissement.v_ass_collecteur_inspection`
+
+Calcule automatiquement la date d'inspection la plus récente (sans if imbriqués QGIS).
+
+| Champ calculé | Description |
+|---------------|-------------|
+| `date_derniere_inspection` | GREATEST(date_inspection_1, date_inspection_2) |
+| `date_premiere_inspection` | LEAST(date_inspection_1, date_inspection_2) |
+| `nb_inspections` | 0, 1 ou 2 |
+| `jours_depuis_inspection` | CURRENT_DATE - date_derniere_inspection |
+| `annee_derniere_inspection` | EXTRACT(YEAR FROM date_derniere_inspection) |
+
+**Projet QGIS** : `M:\...\703211_Projets\Ass_Collecteurs_inspection_v2.qgz`
+
+---
+
 ## Ressources graphiques
 
 ### Logos Bussigny
