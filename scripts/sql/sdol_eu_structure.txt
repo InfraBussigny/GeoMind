@@ -1,0 +1,1703 @@
+          table_name           |     column_name      |     data_type     | is_nullable 
+-------------------------------+----------------------+-------------------+-------------
+ eu_bassin_versant             | gid                  | integer           | NO
+ eu_bassin_versant             | no_obj               | character         | YES
+ eu_bassin_versant             | no_obj2              | character         | YES
+ eu_bassin_versant             | contenu              | character         | YES
+ eu_bassin_versant             | utilisat             | character         | YES
+ eu_bassin_versant             | proprio              | character         | YES
+ eu_bassin_versant             | precis_pl            | character         | YES
+ eu_bassin_versant             | no_ssbv              | character         | YES
+ eu_bassin_versant             | sys_evac             | character         | YES
+ eu_bassin_versant             | sys_evac_fut         | character         | YES
+ eu_bassin_versant             | evac_ec              | character         | YES
+ eu_bassin_versant             | evac_ec_fut          | character         | YES
+ eu_bassin_versant             | pente_pc             | double precision  | YES
+ eu_bassin_versant             | nb_ehdom_act         | double precision  | YES
+ eu_bassin_versant             | nb_ehtot_act         | double precision  | YES
+ eu_bassin_versant             | nb_ehdom_sat         | double precision  | YES
+ eu_bassin_versant             | nb_ehtot_sat         | double precision  | YES
+ eu_bassin_versant             | cr_act               | double precision  | YES
+ eu_bassin_versant             | cr_sat               | double precision  | YES
+ eu_bassin_versant             | qmax_constr          | double precision  | YES
+ eu_bassin_versant             | qmax_ssbv            | double precision  | YES
+ eu_bassin_versant             | area_satred_ha       | double precision  | YES
+ eu_bassin_versant             | obj_lie              | character         | YES
+ eu_bassin_versant             | d_coordn             | double precision  | YES
+ eu_bassin_versant             | d_coorde             | double precision  | YES
+ eu_bassin_versant             | d_color              | character         | YES
+ eu_bassin_versant             | d_size               | double precision  | YES
+ eu_bassin_versant             | remarque             | character         | YES
+ eu_bassin_versant             | maj_date             | date              | YES
+ eu_bassin_versant             | area                 | double precision  | YES
+ eu_bassin_versant             | geom                 | USER-DEFINED      | YES
+ eu_bassin_versant             | pk_uuid              | uuid              | NO
+ eu_bassin_versant             | data_owner           | character varying | YES
+ eu_ce_tr                      | gid                  | integer           | NO
+ eu_ce_tr                      | nom_ce               | character         | YES
+ eu_ce_tr                      | no_tr                | character         | YES
+ eu_ce_tr                      | etat_tr              | character         | YES
+ eu_ce_tr                      | morphologie_lit      | character         | YES
+ eu_ce_tr                      | etat_berge           | character         | YES
+ eu_ce_tr                      | etat_dyn             | character         | YES
+ eu_ce_tr                      | rempl_proj_an        | integer           | YES
+ eu_ce_tr                      | estim_date           | date              | YES
+ eu_ce_tr                      | etat_constr          | character varying | YES
+ eu_ce_tr                      | remarque             | character varying | YES
+ eu_ce_tr                      | hierarchie           | character varying | YES
+ eu_ce_tr                      | maj_date             | date              | YES
+ eu_ce_tr                      | length               | double precision  | YES
+ eu_ce_tr                      | geom                 | USER-DEFINED      | YES
+ eu_ce_tr                      | pk_uuid              | uuid              | NO
+ eu_ce_tr                      | data_owner           | character varying | YES
+ eu_chambre                    | gid                  | integer           | NO
+ eu_chambre                    | no_obj               | character         | YES
+ eu_chambre                    | no_obj_2             | character         | YES
+ eu_chambre                    | contenu              | character         | YES
+ eu_chambre                    | utilisat             | character         | YES
+ eu_chambre                    | proprio              | character         | YES
+ eu_chambre                    | nom_comm             | character         | YES
+ eu_chambre                    | no_comm              | character         | YES
+ eu_chambre                    | coord_nord           | double precision  | YES
+ eu_chambre                    | coord_est            | double precision  | YES
+ eu_chambre                    | mode_acqui           | character         | YES
+ eu_chambre                    | precis_pl            | character         | YES
+ eu_chambre                    | fonction             | character         | YES
+ eu_chambre                    | hierarchie           | character         | YES
+ eu_chambre                    | accessibilite        | character         | YES
+ eu_chambre                    | proprio_chgt         | boolean           | YES
+ eu_chambre                    | ch_dbl_on            | boolean           | YES
+ eu_chambre                    | alt_couv             | double precision  | YES
+ eu_chambre                    | alt_radi             | double precision  | YES
+ eu_chambre                    | profondeur           | double precision  | YES
+ eu_chambre                    | fond_mtx             | character         | YES
+ eu_chambre                    | cheminee_mtx         | character         | YES
+ eu_chambre                    | contenu_fut          | character         | YES
+ eu_chambre                    | ref_dossier          | character         | YES
+ eu_chambre                    | ref_plan             | character         | YES
+ eu_chambre                    | constr_an            | integer           | YES
+ eu_chambre                    | insp_date            | date              | YES
+ eu_chambre                    | insp_interv          | double precision  | YES
+ eu_chambre                    | etat_constr          | character         | YES
+ eu_chambre                    | necess_ass           | character         | YES
+ eu_chambre                    | curage_date          | date              | YES
+ eu_chambre                    | curage_int           | double precision  | YES
+ eu_chambre                    | curage_on            | boolean           | YES
+ eu_chambre                    | sct_interv           | character         | YES
+ eu_chambre                    | diam_couv            | double precision  | YES
+ eu_chambre                    | diam_chambre         | double precision  | YES
+ eu_chambre                    | remarque             | character         | YES
+ eu_chambre                    | an_rem_proj          | character         | YES
+ eu_chambre                    | type_ouvr            | character         | YES
+ eu_chambre                    | type_couv            | character         | YES
+ eu_chambre                    | crea_date            | date              | YES
+ eu_chambre                    | releve_date          | date              | YES
+ eu_chambre                    | releve_geom_date     | date              | YES
+ eu_chambre                    | releve_tech_date     | date              | YES
+ eu_chambre                    | rempl_proj_an        | integer           | YES
+ eu_chambre                    | maj_aut              | character varying | YES
+ eu_chambre                    | crea_fiche_aut       | character varying | YES
+ eu_chambre                    | crea_fiche_date      | date              | YES
+ eu_chambre                    | estim_date           | date              | YES
+ eu_chambre                    | dim_ch               | character varying | YES
+ eu_chambre                    | couv_mtx             | character varying | YES
+ eu_chambre                    | chem_mtx             | character varying | YES
+ eu_chambre                    | maj_date             | date              | YES
+ eu_chambre                    | file1                | character         | YES
+ eu_chambre                    | lien1qgis            | character         | YES
+ eu_chambre                    | lien1gmf             | character         | YES
+ eu_chambre                    | file2                | character         | YES
+ eu_chambre                    | lien2qgis            | character         | YES
+ eu_chambre                    | lien2gmf             | character         | YES
+ eu_chambre                    | file3                | character         | YES
+ eu_chambre                    | lien3qgis            | character         | YES
+ eu_chambre                    | lien3gmf             | character         | YES
+ eu_chambre                    | file4                | character         | YES
+ eu_chambre                    | lien4qgis            | character         | YES
+ eu_chambre                    | lien4gmf             | character         | YES
+ eu_chambre                    | geom                 | USER-DEFINED      | YES
+ eu_chambre                    | pk_uuid              | uuid              | NO
+ eu_chambre                    | data_owner           | character varying | YES
+ eu_chambre_action             | gid                  | integer           | NO
+ eu_chambre_action             | action_type          | character         | YES
+ eu_chambre_action             | action_date          | date              | YES
+ eu_chambre_action             | action_entr          | character         | YES
+ eu_chambre_action             | action_ref           | character         | YES
+ eu_chambre_action             | utilisat             | character         | YES
+ eu_chambre_action             | chantier             | character         | YES
+ eu_chambre_action             | act_couts_chf        | integer           | YES
+ eu_chambre_action             | act_couts_reels_chf  | integer           | YES
+ eu_chambre_action             | act_couts_debiteur   | character         | YES
+ eu_chambre_action             | action_prio          | character         | YES
+ eu_chambre_action             | remarque             | character         | YES
+ eu_chambre_action             | maj_date             | date              | YES
+ eu_chambre_action             | file1                | character         | YES
+ eu_chambre_action             | lien1qgis            | character         | YES
+ eu_chambre_action             | lien1gmf             | character         | YES
+ eu_chambre_action             | file2                | character         | YES
+ eu_chambre_action             | lien2qgis            | character         | YES
+ eu_chambre_action             | lien2gmf             | character         | YES
+ eu_chambre_action             | pk_uuid              | uuid              | NO
+ eu_chambre_action             | fk_chambre           | uuid              | YES
+ eu_chambre_action             | data_owner           | character varying | YES
+ eu_chambre_etat               | gid                  | integer           | NO
+ eu_chambre_etat               | etat_constr          | character         | YES
+ eu_chambre_etat               | necess_ass           | character         | YES
+ eu_chambre_etat               | etat_date            | date              | YES
+ eu_chambre_etat               | remarque             | character         | YES
+ eu_chambre_etat               | maj_date             | date              | YES
+ eu_chambre_etat               | file1                | character         | YES
+ eu_chambre_etat               | lien1qgis            | character         | YES
+ eu_chambre_etat               | lien1gmf             | character         | YES
+ eu_chambre_etat               | file2                | character         | YES
+ eu_chambre_etat               | lien2qgis            | character         | YES
+ eu_chambre_etat               | lien2gmf             | character         | YES
+ eu_chambre_etat               | pk_uuid              | uuid              | NO
+ eu_chambre_etat               | fk_chambre           | uuid              | YES
+ eu_chambre_etat               | data_owner           | character varying | YES
+ eu_coll_serv_l                | gid                  | integer           | NO
+ eu_coll_serv_l                | id_servitude         | character         | YES
+ eu_coll_serv_l                | servitude_type       | character         | YES
+ eu_coll_serv_l                | precis_pl            | character         | YES
+ eu_coll_serv_l                | proprio_chgt_doss    | character         | YES
+ eu_coll_serv_l                | utilisat             | character         | YES
+ eu_coll_serv_l                | maj_date             | date              | YES
+ eu_coll_serv_l                | length               | double precision  | YES
+ eu_coll_serv_l                | file1                | character         | YES
+ eu_coll_serv_l                | lien1qgis            | character         | YES
+ eu_coll_serv_l                | lien1gmf             | character         | YES
+ eu_coll_serv_l                | file2                | character         | YES
+ eu_coll_serv_l                | lien2qgis            | character         | YES
+ eu_coll_serv_l                | lien2gmf             | character         | YES
+ eu_coll_serv_l                | geom                 | USER-DEFINED      | YES
+ eu_coll_serv_l                | pk_uuid              | uuid              | NO
+ eu_coll_serv_l                | data_owner           | character varying | YES
+ eu_collecteur                 | gid                  | integer           | NO
+ eu_collecteur                 | no_obj               | character         | YES
+ eu_collecteur                 | no_obj_2             | character         | YES
+ eu_collecteur                 | contenu              | character         | YES
+ eu_collecteur                 | utilisat             | character         | YES
+ eu_collecteur                 | proprio              | character         | YES
+ eu_collecteur                 | nom_comm             | character         | YES
+ eu_collecteur                 | no_comm              | character         | YES
+ eu_collecteur                 | mode_acqui           | character         | YES
+ eu_collecteur                 | precis_pl            | character         | YES
+ eu_collecteur                 | ecoulem              | character         | YES
+ eu_collecteur                 | fonction             | character         | YES
+ eu_collecteur                 | hierarchie           | character         | YES
+ eu_collecteur                 | proprio_chgt         | character         | YES
+ eu_collecteur                 | proprio_chgt_prio    | character         | YES
+ eu_collecteur                 | servitude_actuelle   | character         | YES
+ eu_collecteur                 | id_servitude         | character         | YES
+ eu_collecteur                 | proprio_chgt_doss    | character         | YES
+ eu_collecteur                 | proprio_chgt_on      | boolean           | YES
+ eu_collecteur                 | materiau             | character         | YES
+ eu_collecteur                 | code_materiau        | character         | YES
+ eu_collecteur                 | profil               | character         | YES
+ eu_collecteur                 | diametre             | integer           | YES
+ eu_collecteur                 | hauteur              | integer           | YES
+ eu_collecteur                 | d_h                  | character         | YES
+ eu_collecteur                 | charge_hydr          | character         | YES
+ eu_collecteur                 | prof_amo             | double precision  | YES
+ eu_collecteur                 | prof_aval            | double precision  | YES
+ eu_collecteur                 | ecp_perm             | character         | YES
+ eu_collecteur                 | ecp_sai              | character         | YES
+ eu_collecteur                 | capacite_t5          | character         | YES
+ eu_collecteur                 | alt_amo              | double precision  | YES
+ eu_collecteur                 | alt_aval             | double precision  | YES
+ eu_collecteur                 | id_chamont           | character         | YES
+ eu_collecteur                 | id_chaval            | character         | YES
+ eu_collecteur                 | id_ouv_amo           | character         | YES
+ eu_collecteur                 | id_ouv_aval          | character         | YES
+ eu_collecteur                 | type_ouv_amo         | character         | YES
+ eu_collecteur                 | type_ouv_aval        | character         | YES
+ eu_collecteur                 | no_obj_amo           | character         | YES
+ eu_collecteur                 | no_obj_aval          | character         | YES
+ eu_collecteur                 | situation            | character         | YES
+ eu_collecteur                 | releve_geom_date     | date              | YES
+ eu_collecteur                 | releve_tech_date     | date              | YES
+ eu_collecteur                 | accessibilite        | character         | YES
+ eu_collecteur                 | pente_pc             | double precision  | YES
+ eu_collecteur                 | contenu_fut          | character         | YES
+ eu_collecteur                 | diam_fut             | integer           | YES
+ eu_collecteur                 | pgee_trav_prevu      | character         | YES
+ eu_collecteur                 | constr_an            | integer           | YES
+ eu_collecteur                 | constr_entr          | character         | YES
+ eu_collecteur                 | constr_dt            | character         | YES
+ eu_collecteur                 | ref_boite            | character         | YES
+ eu_collecteur                 | ref_dossier          | character         | YES
+ eu_collecteur                 | inspcam_date         | date              | YES
+ eu_collecteur                 | inspcam_int          | double precision  | YES
+ eu_collecteur                 | inspcam_no           | character         | YES
+ eu_collecteur                 | etat_constr          | character         | YES
+ eu_collecteur                 | necess_ass           | character         | YES
+ eu_collecteur                 | curage_date          | date              | YES
+ eu_collecteur                 | curage_int           | double precision  | YES
+ eu_collecteur                 | curage_on            | boolean           | YES
+ eu_collecteur                 | inspcam_on           | boolean           | YES
+ eu_collecteur                 | sct_interv           | character         | YES
+ eu_collecteur                 | remarque             | text              | YES
+ eu_collecteur                 | val_remp             | integer           | YES
+ eu_collecteur                 | dur_vie              | integer           | YES
+ eu_collecteur                 | ref_plan             | character         | YES
+ eu_collecteur                 | q_nom                | character         | YES
+ eu_collecteur                 | q_max                | character         | YES
+ eu_collecteur                 | crea_date            | date              | YES
+ eu_collecteur                 | releve_date          | date              | YES
+ eu_collecteur                 | rempl_proj_an        | integer           | YES
+ eu_collecteur                 | curage_an            | integer           | YES
+ eu_collecteur                 | maj_aut              | character varying | YES
+ eu_collecteur                 | crea_fiche_aut       | character varying | YES
+ eu_collecteur                 | crea_fiche_date      | date              | YES
+ eu_collecteur                 | estim_date           | date              | YES
+ eu_collecteur                 | entr_methode         | character varying | YES
+ eu_collecteur                 | chemisage_mtx        | character varying | YES
+ eu_collecteur                 | maj_date             | date              | YES
+ eu_collecteur                 | length               | double precision  | YES
+ eu_collecteur                 | file1                | character         | YES
+ eu_collecteur                 | lien1qgis            | character         | YES
+ eu_collecteur                 | lien1gmf             | character         | YES
+ eu_collecteur                 | file2                | character         | YES
+ eu_collecteur                 | lien2qgis            | character         | YES
+ eu_collecteur                 | lien2gmf             | character         | YES
+ eu_collecteur                 | file3                | character         | YES
+ eu_collecteur                 | lien3qgis            | character         | YES
+ eu_collecteur                 | lien3gmf             | character         | YES
+ eu_collecteur                 | file4                | character         | YES
+ eu_collecteur                 | lien4qgis            | character         | YES
+ eu_collecteur                 | lien4gmf             | character         | YES
+ eu_collecteur                 | geom                 | USER-DEFINED      | YES
+ eu_collecteur                 | pk_uuid              | uuid              | NO
+ eu_collecteur                 | data_owner           | character varying | YES
+ eu_collecteur_action          | gid                  | integer           | NO
+ eu_collecteur_action          | action_type          | character         | YES
+ eu_collecteur_action          | action_date          | date              | YES
+ eu_collecteur_action          | action_entr          | character         | YES
+ eu_collecteur_action          | action_ref           | character         | YES
+ eu_collecteur_action          | utilisat             | character         | YES
+ eu_collecteur_action          | chantier             | character         | YES
+ eu_collecteur_action          | action_long          | double precision  | YES
+ eu_collecteur_action          | act_couts_chf        | integer           | YES
+ eu_collecteur_action          | act_couts_reels_chf  | integer           | YES
+ eu_collecteur_action          | act_couts_debiteur   | character         | YES
+ eu_collecteur_action          | action_prio          | character         | YES
+ eu_collecteur_action          | remarque             | character         | YES
+ eu_collecteur_action          | maj_date             | date              | YES
+ eu_collecteur_action          | file1                | character         | YES
+ eu_collecteur_action          | lien1qgis            | character         | YES
+ eu_collecteur_action          | lien1gmf             | character         | YES
+ eu_collecteur_action          | file2                | character         | YES
+ eu_collecteur_action          | lien2qgis            | character         | YES
+ eu_collecteur_action          | lien2gmf             | character         | YES
+ eu_collecteur_action          | pk_uuid              | uuid              | NO
+ eu_collecteur_action          | fk_collecteur        | uuid              | YES
+ eu_collecteur_action          | data_owner           | character varying | YES
+ eu_collecteur_etat            | gid                  | integer           | NO
+ eu_collecteur_etat            | etat_constr          | character         | YES
+ eu_collecteur_etat            | necess_ass           | character         | YES
+ eu_collecteur_etat            | etat_date            | date              | YES
+ eu_collecteur_etat            | probl_entretien_on   | boolean           | YES
+ eu_collecteur_etat            | probl_structurel_on  | boolean           | YES
+ eu_collecteur_etat            | remarque             | character         | YES
+ eu_collecteur_etat            | maj_date             | date              | YES
+ eu_collecteur_etat            | file1                | character         | YES
+ eu_collecteur_etat            | lien1qgis            | character         | YES
+ eu_collecteur_etat            | lien1gmf             | character         | YES
+ eu_collecteur_etat            | file2                | character         | YES
+ eu_collecteur_etat            | lien2qgis            | character         | YES
+ eu_collecteur_etat            | lien2gmf             | character         | YES
+ eu_collecteur_etat            | pk_uuid              | uuid              | NO
+ eu_collecteur_etat            | fk_collecteur        | uuid              | YES
+ eu_collecteur_etat            | data_owner           | character varying | YES
+ eu_constr_l                   | gid                  | integer           | NO
+ eu_constr_l                   | type_ligne           | character         | YES
+ eu_constr_l                   | remarque             | character         | YES
+ eu_constr_l                   | contenu              | character varying | YES
+ eu_constr_l                   | releve_date          | date              | YES
+ eu_constr_l                   | no_obj               | character varying | YES
+ eu_constr_l                   | no_obj_2             | character varying | YES
+ eu_constr_l                   | mode_acqui           | character varying | YES
+ eu_constr_l                   | maj_date             | date              | YES
+ eu_constr_l                   | geom                 | USER-DEFINED      | YES
+ eu_constr_l                   | pk_uuid              | uuid              | NO
+ eu_constr_l                   | data_owner           | character varying | YES
+ eu_constr_p                   | gid                  | integer           | NO
+ eu_constr_p                   | no_obj               | character         | YES
+ eu_constr_p                   | no_obj2              | character         | YES
+ eu_constr_p                   | utilisat             | character         | YES
+ eu_constr_p                   | precis_pl            | character         | YES
+ eu_constr_p                   | type_point           | character         | YES
+ eu_constr_p                   | alt_couv             | double precision  | YES
+ eu_constr_p                   | alt_radi             | double precision  | YES
+ eu_constr_p                   | remarque             | character         | YES
+ eu_constr_p                   | maj_date             | date              | YES
+ eu_constr_p                   | file1                | character         | YES
+ eu_constr_p                   | lien1qgis            | character         | YES
+ eu_constr_p                   | lien1gmf             | character         | YES
+ eu_constr_p                   | file2                | character         | YES
+ eu_constr_p                   | lien2qgis            | character         | YES
+ eu_constr_p                   | lien2gmf             | character         | YES
+ eu_constr_p                   | file3                | character         | YES
+ eu_constr_p                   | lien3qgis            | character         | YES
+ eu_constr_p                   | lien3gmf             | character         | YES
+ eu_constr_p                   | file4                | character         | YES
+ eu_constr_p                   | lien4qgis            | character         | YES
+ eu_constr_p                   | lien4gmf             | character         | YES
+ eu_constr_p                   | geom                 | USER-DEFINED      | YES
+ eu_constr_p                   | pk_uuid              | uuid              | NO
+ eu_constr_p                   | data_owner           | character varying | YES
+ eu_defaut                     | gid                  | integer           | NO
+ eu_defaut                     | no_obj               | character varying | YES
+ eu_defaut                     | no_obj_2             | character varying | YES
+ eu_defaut                     | type_def             | character         | YES
+ eu_defaut                     | date_insp            | date              | YES
+ eu_defaut                     | utilisat             | character         | YES
+ eu_defaut                     | contenu              | character         | YES
+ eu_defaut                     | necess_ass           | character         | YES
+ eu_defaut                     | no_obj_con           | character         | YES
+ eu_defaut                     | degre_imp            | character         | YES
+ eu_defaut                     | ch_uniq              | boolean           | YES
+ eu_defaut                     | remarque             | character         | YES
+ eu_defaut                     | crea_date            | date              | YES
+ eu_defaut                     | releve_date          | date              | YES
+ eu_defaut                     | date_rep             | date              | YES
+ eu_defaut                     | rep_type             | character         | YES
+ eu_defaut                     | mode_acqui           | character varying | YES
+ eu_defaut                     | maj_date             | date              | YES
+ eu_defaut                     | file1                | character         | YES
+ eu_defaut                     | lien1qgis            | character         | YES
+ eu_defaut                     | lien1gmf             | character         | YES
+ eu_defaut                     | file2                | character         | YES
+ eu_defaut                     | lien2qgis            | character         | YES
+ eu_defaut                     | lien2gmf             | character         | YES
+ eu_defaut                     | geom                 | USER-DEFINED      | YES
+ eu_defaut                     | pk_uuid              | uuid              | NO
+ eu_defaut                     | data_owner           | character varying | YES
+ eu_deversoir                  | gid                  | integer           | NO
+ eu_deversoir                  | no_obj               | character         | YES
+ eu_deversoir                  | no_obj_2             | character         | YES
+ eu_deversoir                  | contenu              | character         | YES
+ eu_deversoir                  | utilisat             | character         | YES
+ eu_deversoir                  | proprio              | character         | YES
+ eu_deversoir                  | nom_comm             | character         | YES
+ eu_deversoir                  | no_comm              | character         | YES
+ eu_deversoir                  | coord_nord           | double precision  | YES
+ eu_deversoir                  | coord_est            | double precision  | YES
+ eu_deversoir                  | mode_acqui           | character         | YES
+ eu_deversoir                  | precis_pl            | character         | YES
+ eu_deversoir                  | fonction             | character         | YES
+ eu_deversoir                  | alt_couv             | double precision  | YES
+ eu_deversoir                  | alt_radi             | double precision  | YES
+ eu_deversoir                  | alt_tp               | double precision  | YES
+ eu_deversoir                  | q_l_min              | double precision  | YES
+ eu_deversoir                  | obj_tp               | character         | YES
+ eu_deversoir                  | constr_an            | integer           | YES
+ eu_deversoir                  | insp_date            | date              | YES
+ eu_deversoir                  | insp_interv          | double precision  | YES
+ eu_deversoir                  | etat_constr          | character         | YES
+ eu_deversoir                  | necess_ass           | character         | YES
+ eu_deversoir                  | curage_date          | date              | YES
+ eu_deversoir                  | curage_int           | double precision  | YES
+ eu_deversoir                  | curage_on            | boolean           | YES
+ eu_deversoir                  | remarque             | character         | YES
+ eu_deversoir                  | releve_date          | date              | YES
+ eu_deversoir                  | rempl_proj_an        | integer           | YES
+ eu_deversoir                  | recept               | character varying | YES
+ eu_deversoir                  | hierarchie           | character varying | YES
+ eu_deversoir                  | type_deversoir       | character varying | YES
+ eu_deversoir                  | maj_date             | date              | YES
+ eu_deversoir                  | file1                | character         | YES
+ eu_deversoir                  | lien1qgis            | character         | YES
+ eu_deversoir                  | lien1gmf             | character         | YES
+ eu_deversoir                  | file2                | character         | YES
+ eu_deversoir                  | lien2qgis            | character         | YES
+ eu_deversoir                  | lien2gmf             | character         | YES
+ eu_deversoir                  | file3                | character         | YES
+ eu_deversoir                  | lien3qgis            | character         | YES
+ eu_deversoir                  | lien3gmf             | character         | YES
+ eu_deversoir                  | file4                | character         | YES
+ eu_deversoir                  | lien4qgis            | character         | YES
+ eu_deversoir                  | lien4gmf             | character         | YES
+ eu_deversoir                  | geom                 | USER-DEFINED      | YES
+ eu_deversoir                  | pk_uuid              | uuid              | NO
+ eu_deversoir                  | data_owner           | character varying | YES
+ eu_ecp_p                      | gid                  | integer           | NO
+ eu_ecp_p                      | date_mes             | date              | YES
+ eu_ecp_p                      | responsable          | character         | YES
+ eu_ecp_p                      | contenu              | character         | YES
+ eu_ecp_p                      | q_perm               | double precision  | YES
+ eu_ecp_p                      | q_saison             | double precision  | YES
+ eu_ecp_p                      | methode              | character         | YES
+ eu_ecp_p                      | remarque             | character         | YES
+ eu_ecp_p                      | releve_date          | date              | YES
+ eu_ecp_p                      | maj_date             | date              | YES
+ eu_ecp_p                      | file1                | character         | YES
+ eu_ecp_p                      | lien1qgis            | character         | YES
+ eu_ecp_p                      | lien1gmf             | character         | YES
+ eu_ecp_p                      | file2                | character         | YES
+ eu_ecp_p                      | lien2qgis            | character         | YES
+ eu_ecp_p                      | lien2gmf             | character         | YES
+ eu_ecp_p                      | geom                 | USER-DEFINED      | YES
+ eu_ecp_p                      | pk_uuid              | uuid              | NO
+ eu_ecp_p                      | data_owner           | character varying | YES
+ eu_elemontage                 | gid                  | integer           | NO
+ eu_elemontage                 | no_obj               | character         | YES
+ eu_elemontage                 | type_elem            | character         | YES
+ eu_elemontage                 | contenu              | character         | YES
+ eu_elemontage                 | utilisat             | character         | YES
+ eu_elemontage                 | proprio              | character         | YES
+ eu_elemontage                 | nom_comm             | character         | YES
+ eu_elemontage                 | no_comm              | character         | YES
+ eu_elemontage                 | coord_nord           | double precision  | YES
+ eu_elemontage                 | coord_est            | double precision  | YES
+ eu_elemontage                 | mode_acqui           | character         | YES
+ eu_elemontage                 | precis_pl            | character         | YES
+ eu_elemontage                 | alt_radi             | double precision  | YES
+ eu_elemontage                 | nature               | character         | YES
+ eu_elemontage                 | remarque             | character         | YES
+ eu_elemontage                 | s_orient             | double precision  | YES
+ eu_elemontage                 | no_obj_2             | character varying | YES
+ eu_elemontage                 | rempl_proj_an        | integer           | YES
+ eu_elemontage                 | crea_fiche_aut       | character varying | YES
+ eu_elemontage                 | crea_fiche_date      | date              | YES
+ eu_elemontage                 | etat_constr          | character varying | YES
+ eu_elemontage                 | hierarchie           | character varying | YES
+ eu_elemontage                 | constr_an            | integer           | YES
+ eu_elemontage                 | releve_date          | date              | YES
+ eu_elemontage                 | maj_date             | date              | YES
+ eu_elemontage                 | file1                | character         | YES
+ eu_elemontage                 | lien1qgis            | character         | YES
+ eu_elemontage                 | lien1gmf             | character         | YES
+ eu_elemontage                 | file2                | character         | YES
+ eu_elemontage                 | lien2qgis            | character         | YES
+ eu_elemontage                 | lien2gmf             | character         | YES
+ eu_elemontage                 | geom                 | USER-DEFINED      | YES
+ eu_elemontage                 | pk_uuid              | uuid              | NO
+ eu_elemontage                 | data_owner           | character varying | YES
+ eu_evac_par                   | gid                  | integer           | NO
+ eu_evac_par                   | racc_conf            | character         | YES
+ eu_evac_par                   | date                 | date              | YES
+ eu_evac_par                   | no_par               | character         | YES
+ eu_evac_par                   | etat_racc_ec         | character         | YES
+ eu_evac_par                   | etat_racc_eu         | character         | YES
+ eu_evac_par                   | evac_ec              | character         | YES
+ eu_evac_par                   | sct_interv           | character         | YES
+ eu_evac_par                   | no_dossier           | character         | YES
+ eu_evac_par                   | auteur_fiche         | character varying | YES
+ eu_evac_par                   | releve_aut           | character varying | YES
+ eu_evac_par                   | superficie_rf        | integer           | YES
+ eu_evac_par                   | remarque             | text              | YES
+ eu_evac_par                   | area                 | integer           | YES
+ eu_evac_par                   | maj_date             | date              | YES
+ eu_evac_par                   | file1                | character         | YES
+ eu_evac_par                   | lien1qgis            | character         | YES
+ eu_evac_par                   | lien1gmf             | character         | YES
+ eu_evac_par                   | file2                | character         | YES
+ eu_evac_par                   | lien2qgis            | character         | YES
+ eu_evac_par                   | lien2gmf             | character         | YES
+ eu_evac_par                   | geom                 | USER-DEFINED      | YES
+ eu_evac_par                   | pk_uuid              | uuid              | NO
+ eu_evac_par                   | data_owner           | character varying | YES
+ eu_evac_par_etat              | gid                  | integer           | NO
+ eu_evac_par_etat              | racc_conf            | character         | YES
+ eu_evac_par_etat              | date                 | date              | YES
+ eu_evac_par_etat              | etat_racc_ec         | character         | YES
+ eu_evac_par_etat              | etat_racc_eu         | character         | YES
+ eu_evac_par_etat              | evac_ec              | character         | YES
+ eu_evac_par_etat              | no_dossier           | character         | YES
+ eu_evac_par_etat              | remarque             | text              | YES
+ eu_evac_par_etat              | maj_date             | date              | YES
+ eu_evac_par_etat              | file1                | character         | YES
+ eu_evac_par_etat              | lien1qgis            | character         | YES
+ eu_evac_par_etat              | lien1gmf             | character         | YES
+ eu_evac_par_etat              | file2                | character         | YES
+ eu_evac_par_etat              | lien2qgis            | character         | YES
+ eu_evac_par_etat              | lien2gmf             | character         | YES
+ eu_evac_par_etat              | pk_uuid              | uuid              | NO
+ eu_evac_par_etat              | fk_evac_par          | uuid              | YES
+ eu_evac_par_etat              | data_owner           | character varying | YES
+ eu_exutoire                   | gid                  | integer           | NO
+ eu_exutoire                   | no_obj               | character         | YES
+ eu_exutoire                   | no_obj_2             | character         | YES
+ eu_exutoire                   | contenu              | character         | YES
+ eu_exutoire                   | utilisat             | character         | YES
+ eu_exutoire                   | proprio              | character         | YES
+ eu_exutoire                   | nom_comm             | character         | YES
+ eu_exutoire                   | no_comm              | character         | YES
+ eu_exutoire                   | coord_nord           | double precision  | YES
+ eu_exutoire                   | coord_est            | double precision  | YES
+ eu_exutoire                   | mode_acqui           | character         | YES
+ eu_exutoire                   | precis_pl            | character         | YES
+ eu_exutoire                   | hierarchie           | character         | YES
+ eu_exutoire                   | ref_plan             | character         | YES
+ eu_exutoire                   | provenance           | character         | YES
+ eu_exutoire                   | rive                 | character         | YES
+ eu_exutoire                   | materiau             | character         | YES
+ eu_exutoire                   | q_max_30             | character         | YES
+ eu_exutoire                   | alt_radi             | double precision  | YES
+ eu_exutoire                   | recept               | character         | YES
+ eu_exutoire                   | q_tp_sec             | double precision  | YES
+ eu_exutoire                   | q_max                | double precision  | YES
+ eu_exutoire                   | qualite              | character         | YES
+ eu_exutoire                   | periode_q            | character         | YES
+ eu_exutoire                   | constr_an            | integer           | YES
+ eu_exutoire                   | insp_date            | date              | YES
+ eu_exutoire                   | insp_interv          | double precision  | YES
+ eu_exutoire                   | etat_constr          | character         | YES
+ eu_exutoire                   | necess_ass           | character         | YES
+ eu_exutoire                   | s_orient             | double precision  | YES
+ eu_exutoire                   | remarque             | character         | YES
+ eu_exutoire                   | releve_date          | date              | YES
+ eu_exutoire                   | releve_geom_date     | date              | YES
+ eu_exutoire                   | releve_tech_date     | date              | YES
+ eu_exutoire                   | accessibilite        | character         | YES
+ eu_exutoire                   | maj_date             | date              | YES
+ eu_exutoire                   | file1                | character         | YES
+ eu_exutoire                   | lien1qgis            | character         | YES
+ eu_exutoire                   | lien1gmf             | character         | YES
+ eu_exutoire                   | file2                | character         | YES
+ eu_exutoire                   | lien2qgis            | character         | YES
+ eu_exutoire                   | lien2gmf             | character         | YES
+ eu_exutoire                   | file3                | character         | YES
+ eu_exutoire                   | lien3qgis            | character         | YES
+ eu_exutoire                   | lien3gmf             | character         | YES
+ eu_exutoire                   | file4                | character         | YES
+ eu_exutoire                   | lien4qgis            | character         | YES
+ eu_exutoire                   | lien4gmf             | character         | YES
+ eu_exutoire                   | geom                 | USER-DEFINED      | YES
+ eu_exutoire                   | pk_uuid              | uuid              | NO
+ eu_exutoire                   | data_owner           | character varying | YES
+ eu_fontaine                   | gid                  | integer           | NO
+ eu_fontaine                   | no_obj               | character         | YES
+ eu_fontaine                   | no_obj_2             | character         | YES
+ eu_fontaine                   | contenu              | character         | YES
+ eu_fontaine                   | utilisat             | character         | YES
+ eu_fontaine                   | proprio              | character         | YES
+ eu_fontaine                   | nom_comm             | character         | YES
+ eu_fontaine                   | no_comm              | character         | YES
+ eu_fontaine                   | coord_nord           | double precision  | YES
+ eu_fontaine                   | coord_est            | double precision  | YES
+ eu_fontaine                   | mode_acqui           | character         | YES
+ eu_fontaine                   | precis_pl            | character         | YES
+ eu_fontaine                   | q_l_min              | double precision  | YES
+ eu_fontaine                   | constr_an            | integer           | YES
+ eu_fontaine                   | materiau             | character         | YES
+ eu_fontaine                   | remarque             | character         | YES
+ eu_fontaine                   | releve_date          | date              | YES
+ eu_fontaine                   | hierarchie           | character varying | YES
+ eu_fontaine                   | maj_date             | date              | YES
+ eu_fontaine                   | file1                | character         | YES
+ eu_fontaine                   | lien1qgis            | character         | YES
+ eu_fontaine                   | lien1gmf             | character         | YES
+ eu_fontaine                   | file2                | character         | YES
+ eu_fontaine                   | lien2qgis            | character         | YES
+ eu_fontaine                   | lien2gmf             | character         | YES
+ eu_fontaine                   | geom                 | USER-DEFINED      | YES
+ eu_fontaine                   | pk_uuid              | uuid              | NO
+ eu_fontaine                   | data_owner           | character varying | YES
+ eu_grille                     | gid                  | integer           | NO
+ eu_grille                     | no_obj               | character         | YES
+ eu_grille                     | no_obj_2             | character         | YES
+ eu_grille                     | contenu              | character         | YES
+ eu_grille                     | utilisat             | character         | YES
+ eu_grille                     | proprio              | character         | YES
+ eu_grille                     | nom_comm             | character         | YES
+ eu_grille                     | no_comm              | character         | YES
+ eu_grille                     | ref_dossier          | character         | YES
+ eu_grille                     | ref_plan             | character         | YES
+ eu_grille                     | mode_acqui           | character         | YES
+ eu_grille                     | precis_pl            | character         | YES
+ eu_grille                     | coord_nord           | double precision  | YES
+ eu_grille                     | coord_est            | double precision  | YES
+ eu_grille                     | type_gr              | character         | YES
+ eu_grille                     | forme                | character         | YES
+ eu_grille                     | alt_couv             | double precision  | YES
+ eu_grille                     | alt_radi             | double precision  | YES
+ eu_grille                     | profondeur           | double precision  | YES
+ eu_grille                     | coude                | boolean           | YES
+ eu_grille                     | depotoir             | boolean           | YES
+ eu_grille                     | constr_an            | integer           | YES
+ eu_grille                     | insp_date            | date              | YES
+ eu_grille                     | insp_interv          | double precision  | YES
+ eu_grille                     | etat_constr          | character         | YES
+ eu_grille                     | necess_ass           | character         | YES
+ eu_grille                     | curage_date          | date              | YES
+ eu_grille                     | curage_int           | double precision  | YES
+ eu_grille                     | curage_on            | boolean           | YES
+ eu_grille                     | sct_interv           | character         | YES
+ eu_grille                     | remarque             | character         | YES
+ eu_grille                     | crea_date            | date              | YES
+ eu_grille                     | releve_date          | date              | YES
+ eu_grille                     | releve_geom_date     | date              | YES
+ eu_grille                     | releve_tech_date     | date              | YES
+ eu_grille                     | accessibilite        | character         | YES
+ eu_grille                     | rempl_proj_an        | integer           | YES
+ eu_grille                     | maj_aut              | character varying | YES
+ eu_grille                     | crea_fiche_aut       | character varying | YES
+ eu_grille                     | crea_fiche_date      | date              | YES
+ eu_grille                     | estim_date           | date              | YES
+ eu_grille                     | hierarchie           | character varying | YES
+ eu_grille                     | maj_date             | date              | YES
+ eu_grille                     | file1                | character         | YES
+ eu_grille                     | lien1qgis            | character         | YES
+ eu_grille                     | lien1gmf             | character         | YES
+ eu_grille                     | file2                | character         | YES
+ eu_grille                     | lien2qgis            | character         | YES
+ eu_grille                     | lien2gmf             | character         | YES
+ eu_grille                     | file3                | character         | YES
+ eu_grille                     | lien3qgis            | character         | YES
+ eu_grille                     | lien3gmf             | character         | YES
+ eu_grille                     | file4                | character         | YES
+ eu_grille                     | lien4qgis            | character         | YES
+ eu_grille                     | lien4gmf             | character         | YES
+ eu_grille                     | geom                 | USER-DEFINED      | YES
+ eu_grille                     | pk_uuid              | uuid              | NO
+ eu_grille                     | data_owner           | character varying | YES
+ eu_grille_action              | gid                  | integer           | NO
+ eu_grille_action              | action_type          | character         | YES
+ eu_grille_action              | action_date          | date              | YES
+ eu_grille_action              | action_entr          | character         | YES
+ eu_grille_action              | action_ref           | character         | YES
+ eu_grille_action              | utilisat             | character         | YES
+ eu_grille_action              | chantier             | character         | YES
+ eu_grille_action              | act_couts_chf        | integer           | YES
+ eu_grille_action              | act_couts_reels_chf  | integer           | YES
+ eu_grille_action              | act_couts_debiteur   | character         | YES
+ eu_grille_action              | action_prio          | character         | YES
+ eu_grille_action              | remarque             | character         | YES
+ eu_grille_action              | maj_date             | date              | YES
+ eu_grille_action              | file1                | character         | YES
+ eu_grille_action              | lien1qgis            | character         | YES
+ eu_grille_action              | lien1gmf             | character         | YES
+ eu_grille_action              | file2                | character         | YES
+ eu_grille_action              | lien2qgis            | character         | YES
+ eu_grille_action              | lien2gmf             | character         | YES
+ eu_grille_action              | pk_uuid              | uuid              | NO
+ eu_grille_action              | fk_grille            | uuid              | YES
+ eu_grille_action              | data_owner           | character varying | YES
+ eu_grille_etat                | gid                  | integer           | NO
+ eu_grille_etat                | etat_constr          | character         | YES
+ eu_grille_etat                | necess_ass           | character         | YES
+ eu_grille_etat                | etat_date            | date              | YES
+ eu_grille_etat                | remarque             | character         | YES
+ eu_grille_etat                | maj_date             | date              | YES
+ eu_grille_etat                | file1                | character         | YES
+ eu_grille_etat                | lien1qgis            | character         | YES
+ eu_grille_etat                | lien1gmf             | character         | YES
+ eu_grille_etat                | file2                | character         | YES
+ eu_grille_etat                | lien2qgis            | character         | YES
+ eu_grille_etat                | lien2gmf             | character         | YES
+ eu_grille_etat                | pk_uuid              | uuid              | NO
+ eu_grille_etat                | fk_grille            | uuid              | YES
+ eu_grille_etat                | data_owner           | character varying | YES
+ eu_inst_indiv                 | gid                  | integer           | NO
+ eu_inst_indiv                 | no_obj               | character         | YES
+ eu_inst_indiv                 | no_obj_2             | character         | YES
+ eu_inst_indiv                 | contenu              | character         | YES
+ eu_inst_indiv                 | utilisat             | character         | YES
+ eu_inst_indiv                 | proprio              | character         | YES
+ eu_inst_indiv                 | precis_pl            | character         | YES
+ eu_inst_indiv                 | type_inst            | character         | YES
+ eu_inst_indiv                 | volume               | double precision  | YES
+ eu_inst_indiv                 | obj_lie              | character         | YES
+ eu_inst_indiv                 | alt_tp               | double precision  | YES
+ eu_inst_indiv                 | contrat_ent          | boolean           | YES
+ eu_inst_indiv                 | contrat_num          | character         | YES
+ eu_inst_indiv                 | contrat_fin          | date              | YES
+ eu_inst_indiv                 | vidange_entr         | character         | YES
+ eu_inst_indiv                 | vidange_int          | double precision  | YES
+ eu_inst_indiv                 | remarque             | character         | YES
+ eu_inst_indiv                 | releve_date          | date              | YES
+ eu_inst_indiv                 | maj_date             | date              | YES
+ eu_inst_indiv                 | file1                | character         | YES
+ eu_inst_indiv                 | lien1qgis            | character         | YES
+ eu_inst_indiv                 | lien1gmf             | character         | YES
+ eu_inst_indiv                 | file2                | character         | YES
+ eu_inst_indiv                 | lien2qgis            | character         | YES
+ eu_inst_indiv                 | lien2gmf             | character         | YES
+ eu_inst_indiv                 | file3                | character         | YES
+ eu_inst_indiv                 | lien3qgis            | character         | YES
+ eu_inst_indiv                 | lien3gmf             | character         | YES
+ eu_inst_indiv                 | file4                | character         | YES
+ eu_inst_indiv                 | lien4qgis            | character         | YES
+ eu_inst_indiv                 | lien4gmf             | character         | YES
+ eu_inst_indiv                 | geom                 | USER-DEFINED      | YES
+ eu_inst_indiv                 | pk_uuid              | uuid              | NO
+ eu_inst_indiv                 | data_owner           | character varying | YES
+ eu_install_infilt             | gid                  | integer           | NO
+ eu_install_infilt             | no_obj               | character         | YES
+ eu_install_infilt             | no_obj_2             | character         | YES
+ eu_install_infilt             | contenu              | character         | YES
+ eu_install_infilt             | utilisat             | character         | YES
+ eu_install_infilt             | proprio              | character         | YES
+ eu_install_infilt             | nom_comm             | character         | YES
+ eu_install_infilt             | no_comm              | character         | YES
+ eu_install_infilt             | coord_nord           | double precision  | YES
+ eu_install_infilt             | coord_est            | double precision  | YES
+ eu_install_infilt             | mode_acqui           | character         | YES
+ eu_install_infilt             | precis_pl            | character         | YES
+ eu_install_infilt             | type_inst            | character         | YES
+ eu_install_infilt             | no_vd                | character         | YES
+ eu_install_infilt             | q_inf                | double precision  | YES
+ eu_install_infilt             | alt_couv             | double precision  | YES
+ eu_install_infilt             | alt_tp               | double precision  | YES
+ eu_install_infilt             | obj_tp               | character         | YES
+ eu_install_infilt             | constr_an            | integer           | YES
+ eu_install_infilt             | insp_date            | date              | YES
+ eu_install_infilt             | insp_interv          | double precision  | YES
+ eu_install_infilt             | etat_constr          | character         | YES
+ eu_install_infilt             | necess_ass           | character         | YES
+ eu_install_infilt             | remarque             | character         | YES
+ eu_install_infilt             | releve_date          | date              | YES
+ eu_install_infilt             | hierarchie           | character varying | YES
+ eu_install_infilt             | maj_date             | date              | YES
+ eu_install_infilt             | file1                | character         | YES
+ eu_install_infilt             | lien1qgis            | character         | YES
+ eu_install_infilt             | lien1gmf             | character         | YES
+ eu_install_infilt             | file2                | character         | YES
+ eu_install_infilt             | lien2qgis            | character         | YES
+ eu_install_infilt             | lien2gmf             | character         | YES
+ eu_install_infilt             | file3                | character         | YES
+ eu_install_infilt             | lien3qgis            | character         | YES
+ eu_install_infilt             | lien3gmf             | character         | YES
+ eu_install_infilt             | file4                | character         | YES
+ eu_install_infilt             | lien4qgis            | character         | YES
+ eu_install_infilt             | lien4gmf             | character         | YES
+ eu_install_infilt             | geom                 | USER-DEFINED      | YES
+ eu_install_infilt             | pk_uuid              | uuid              | NO
+ eu_install_infilt             | data_owner           | character varying | YES
+ eu_ouvr_sp                    | gid                  | integer           | NO
+ eu_ouvr_sp                    | no_obj               | character         | YES
+ eu_ouvr_sp                    | no_obj_2             | character         | YES
+ eu_ouvr_sp                    | contenu              | character         | YES
+ eu_ouvr_sp                    | utilisat             | character         | YES
+ eu_ouvr_sp                    | proprio              | character         | YES
+ eu_ouvr_sp                    | nom_comm             | character         | YES
+ eu_ouvr_sp                    | no_comm              | character         | YES
+ eu_ouvr_sp                    | coord_nord           | double precision  | YES
+ eu_ouvr_sp                    | coord_est            | double precision  | YES
+ eu_ouvr_sp                    | mode_acqui           | character         | YES
+ eu_ouvr_sp                    | precis_pl            | character         | YES
+ eu_ouvr_sp                    | type_ouvr            | character         | YES
+ eu_ouvr_sp                    | alt_couv             | double precision  | YES
+ eu_ouvr_sp                    | remarque             | character         | YES
+ eu_ouvr_sp                    | releve_date          | date              | YES
+ eu_ouvr_sp                    | rempl_proj_an        | integer           | YES
+ eu_ouvr_sp                    | maj_aut              | character varying | YES
+ eu_ouvr_sp                    | crea_fiche_aut       | character varying | YES
+ eu_ouvr_sp                    | crea_fiche_date      | date              | YES
+ eu_ouvr_sp                    | etat_constr          | character varying | YES
+ eu_ouvr_sp                    | hierarchie           | character varying | YES
+ eu_ouvr_sp                    | constr_an            | integer           | YES
+ eu_ouvr_sp                    | maj_date             | date              | YES
+ eu_ouvr_sp                    | file1                | character         | YES
+ eu_ouvr_sp                    | lien1qgis            | character         | YES
+ eu_ouvr_sp                    | lien1gmf             | character         | YES
+ eu_ouvr_sp                    | file2                | character         | YES
+ eu_ouvr_sp                    | lien2qgis            | character         | YES
+ eu_ouvr_sp                    | lien2gmf             | character         | YES
+ eu_ouvr_sp                    | file3                | character         | YES
+ eu_ouvr_sp                    | lien3qgis            | character         | YES
+ eu_ouvr_sp                    | lien3gmf             | character         | YES
+ eu_ouvr_sp                    | file4                | character         | YES
+ eu_ouvr_sp                    | lien4qgis            | character         | YES
+ eu_ouvr_sp                    | lien4gmf             | character         | YES
+ eu_ouvr_sp                    | geom                 | USER-DEFINED      | YES
+ eu_ouvr_sp                    | pk_uuid              | uuid              | NO
+ eu_ouvr_sp                    | data_owner           | character varying | YES
+ eu_par_coll                   | gid                  | integer           | NO
+ eu_par_coll                   | identdn              | character         | YES
+ eu_par_coll                   | numero               | character         | YES
+ eu_par_coll                   | egrid                | character         | YES
+ eu_par_coll                   | nom_local            | character         | YES
+ eu_par_coll                   | proprio_deter        | character         | YES
+ eu_par_coll                   | servitude_perso      | character         | YES
+ eu_par_coll                   | servitude_fonciere   | character         | YES
+ eu_par_coll                   | travaux_sur_parc     | character         | YES
+ eu_par_coll                   | travaux_acharge_parc | character         | YES
+ eu_par_coll                   | frais_estim_tot      | integer           | YES
+ eu_par_coll                   | frais_soum_tot       | integer           | YES
+ eu_par_coll                   | frais_metres_tot     | integer           | YES
+ eu_par_coll                   | valid_txt            | character         | YES
+ eu_par_coll                   | integr_txt           | character         | YES
+ eu_par_coll                   | genre_txt            | character         | YES
+ eu_par_coll                   | sup_totale           | double precision  | YES
+ eu_par_coll                   | superficie           | double precision  | YES
+ eu_par_coll                   | sup_rf               | double precision  | YES
+ eu_par_coll                   | lien_rf_simple       | character         | YES
+ eu_par_coll                   | lien_rf_complet      | character         | YES
+ eu_par_coll                   | lien_rf_simple_qg    | character         | YES
+ eu_par_coll                   | lien_rf_complet_qg   | character         | YES
+ eu_par_coll                   | nom_comm             | character         | YES
+ eu_par_coll                   | import               | date              | YES
+ eu_par_coll                   | geom                 | USER-DEFINED      | YES
+ eu_par_coll                   | proprio_chgt_doss    | character         | YES
+ eu_par_coll                   | proprio_nom          | character         | YES
+ eu_par_coll                   | proprio_nom_date     | date              | YES
+ eu_par_coll                   | type_mens            | character         | YES
+ eu_par_coll                   | no_plan              | character         | YES
+ eu_par_coll                   | file1                | character         | YES
+ eu_par_coll                   | lien1qgis            | character         | YES
+ eu_par_coll                   | lien1gmf             | character         | YES
+ eu_par_coll                   | file2                | character         | YES
+ eu_par_coll                   | lien2qgis            | character         | YES
+ eu_par_coll                   | lien2gmf             | character         | YES
+ eu_par_coll                   | maj_date             | date              | YES
+ eu_par_coll                   | pk_uuid              | uuid              | NO
+ eu_par_coll                   | data_owner           | character varying | YES
+ eu_pgee_ligne                 | gid                  | integer           | NO
+ eu_pgee_ligne                 | texte                | character         | YES
+ eu_pgee_ligne                 | type_ligne           | character         | YES
+ eu_pgee_ligne                 | l_color              | character         | YES
+ eu_pgee_ligne                 | l_size               | double precision  | YES
+ eu_pgee_ligne                 | maj_date             | date              | YES
+ eu_pgee_ligne                 | geom                 | USER-DEFINED      | YES
+ eu_pgee_ligne                 | pk_uuid              | uuid              | NO
+ eu_pgee_ligne                 | data_owner           | character varying | YES
+ eu_pgee_txt                   | gid                  | integer           | NO
+ eu_pgee_txt                   | valeur               | character         | YES
+ eu_pgee_txt                   | type_txt             | character         | YES
+ eu_pgee_txt                   | l_coordn             | double precision  | YES
+ eu_pgee_txt                   | l_coorde             | double precision  | YES
+ eu_pgee_txt                   | l_orient             | double precision  | YES
+ eu_pgee_txt                   | l_color              | character         | YES
+ eu_pgee_txt                   | l_size               | double precision  | YES
+ eu_pgee_txt                   | maj_date             | date              | YES
+ eu_pgee_txt                   | geom                 | USER-DEFINED      | YES
+ eu_pgee_txt                   | pk_uuid              | uuid              | NO
+ eu_pgee_txt                   | data_owner           | character varying | YES
+ eu_photo_p                    | gid                  | integer           | NO
+ eu_photo_p                    | date_doc             | date              | YES
+ eu_photo_p                    | remarque             | character         | YES
+ eu_photo_p                    | maj_date             | date              | YES
+ eu_photo_p                    | file1                | character         | YES
+ eu_photo_p                    | lien1qgis            | character         | YES
+ eu_photo_p                    | lien1gmf             | character         | YES
+ eu_photo_p                    | file2                | character         | YES
+ eu_photo_p                    | lien2qgis            | character         | YES
+ eu_photo_p                    | lien2gmf             | character         | YES
+ eu_photo_p                    | file3                | character         | YES
+ eu_photo_p                    | lien3qgis            | character         | YES
+ eu_photo_p                    | lien3gmf             | character         | YES
+ eu_photo_p                    | file4                | character         | YES
+ eu_photo_p                    | lien4qgis            | character         | YES
+ eu_photo_p                    | lien4gmf             | character         | YES
+ eu_photo_p                    | geom                 | USER-DEFINED      | YES
+ eu_photo_p                    | pk_uuid              | uuid              | NO
+ eu_photo_p                    | data_owner           | character varying | YES
+ eu_plan_s                     | gid                  | integer           | NO
+ eu_plan_s                     | groupe_plan          | character         | YES
+ eu_plan_s                     | no_plan              | character         | YES
+ eu_plan_s                     | nom_plan             | character         | YES
+ eu_plan_s                     | echelle_plan         | integer           | YES
+ eu_plan_s                     | date_plan            | date              | YES
+ eu_plan_s                     | proc_type            | character         | YES
+ eu_plan_s                     | proc_statut          | character         | YES
+ eu_plan_s                     | tvx_prevus           | character         | YES
+ eu_plan_s                     | tvx_horizon          | character         | YES
+ eu_plan_s                     | remarque             | character         | YES
+ eu_plan_s                     | act_couts_chf        | integer           | YES
+ eu_plan_s                     | act_couts_par        | integer           | YES
+ eu_plan_s                     | serv_fonc_nb         | integer           | YES
+ eu_plan_s                     | maj_date             | date              | YES
+ eu_plan_s                     | area                 | double precision  | YES
+ eu_plan_s                     | file1                | character         | YES
+ eu_plan_s                     | lien1qgis            | character         | YES
+ eu_plan_s                     | lien1gmf             | character         | YES
+ eu_plan_s                     | file2                | character         | YES
+ eu_plan_s                     | lien2qgis            | character         | YES
+ eu_plan_s                     | lien2gmf             | character         | YES
+ eu_plan_s                     | geom                 | USER-DEFINED      | YES
+ eu_plan_s                     | pk_uuid              | uuid              | NO
+ eu_plan_s                     | data_owner           | character varying | YES
+ eu_recup_ep                   | gid                  | integer           | NO
+ eu_recup_ep                   | no_obj               | character         | YES
+ eu_recup_ep                   | no_obj_2             | character         | YES
+ eu_recup_ep                   | utilisat             | character         | YES
+ eu_recup_ep                   | proprio              | character         | YES
+ eu_recup_ep                   | precis_pl            | character         | YES
+ eu_recup_ep                   | releve_date          | date              | YES
+ eu_recup_ep                   | situation            | character         | YES
+ eu_recup_ep                   | surverse             | character         | YES
+ eu_recup_ep                   | volume               | integer           | YES
+ eu_recup_ep                   | remarque             | character         | YES
+ eu_recup_ep                   | maj_date             | date              | YES
+ eu_recup_ep                   | file1                | character         | YES
+ eu_recup_ep                   | lien1qgis            | character         | YES
+ eu_recup_ep                   | lien1gmf             | character         | YES
+ eu_recup_ep                   | file2                | character         | YES
+ eu_recup_ep                   | lien2qgis            | character         | YES
+ eu_recup_ep                   | lien2gmf             | character         | YES
+ eu_recup_ep                   | geom                 | USER-DEFINED      | YES
+ eu_recup_ep                   | pk_uuid              | uuid              | NO
+ eu_recup_ep                   | data_owner           | character varying | YES
+ eu_relevage                   | gid                  | integer           | NO
+ eu_relevage                   | no_obj               | character         | YES
+ eu_relevage                   | no_obj_2             | character         | YES
+ eu_relevage                   | contenu              | character         | YES
+ eu_relevage                   | utilisat             | character         | YES
+ eu_relevage                   | proprio              | character         | YES
+ eu_relevage                   | nom_comm             | character         | YES
+ eu_relevage                   | no_comm              | character         | YES
+ eu_relevage                   | coord_nord           | double precision  | YES
+ eu_relevage                   | coord_est            | double precision  | YES
+ eu_relevage                   | mode_acqui           | character         | YES
+ eu_relevage                   | hierarchie           | character         | YES
+ eu_relevage                   | precis_pl            | character         | YES
+ eu_relevage                   | alt_tp               | double precision  | YES
+ eu_relevage                   | q_ref                | double precision  | YES
+ eu_relevage                   | obj_tp               | character         | YES
+ eu_relevage                   | volume               | double precision  | YES
+ eu_relevage                   | nom_stap             | character         | YES
+ eu_relevage                   | type_pompe           | character         | YES
+ eu_relevage                   | nb_pompe             | double precision  | YES
+ eu_relevage                   | h_ref                | double precision  | YES
+ eu_relevage                   | alt_couv             | double precision  | YES
+ eu_relevage                   | constr_an            | integer           | YES
+ eu_relevage                   | insp_date            | date              | YES
+ eu_relevage                   | insp_interv          | double precision  | YES
+ eu_relevage                   | etat_constr          | character         | YES
+ eu_relevage                   | necess_ass           | character         | YES
+ eu_relevage                   | curage_date          | date              | YES
+ eu_relevage                   | curage_int           | double precision  | YES
+ eu_relevage                   | curage_on            | boolean           | YES
+ eu_relevage                   | s_orient             | double precision  | YES
+ eu_relevage                   | remarque             | character         | YES
+ eu_relevage                   | releve_date          | date              | YES
+ eu_relevage                   | releve_geom_date     | date              | YES
+ eu_relevage                   | releve_tech_date     | date              | YES
+ eu_relevage                   | accessibilite        | character         | YES
+ eu_relevage                   | rempl_proj_an        | integer           | YES
+ eu_relevage                   | maj_date             | date              | YES
+ eu_relevage                   | file1                | character         | YES
+ eu_relevage                   | lien1qgis            | character         | YES
+ eu_relevage                   | lien1gmf             | character         | YES
+ eu_relevage                   | file2                | character         | YES
+ eu_relevage                   | lien2qgis            | character         | YES
+ eu_relevage                   | lien2gmf             | character         | YES
+ eu_relevage                   | file3                | character         | YES
+ eu_relevage                   | lien3qgis            | character         | YES
+ eu_relevage                   | lien3gmf             | character         | YES
+ eu_relevage                   | file4                | character         | YES
+ eu_relevage                   | lien4qgis            | character         | YES
+ eu_relevage                   | lien4gmf             | character         | YES
+ eu_relevage                   | geom                 | USER-DEFINED      | YES
+ eu_relevage                   | pk_uuid              | uuid              | NO
+ eu_relevage                   | data_owner           | character varying | YES
+ eu_reperage                   | gid                  | integer           | NO
+ eu_reperage                   | no_obj               | character         | YES
+ eu_reperage                   | precis_pl            | character         | YES
+ eu_reperage                   | alt_radi             | double precision  | YES
+ eu_reperage                   | cq3d                 | double precision  | YES
+ eu_reperage                   | elem_leve            | character         | YES
+ eu_reperage                   | nature               | character         | YES
+ eu_reperage                   | remarque             | character         | YES
+ eu_reperage                   | releve_date          | date              | YES
+ eu_reperage                   | maj_date             | date              | YES
+ eu_reperage                   | geom                 | USER-DEFINED      | YES
+ eu_reperage                   | pk_uuid              | uuid              | NO
+ eu_reperage                   | data_owner           | character varying | YES
+ eu_retention                  | gid                  | integer           | NO
+ eu_retention                  | no_obj               | character         | YES
+ eu_retention                  | no_obj_2             | character         | YES
+ eu_retention                  | contenu              | character         | YES
+ eu_retention                  | type_retention       | character varying | YES
+ eu_retention                  | utilisat             | character         | YES
+ eu_retention                  | proprio              | character         | YES
+ eu_retention                  | nom_comm             | character         | YES
+ eu_retention                  | no_comm              | character         | YES
+ eu_retention                  | coord_nord           | double precision  | YES
+ eu_retention                  | coord_est            | double precision  | YES
+ eu_retention                  | mode_acqui           | character         | YES
+ eu_retention                  | superficie           | double precision  | YES
+ eu_retention                  | ref_plan             | character         | YES
+ eu_retention                  | precis_pl            | character         | YES
+ eu_retention                  | alt_radi             | double precision  | YES
+ eu_retention                  | alt_tp               | double precision  | YES
+ eu_retention                  | alt_couv             | double precision  | YES
+ eu_retention                  | q_rest               | double precision  | YES
+ eu_retention                  | obj_tp               | character         | YES
+ eu_retention                  | vol_m3               | double precision  | YES
+ eu_retention                  | alt_sort             | double precision  | YES
+ eu_retention                  | tr_dim               | double precision  | YES
+ eu_retention                  | hierarchie           | character varying | YES
+ eu_retention                  | constr_an            | integer           | YES
+ eu_retention                  | insp_date            | date              | YES
+ eu_retention                  | insp_interv          | double precision  | YES
+ eu_retention                  | etat_constr          | character         | YES
+ eu_retention                  | necess_ass           | character         | YES
+ eu_retention                  | crea_fiche_date      | date              | YES
+ eu_retention                  | rempl_proj_an        | integer           | YES
+ eu_retention                  | remarque             | character         | YES
+ eu_retention                  | releve_date          | date              | YES
+ eu_retention                  | maj_date             | date              | YES
+ eu_retention                  | file1                | character         | YES
+ eu_retention                  | lien1qgis            | character         | YES
+ eu_retention                  | lien1gmf             | character         | YES
+ eu_retention                  | file2                | character         | YES
+ eu_retention                  | lien2qgis            | character         | YES
+ eu_retention                  | lien2gmf             | character         | YES
+ eu_retention                  | file3                | character         | YES
+ eu_retention                  | lien3qgis            | character         | YES
+ eu_retention                  | lien3gmf             | character         | YES
+ eu_retention                  | file4                | character         | YES
+ eu_retention                  | lien4qgis            | character         | YES
+ eu_retention                  | lien4gmf             | character         | YES
+ eu_retention                  | geom                 | USER-DEFINED      | YES
+ eu_retention                  | pk_uuid              | uuid              | NO
+ eu_retention                  | data_owner           | character varying | YES
+ eu_retention_s                | gid                  | integer           | NO
+ eu_retention_s                | no_obj               | character         | YES
+ eu_retention_s                | no_obj_2             | character         | YES
+ eu_retention_s                | contenu              | character         | YES
+ eu_retention_s                | utilisat             | character         | YES
+ eu_retention_s                | proprio              | character         | YES
+ eu_retention_s                | precis_pl            | character         | YES
+ eu_retention_s                | alt_radi             | double precision  | YES
+ eu_retention_s                | alt_tp               | double precision  | YES
+ eu_retention_s                | q_rest               | double precision  | YES
+ eu_retention_s                | obj_tp               | character         | YES
+ eu_retention_s                | vol_m3               | double precision  | YES
+ eu_retention_s                | alt_sort             | double precision  | YES
+ eu_retention_s                | tr_dim               | double precision  | YES
+ eu_retention_s                | constr_an            | integer           | YES
+ eu_retention_s                | insp_date            | date              | YES
+ eu_retention_s                | insp_interv          | double precision  | YES
+ eu_retention_s                | etat_constr          | character         | YES
+ eu_retention_s                | necess_ass           | character         | YES
+ eu_retention_s                | remarque             | character         | YES
+ eu_retention_s                | releve_date          | date              | YES
+ eu_retention_s                | maj_date             | date              | YES
+ eu_retention_s                | file1                | character         | YES
+ eu_retention_s                | lien1qgis            | character         | YES
+ eu_retention_s                | lien1gmf             | character         | YES
+ eu_retention_s                | file2                | character         | YES
+ eu_retention_s                | lien2qgis            | character         | YES
+ eu_retention_s                | lien2gmf             | character         | YES
+ eu_retention_s                | mode_acqui           | character         | YES
+ eu_retention_s                | area                 | double precision  | YES
+ eu_retention_s                | ref_plan             | character         | YES
+ eu_retention_s                | nom_comm             | character         | YES
+ eu_retention_s                | no_comm              | character         | YES
+ eu_retention_s                | geom                 | USER-DEFINED      | YES
+ eu_retention_s                | pk_uuid              | uuid              | NO
+ eu_retention_s                | data_owner           | character varying | YES
+ eu_sct_interv                 | gid                  | integer           | NO
+ eu_sct_interv                 | no_obj               | character         | YES
+ eu_sct_interv                 | no_obj2              | character         | YES
+ eu_sct_interv                 | utilisat             | character         | YES
+ eu_sct_interv                 | remarque             | character         | YES
+ eu_sct_interv                 | maj_date             | date              | YES
+ eu_sct_interv                 | area                 | double precision  | YES
+ eu_sct_interv                 | geom                 | USER-DEFINED      | YES
+ eu_sct_interv                 | pk_uuid              | uuid              | NO
+ eu_sct_interv                 | data_owner           | character varying | YES
+ eu_sous_bv                    | gid                  | integer           | NO
+ eu_sous_bv                    | no_obj               | character         | YES
+ eu_sous_bv                    | no_obj2              | character         | YES
+ eu_sous_bv                    | contenu              | character         | YES
+ eu_sous_bv                    | utilisat             | character         | YES
+ eu_sous_bv                    | proprio              | character         | YES
+ eu_sous_bv                    | precis_pl            | character         | YES
+ eu_sous_bv                    | no_ssbv              | character         | YES
+ eu_sous_bv                    | sys_evac             | character         | YES
+ eu_sous_bv                    | affectation          | character         | YES
+ eu_sous_bv                    | eh_ha                | character         | YES
+ eu_sous_bv                    | pente_pc             | double precision  | YES
+ eu_sous_bv                    | nb_ehdom_act         | double precision  | YES
+ eu_sous_bv                    | nb_ehtot_act         | double precision  | YES
+ eu_sous_bv                    | nb_ehdom_sat         | double precision  | YES
+ eu_sous_bv                    | nb_ehtot_sat         | double precision  | YES
+ eu_sous_bv                    | cr_act               | double precision  | YES
+ eu_sous_bv                    | cr_sat               | double precision  | YES
+ eu_sous_bv                    | qmax_constr          | double precision  | YES
+ eu_sous_bv                    | qmax_ssbv            | double precision  | YES
+ eu_sous_bv                    | obj_lie              | character         | YES
+ eu_sous_bv                    | remarque             | character         | YES
+ eu_sous_bv                    | d_coordn             | double precision  | YES
+ eu_sous_bv                    | d_coorde             | double precision  | YES
+ eu_sous_bv                    | d_color              | character         | YES
+ eu_sous_bv                    | d_size               | double precision  | YES
+ eu_sous_bv                    | maj_date             | date              | YES
+ eu_sous_bv                    | area                 | double precision  | YES
+ eu_sous_bv                    | geom                 | USER-DEFINED      | YES
+ eu_sous_bv                    | pk_uuid              | uuid              | NO
+ eu_sous_bv                    | data_owner           | character varying | YES
+ eu_ss_surf_impermeable        | gid                  | integer           | NO
+ eu_ss_surf_impermeable        | type_surf            | character         | YES
+ eu_ss_surf_impermeable        | remarque             | character         | YES
+ eu_ss_surf_impermeable        | area                 | double precision  | YES
+ eu_ss_surf_impermeable        | surf_deduct          | double precision  | YES
+ eu_ss_surf_impermeable        | deduct_justif        | character         | YES
+ eu_ss_surf_impermeable        | tarif                | double precision  | YES
+ eu_ss_surf_impermeable        | maj_date             | date              | YES
+ eu_ss_surf_impermeable        | file1                | character         | YES
+ eu_ss_surf_impermeable        | lien1qgis            | character         | YES
+ eu_ss_surf_impermeable        | lien1gmf             | character         | YES
+ eu_ss_surf_impermeable        | file2                | character         | YES
+ eu_ss_surf_impermeable        | lien2qgis            | character         | YES
+ eu_ss_surf_impermeable        | lien2gmf             | character         | YES
+ eu_ss_surf_impermeable        | geom                 | USER-DEFINED      | YES
+ eu_ss_surf_impermeable        | pk_uuid              | uuid              | NO
+ eu_ss_surf_impermeable        | fk_surf_imperm       | uuid              | YES
+ eu_ss_surf_impermeable        | data_owner           | character varying | YES
+ eu_step                       | gid                  | integer           | NO
+ eu_step                       | no_obj               | character         | YES
+ eu_step                       | no_obj_2             | character         | YES
+ eu_step                       | contenu              | character         | YES
+ eu_step                       | utilisat             | character         | YES
+ eu_step                       | proprio              | character         | YES
+ eu_step                       | precis_pl            | character         | YES
+ eu_step                       | alt_entr             | double precision  | YES
+ eu_step                       | alt_sort             | double precision  | YES
+ eu_step                       | nom_step             | character         | YES
+ eu_step                       | eh_racc              | double precision  | YES
+ eu_step                       | eh_dim               | double precision  | YES
+ eu_step                       | type_ep              | character         | YES
+ eu_step                       | remarque             | character         | YES
+ eu_step                       | releve_date          | date              | YES
+ eu_step                       | maj_date             | date              | YES
+ eu_step                       | file1                | character         | YES
+ eu_step                       | lien1qgis            | character         | YES
+ eu_step                       | lien1gmf             | character         | YES
+ eu_step                       | file2                | character         | YES
+ eu_step                       | lien2qgis            | character         | YES
+ eu_step                       | lien2gmf             | character         | YES
+ eu_step                       | file3                | character         | YES
+ eu_step                       | lien3qgis            | character         | YES
+ eu_step                       | lien3gmf             | character         | YES
+ eu_step                       | file4                | character         | YES
+ eu_step                       | lien4qgis            | character         | YES
+ eu_step                       | lien4gmf             | character         | YES
+ eu_step                       | geom                 | USER-DEFINED      | YES
+ eu_step                       | pk_uuid              | uuid              | NO
+ eu_step                       | data_owner           | character varying | YES
+ eu_surf_impermeable           | gid                  | integer           | NO
+ eu_surf_impermeable           | proprio              | character         | YES
+ eu_surf_impermeable           | no_parc              | character         | YES
+ eu_surf_impermeable           | adresse              | character         | YES
+ eu_surf_impermeable           | type_parc            | character         | YES
+ eu_surf_impermeable           | affectation          | character         | YES
+ eu_surf_impermeable           | sup_rf               | double precision  | YES
+ eu_surf_impermeable           | surf_bat             | double precision  | YES
+ eu_surf_impermeable           | surf_acces           | double precision  | YES
+ eu_surf_impermeable           | surf_autre           | double precision  | YES
+ eu_surf_impermeable           | surf_totale_imperm   | double precision  | YES
+ eu_surf_impermeable           | part_imperm          | double precision  | YES
+ eu_surf_impermeable           | taxe_epuration       | integer           | YES
+ eu_surf_impermeable           | file1                | character         | YES
+ eu_surf_impermeable           | lien1qgis            | character         | YES
+ eu_surf_impermeable           | lien1gmf             | character         | YES
+ eu_surf_impermeable           | file2                | character         | YES
+ eu_surf_impermeable           | lien2qgis            | character         | YES
+ eu_surf_impermeable           | lien2gmf             | character         | YES
+ eu_surf_impermeable           | maj_date             | date              | YES
+ eu_surf_impermeable           | geom                 | USER-DEFINED      | YES
+ eu_surf_impermeable           | pk_uuid              | uuid              | NO
+ eu_surf_impermeable           | data_owner           | character varying | YES
+ eu_tmp_remarque               | gid                  | integer           | NO
+ eu_tmp_remarque               | remarque             | character         | YES
+ eu_tmp_remarque               | couleur              | character         | YES
+ eu_tmp_remarque               | statut               | character         | YES
+ eu_tmp_remarque               | releve_date          | date              | YES
+ eu_tmp_remarque               | maj_date             | date              | YES
+ eu_tmp_remarque               | file1                | character         | YES
+ eu_tmp_remarque               | lien1qgis            | character         | YES
+ eu_tmp_remarque               | lien1gmf             | character         | YES
+ eu_tmp_remarque               | file2                | character         | YES
+ eu_tmp_remarque               | lien2qgis            | character         | YES
+ eu_tmp_remarque               | lien2gmf             | character         | YES
+ eu_tmp_remarque               | geom                 | USER-DEFINED      | YES
+ eu_tmp_remarque               | pk_uuid              | uuid              | NO
+ eu_tmp_remarque               | data_owner           | character varying | YES
+ eu_uhz                        | gid                  | integer           | NO
+ eu_uhz                        | no_obj               | character         | YES
+ eu_uhz                        | no_obj_2             | character         | YES
+ eu_uhz                        | contenu              | character         | YES
+ eu_uhz                        | utilisat             | character         | YES
+ eu_uhz                        | proprio              | character         | YES
+ eu_uhz                        | precis_pl            | character         | YES
+ eu_uhz                        | num_eca              | integer           | YES
+ eu_uhz                        | num_ref_vd           | character         | YES
+ eu_uhz                        | pretrait             | character         | YES
+ eu_uhz                        | freq_vid             | character         | YES
+ eu_uhz                        | remarque             | character         | YES
+ eu_uhz                        | releve_date          | date              | YES
+ eu_uhz                        | maj_date             | date              | YES
+ eu_uhz                        | file1                | character         | YES
+ eu_uhz                        | lien1qgis            | character         | YES
+ eu_uhz                        | lien1gmf             | character         | YES
+ eu_uhz                        | file2                | character         | YES
+ eu_uhz                        | lien2qgis            | character         | YES
+ eu_uhz                        | lien2gmf             | character         | YES
+ eu_uhz                        | geom                 | USER-DEFINED      | YES
+ eu_uhz                        | pk_uuid              | uuid              | NO
+ eu_uhz                        | data_owner           | character varying | YES
+ eu_uhz_s                      | gid                  | integer           | NO
+ eu_uhz_s                      | no_obj               | character         | YES
+ eu_uhz_s                      | no_obj_2             | character         | YES
+ eu_uhz_s                      | nom_comm             | character         | YES
+ eu_uhz_s                      | no_comm              | character         | YES
+ eu_uhz_s                      | contenu              | character         | YES
+ eu_uhz_s                      | utilisat             | character         | YES
+ eu_uhz_s                      | proprio              | character         | YES
+ eu_uhz_s                      | precis_pl            | character         | YES
+ eu_uhz_s                      | sys_assai            | character         | YES
+ eu_uhz_s                      | remarque             | character         | YES
+ eu_uhz_s                      | releve_date          | date              | YES
+ eu_uhz_s                      | affect_bat           | character         | YES
+ eu_uhz_s                      | etat_zone            | character         | YES
+ eu_uhz_s                      | maj_date             | date              | YES
+ eu_uhz_s                      | file1                | character         | YES
+ eu_uhz_s                      | lien1qgis            | character         | YES
+ eu_uhz_s                      | lien1gmf             | character         | YES
+ eu_uhz_s                      | file2                | character         | YES
+ eu_uhz_s                      | lien2qgis            | character         | YES
+ eu_uhz_s                      | lien2gmf             | character         | YES
+ eu_uhz_s                      | area                 | double precision  | YES
+ eu_uhz_s                      | geom                 | USER-DEFINED      | YES
+ eu_uhz_s                      | date_imp             | date              | YES
+ eu_uhz_s                      | pk_uuid              | uuid              | NO
+ eu_uhz_s                      | data_owner           | character varying | YES
+ eu_va_chaccur_last            | gid                  | integer           | YES
+ eu_va_chaccur_last            | fk_chambre           | uuid              | YES
+ eu_va_chaccur_last            | contenu              | character         | YES
+ eu_va_chaccur_last            | proprio              | character         | YES
+ eu_va_chaccur_last            | action_type          | character         | YES
+ eu_va_chaccur_last            | action_date          | date              | YES
+ eu_va_chaccur_last            | action_annee         | double precision  | YES
+ eu_va_chaccur_last            | action_entr          | character         | YES
+ eu_va_chaccur_last            | action_ref           | character         | YES
+ eu_va_chaccur_last            | utilisat             | character         | YES
+ eu_va_chaccur_last            | chantier             | character         | YES
+ eu_va_chaccur_last            | remarque             | character         | YES
+ eu_va_chaccur_last            | lien1gmf             | character         | YES
+ eu_va_chaccur_last            | lien2gmf             | character         | YES
+ eu_va_chaccur_last            | maj_date             | date              | YES
+ eu_va_chaccur_last            | geom                 | USER-DEFINED      | YES
+ eu_va_chaccur_todo            | gid                  | integer           | YES
+ eu_va_chaccur_todo            | fk_chambre           | uuid              | YES
+ eu_va_chaccur_todo            | contenu              | character         | YES
+ eu_va_chaccur_todo            | proprio              | character         | YES
+ eu_va_chaccur_todo            | action_type          | character         | YES
+ eu_va_chaccur_todo            | action_date          | date              | YES
+ eu_va_chaccur_todo            | action_annee         | double precision  | YES
+ eu_va_chaccur_todo            | action_entr          | character         | YES
+ eu_va_chaccur_todo            | action_ref           | character         | YES
+ eu_va_chaccur_todo            | utilisat             | character         | YES
+ eu_va_chaccur_todo            | chantier             | character         | YES
+ eu_va_chaccur_todo            | remarque             | character         | YES
+ eu_va_chaccur_todo            | lien1gmf             | character         | YES
+ eu_va_chaccur_todo            | lien2gmf             | character         | YES
+ eu_va_chaccur_todo            | maj_date             | date              | YES
+ eu_va_chaccur_todo            | geom                 | USER-DEFINED      | YES
+ eu_va_chacinsp_last           | gid                  | integer           | YES
+ eu_va_chacinsp_last           | fk_chambre           | uuid              | YES
+ eu_va_chacinsp_last           | contenu              | character         | YES
+ eu_va_chacinsp_last           | proprio              | character         | YES
+ eu_va_chacinsp_last           | action_type          | character         | YES
+ eu_va_chacinsp_last           | action_date          | date              | YES
+ eu_va_chacinsp_last           | action_annee         | double precision  | YES
+ eu_va_chacinsp_last           | action_entr          | character         | YES
+ eu_va_chacinsp_last           | action_ref           | character         | YES
+ eu_va_chacinsp_last           | utilisat             | character         | YES
+ eu_va_chacinsp_last           | chantier             | character         | YES
+ eu_va_chacinsp_last           | remarque             | character         | YES
+ eu_va_chacinsp_last           | lien1gmf             | character         | YES
+ eu_va_chacinsp_last           | lien2gmf             | character         | YES
+ eu_va_chacinsp_last           | maj_date             | date              | YES
+ eu_va_chacinsp_last           | geom                 | USER-DEFINED      | YES
+ eu_va_chacinsp_todo           | gid                  | integer           | YES
+ eu_va_chacinsp_todo           | fk_chambre           | uuid              | YES
+ eu_va_chacinsp_todo           | contenu              | character         | YES
+ eu_va_chacinsp_todo           | proprio              | character         | YES
+ eu_va_chacinsp_todo           | action_type          | character         | YES
+ eu_va_chacinsp_todo           | action_date          | date              | YES
+ eu_va_chacinsp_todo           | action_annee         | double precision  | YES
+ eu_va_chacinsp_todo           | action_entr          | character         | YES
+ eu_va_chacinsp_todo           | action_ref           | character         | YES
+ eu_va_chacinsp_todo           | utilisat             | character         | YES
+ eu_va_chacinsp_todo           | chantier             | character         | YES
+ eu_va_chacinsp_todo           | remarque             | character         | YES
+ eu_va_chacinsp_todo           | lien1gmf             | character         | YES
+ eu_va_chacinsp_todo           | lien2gmf             | character         | YES
+ eu_va_chacinsp_todo           | maj_date             | date              | YES
+ eu_va_chacinsp_todo           | geom                 | USER-DEFINED      | YES
+ eu_va_chactions               | pk_uuid              | uuid              | YES
+ eu_va_chactions               | gid                  | integer           | YES
+ eu_va_chactions               | fk_chambre           | uuid              | YES
+ eu_va_chactions               | contenu              | character         | YES
+ eu_va_chactions               | proprio              | character         | YES
+ eu_va_chactions               | action_type          | character         | YES
+ eu_va_chactions               | action_date          | date              | YES
+ eu_va_chactions               | action_annee         | double precision  | YES
+ eu_va_chactions               | action_entr          | character         | YES
+ eu_va_chactions               | action_ref           | character         | YES
+ eu_va_chactions               | utilisat             | character         | YES
+ eu_va_chactions               | chantier             | character         | YES
+ eu_va_chactions               | remarque             | character         | YES
+ eu_va_chactions               | lien1gmf             | character         | YES
+ eu_va_chactions               | lien2gmf             | character         | YES
+ eu_va_chactions               | maj_date             | date              | YES
+ eu_va_chactions               | geom                 | USER-DEFINED      | YES
+ eu_va_chetat_last             | gid                  | integer           | YES
+ eu_va_chetat_last             | fk_chambre           | uuid              | YES
+ eu_va_chetat_last             | contenu              | character         | YES
+ eu_va_chetat_last             | proprio              | character         | YES
+ eu_va_chetat_last             | etat_constr          | character         | YES
+ eu_va_chetat_last             | necess_ass           | character         | YES
+ eu_va_chetat_last             | etat_date            | date              | YES
+ eu_va_chetat_last             | etat_annee           | double precision  | YES
+ eu_va_chetat_last             | remarque             | character         | YES
+ eu_va_chetat_last             | lien1gmf             | character         | YES
+ eu_va_chetat_last             | lien2gmf             | character         | YES
+ eu_va_chetat_last             | maj_date             | date              | YES
+ eu_va_chetat_last             | geom                 | USER-DEFINED      | YES
+ eu_va_chetats                 | pk_uuid              | uuid              | YES
+ eu_va_chetats                 | gid                  | integer           | YES
+ eu_va_chetats                 | fk_chambre           | uuid              | YES
+ eu_va_chetats                 | contenu              | character         | YES
+ eu_va_chetats                 | proprio              | character         | YES
+ eu_va_chetats                 | etat_constr          | character         | YES
+ eu_va_chetats                 | necess_ass           | character         | YES
+ eu_va_chetats                 | etat_date            | date              | YES
+ eu_va_chetats                 | etat_annee           | double precision  | YES
+ eu_va_chetats                 | remarque             | character         | YES
+ eu_va_chetats                 | lien1gmf             | character         | YES
+ eu_va_chetats                 | lien2gmf             | character         | YES
+ eu_va_chetats                 | maj_date             | date              | YES
+ eu_va_chetats                 | geom                 | USER-DEFINED      | YES
+ eu_va_collaccur_last          | gid                  | integer           | YES
+ eu_va_collaccur_last          | fk_collecteur        | uuid              | YES
+ eu_va_collaccur_last          | contenu              | character         | YES
+ eu_va_collaccur_last          | proprio              | character         | YES
+ eu_va_collaccur_last          | action_type          | character         | YES
+ eu_va_collaccur_last          | action_date          | date              | YES
+ eu_va_collaccur_last          | action_annee         | double precision  | YES
+ eu_va_collaccur_last          | action_entr          | character         | YES
+ eu_va_collaccur_last          | action_ref           | character         | YES
+ eu_va_collaccur_last          | utilisat             | character         | YES
+ eu_va_collaccur_last          | chantier             | character         | YES
+ eu_va_collaccur_last          | remarque             | character         | YES
+ eu_va_collaccur_last          | lien1gmf             | character         | YES
+ eu_va_collaccur_last          | lien2gmf             | character         | YES
+ eu_va_collaccur_last          | maj_date             | date              | YES
+ eu_va_collaccur_last          | length               | double precision  | YES
+ eu_va_collaccur_last          | geom                 | USER-DEFINED      | YES
+ eu_va_collaccur_todo          | gid                  | integer           | YES
+ eu_va_collaccur_todo          | fk_collecteur        | uuid              | YES
+ eu_va_collaccur_todo          | contenu              | character         | YES
+ eu_va_collaccur_todo          | proprio              | character         | YES
+ eu_va_collaccur_todo          | action_type          | character         | YES
+ eu_va_collaccur_todo          | action_date          | date              | YES
+ eu_va_collaccur_todo          | action_annee         | double precision  | YES
+ eu_va_collaccur_todo          | action_entr          | character         | YES
+ eu_va_collaccur_todo          | action_ref           | character         | YES
+ eu_va_collaccur_todo          | utilisat             | character         | YES
+ eu_va_collaccur_todo          | chantier             | character         | YES
+ eu_va_collaccur_todo          | remarque             | character         | YES
+ eu_va_collaccur_todo          | lien1gmf             | character         | YES
+ eu_va_collaccur_todo          | lien2gmf             | character         | YES
+ eu_va_collaccur_todo          | maj_date             | date              | YES
+ eu_va_collaccur_todo          | length               | double precision  | YES
+ eu_va_collaccur_todo          | geom                 | USER-DEFINED      | YES
+ eu_va_collacinsp_last         | gid                  | integer           | YES
+ eu_va_collacinsp_last         | fk_collecteur        | uuid              | YES
+ eu_va_collacinsp_last         | contenu              | character         | YES
+ eu_va_collacinsp_last         | proprio              | character         | YES
+ eu_va_collacinsp_last         | action_type          | character         | YES
+ eu_va_collacinsp_last         | action_date          | date              | YES
+ eu_va_collacinsp_last         | action_annee         | double precision  | YES
+ eu_va_collacinsp_last         | action_entr          | character         | YES
+ eu_va_collacinsp_last         | action_ref           | character         | YES
+ eu_va_collacinsp_last         | utilisat             | character         | YES
+ eu_va_collacinsp_last         | chantier             | character         | YES
+ eu_va_collacinsp_last         | remarque             | character         | YES
+ eu_va_collacinsp_last         | lien1gmf             | character         | YES
+ eu_va_collacinsp_last         | lien2gmf             | character         | YES
+ eu_va_collacinsp_last         | maj_date             | date              | YES
+ eu_va_collacinsp_last         | length               | double precision  | YES
+ eu_va_collacinsp_last         | geom                 | USER-DEFINED      | YES
+ eu_va_collacinsp_todo         | gid                  | integer           | YES
+ eu_va_collacinsp_todo         | fk_collecteur        | uuid              | YES
+ eu_va_collacinsp_todo         | contenu              | character         | YES
+ eu_va_collacinsp_todo         | proprio              | character         | YES
+ eu_va_collacinsp_todo         | action_type          | character         | YES
+ eu_va_collacinsp_todo         | action_date          | date              | YES
+ eu_va_collacinsp_todo         | action_annee         | double precision  | YES
+ eu_va_collacinsp_todo         | action_entr          | character         | YES
+ eu_va_collacinsp_todo         | action_ref           | character         | YES
+ eu_va_collacinsp_todo         | utilisat             | character         | YES
+ eu_va_collacinsp_todo         | chantier             | character         | YES
+ eu_va_collacinsp_todo         | remarque             | character         | YES
+ eu_va_collacinsp_todo         | lien1gmf             | character         | YES
+ eu_va_collacinsp_todo         | lien2gmf             | character         | YES
+ eu_va_collacinsp_todo         | maj_date             | date              | YES
+ eu_va_collacinsp_todo         | length               | double precision  | YES
+ eu_va_collacinsp_todo         | geom                 | USER-DEFINED      | YES
+ eu_va_collactions             | pk_uuid              | uuid              | YES
+ eu_va_collactions             | gid                  | integer           | YES
+ eu_va_collactions             | fk_collecteur        | uuid              | YES
+ eu_va_collactions             | contenu              | character         | YES
+ eu_va_collactions             | proprio              | character         | YES
+ eu_va_collactions             | action_type          | character         | YES
+ eu_va_collactions             | action_date          | date              | YES
+ eu_va_collactions             | action_annee         | double precision  | YES
+ eu_va_collactions             | action_entr          | character         | YES
+ eu_va_collactions             | action_ref           | character         | YES
+ eu_va_collactions             | utilisat             | character         | YES
+ eu_va_collactions             | chantier             | character         | YES
+ eu_va_collactions             | remarque             | character         | YES
+ eu_va_collactions             | lien1gmf             | character         | YES
+ eu_va_collactions             | lien2gmf             | character         | YES
+ eu_va_collactions             | maj_date             | date              | YES
+ eu_va_collactions             | length               | double precision  | YES
+ eu_va_collactions             | geom                 | USER-DEFINED      | YES
+ eu_va_colletat_last           | gid                  | integer           | YES
+ eu_va_colletat_last           | fk_collecteur        | uuid              | YES
+ eu_va_colletat_last           | contenu              | character         | YES
+ eu_va_colletat_last           | proprio              | character         | YES
+ eu_va_colletat_last           | proprio_chgt         | character         | YES
+ eu_va_colletat_last           | proprio_chgt_prio    | character         | YES
+ eu_va_colletat_last           | servitude_actuelle   | character         | YES
+ eu_va_colletat_last           | etat_constr          | character         | YES
+ eu_va_colletat_last           | necess_ass           | character         | YES
+ eu_va_colletat_last           | probl_entretien_on   | boolean           | YES
+ eu_va_colletat_last           | probl_structurel_on  | boolean           | YES
+ eu_va_colletat_last           | etat_date            | date              | YES
+ eu_va_colletat_last           | etat_annee           | double precision  | YES
+ eu_va_colletat_last           | remarque             | character         | YES
+ eu_va_colletat_last           | lien1gmf             | character         | YES
+ eu_va_colletat_last           | lien2gmf             | character         | YES
+ eu_va_colletat_last           | maj_date             | date              | YES
+ eu_va_colletat_last           | length               | double precision  | YES
+ eu_va_colletat_last           | geom                 | USER-DEFINED      | YES
+ eu_va_colletats               | pk_uuid              | uuid              | YES
+ eu_va_colletats               | gid                  | integer           | YES
+ eu_va_colletats               | fk_collecteur        | uuid              | YES
+ eu_va_colletats               | contenu              | character         | YES
+ eu_va_colletats               | proprio              | character         | YES
+ eu_va_colletats               | etat_constr          | character         | YES
+ eu_va_colletats               | necess_ass           | character         | YES
+ eu_va_colletats               | etat_date            | date              | YES
+ eu_va_colletats               | etat_annee           | double precision  | YES
+ eu_va_colletats               | remarque             | character         | YES
+ eu_va_colletats               | lien1gmf             | character         | YES
+ eu_va_colletats               | lien2gmf             | character         | YES
+ eu_va_colletats               | maj_date             | date              | YES
+ eu_va_colletats               | length               | double precision  | YES
+ eu_va_colletats               | geom                 | USER-DEFINED      | YES
+ eu_va_evacparetats            | pk_uuid              | uuid              | YES
+ eu_va_evacparetats            | gid                  | integer           | YES
+ eu_va_evacparetats            | fk_evac_par          | uuid              | YES
+ eu_va_evacparetats            | racc_conf            | character         | YES
+ eu_va_evacparetats            | date                 | date              | YES
+ eu_va_evacparetats            | etat_racc_ec         | character         | YES
+ eu_va_evacparetats            | etat_racc_eu         | character         | YES
+ eu_va_evacparetats            | evac_ec              | character         | YES
+ eu_va_evacparetats            | no_dossier           | character         | YES
+ eu_va_evacparetats            | remarque             | text              | YES
+ eu_va_evacparetats            | maj_date             | date              | YES
+ eu_va_evacparetats            | lien1gmf             | character         | YES
+ eu_va_evacparetats            | lien2gmf             | character         | YES
+ eu_va_evacparetats            | no_par               | character         | YES
+ eu_va_evacparetats            | geom                 | USER-DEFINED      | YES
+ eu_va_evacparetats            | sct_interv           | character         | YES
+ eu_va_evacparetats_last       | gid                  | integer           | YES
+ eu_va_evacparetats_last       | fk_evac_par          | uuid              | YES
+ eu_va_evacparetats_last       | racc_conf            | character         | YES
+ eu_va_evacparetats_last       | date                 | date              | YES
+ eu_va_evacparetats_last       | etat_racc_ec         | character         | YES
+ eu_va_evacparetats_last       | etat_racc_eu         | character         | YES
+ eu_va_evacparetats_last       | evac_ec              | character         | YES
+ eu_va_evacparetats_last       | no_dossier           | character         | YES
+ eu_va_evacparetats_last       | remarque             | text              | YES
+ eu_va_evacparetats_last       | maj_date             | date              | YES
+ eu_va_evacparetats_last       | lien1gmf             | character         | YES
+ eu_va_evacparetats_last       | lien2gmf             | character         | YES
+ eu_va_evacparetats_last       | no_par               | character         | YES
+ eu_va_evacparetats_last       | geom                 | USER-DEFINED      | YES
+ eu_va_evacparetats_last       | sct_interv           | character         | YES
+ eu_va_files                   | gid                  | integer           | YES
+ eu_va_files                   | layer                | text              | YES
+ eu_va_files                   | file1                | character         | YES
+ eu_va_files                   | lien1qgis            | character         | YES
+ eu_va_files                   | lien1gmf             | character         | YES
+ eu_va_files                   | file2                | character         | YES
+ eu_va_files                   | lien2qgis            | character         | YES
+ eu_va_files                   | lien2gmf             | character         | YES
+ eu_va_files                   | geom                 | USER-DEFINED      | YES
+ eu_va_graccur_last            | gid                  | integer           | YES
+ eu_va_graccur_last            | fk_grille            | uuid              | YES
+ eu_va_graccur_last            | contenu              | character         | YES
+ eu_va_graccur_last            | proprio              | character         | YES
+ eu_va_graccur_last            | action_type          | character         | YES
+ eu_va_graccur_last            | action_date          | date              | YES
+ eu_va_graccur_last            | action_annee         | double precision  | YES
+ eu_va_graccur_last            | action_entr          | character         | YES
+ eu_va_graccur_last            | action_ref           | character         | YES
+ eu_va_graccur_last            | utilisat             | character         | YES
+ eu_va_graccur_last            | chantier             | character         | YES
+ eu_va_graccur_last            | remarque             | character         | YES
+ eu_va_graccur_last            | lien1gmf             | character         | YES
+ eu_va_graccur_last            | lien2gmf             | character         | YES
+ eu_va_graccur_last            | maj_date             | date              | YES
+ eu_va_graccur_last            | geom                 | USER-DEFINED      | YES
+ eu_va_graccur_todo            | gid                  | integer           | YES
+ eu_va_graccur_todo            | fk_grille            | uuid              | YES
+ eu_va_graccur_todo            | contenu              | character         | YES
+ eu_va_graccur_todo            | proprio              | character         | YES
+ eu_va_graccur_todo            | action_type          | character         | YES
+ eu_va_graccur_todo            | action_date          | date              | YES
+ eu_va_graccur_todo            | action_annee         | double precision  | YES
+ eu_va_graccur_todo            | action_entr          | character         | YES
+ eu_va_graccur_todo            | action_ref           | character         | YES
+ eu_va_graccur_todo            | utilisat             | character         | YES
+ eu_va_graccur_todo            | chantier             | character         | YES
+ eu_va_graccur_todo            | remarque             | character         | YES
+ eu_va_graccur_todo            | lien1gmf             | character         | YES
+ eu_va_graccur_todo            | lien2gmf             | character         | YES
+ eu_va_graccur_todo            | maj_date             | date              | YES
+ eu_va_graccur_todo            | geom                 | USER-DEFINED      | YES
+ eu_va_gracinsp_last           | gid                  | integer           | YES
+ eu_va_gracinsp_last           | fk_grille            | uuid              | YES
+ eu_va_gracinsp_last           | contenu              | character         | YES
+ eu_va_gracinsp_last           | proprio              | character         | YES
+ eu_va_gracinsp_last           | action_type          | character         | YES
+ eu_va_gracinsp_last           | action_date          | date              | YES
+ eu_va_gracinsp_last           | action_annee         | double precision  | YES
+ eu_va_gracinsp_last           | action_entr          | character         | YES
+ eu_va_gracinsp_last           | action_ref           | character         | YES
+ eu_va_gracinsp_last           | utilisat             | character         | YES
+ eu_va_gracinsp_last           | chantier             | character         | YES
+ eu_va_gracinsp_last           | remarque             | character         | YES
+ eu_va_gracinsp_last           | lien1gmf             | character         | YES
+ eu_va_gracinsp_last           | lien2gmf             | character         | YES
+ eu_va_gracinsp_last           | maj_date             | date              | YES
+ eu_va_gracinsp_last           | geom                 | USER-DEFINED      | YES
+ eu_va_gracinsp_todo           | gid                  | integer           | YES
+ eu_va_gracinsp_todo           | fk_grille            | uuid              | YES
+ eu_va_gracinsp_todo           | contenu              | character         | YES
+ eu_va_gracinsp_todo           | proprio              | character         | YES
+ eu_va_gracinsp_todo           | action_type          | character         | YES
+ eu_va_gracinsp_todo           | action_date          | date              | YES
+ eu_va_gracinsp_todo           | action_annee         | double precision  | YES
+ eu_va_gracinsp_todo           | action_entr          | character         | YES
+ eu_va_gracinsp_todo           | action_ref           | character         | YES
+ eu_va_gracinsp_todo           | utilisat             | character         | YES
+ eu_va_gracinsp_todo           | chantier             | character         | YES
+ eu_va_gracinsp_todo           | remarque             | character         | YES
+ eu_va_gracinsp_todo           | lien1gmf             | character         | YES
+ eu_va_gracinsp_todo           | lien2gmf             | character         | YES
+ eu_va_gracinsp_todo           | maj_date             | date              | YES
+ eu_va_gracinsp_todo           | geom                 | USER-DEFINED      | YES
+ eu_va_gractions               | pk_uuid              | uuid              | YES
+ eu_va_gractions               | gid                  | integer           | YES
+ eu_va_gractions               | fk_grille            | uuid              | YES
+ eu_va_gractions               | contenu              | character         | YES
+ eu_va_gractions               | proprio              | character         | YES
+ eu_va_gractions               | action_type          | character         | YES
+ eu_va_gractions               | action_date          | date              | YES
+ eu_va_gractions               | action_annee         | double precision  | YES
+ eu_va_gractions               | action_entr          | character         | YES
+ eu_va_gractions               | action_ref           | character         | YES
+ eu_va_gractions               | utilisat             | character         | YES
+ eu_va_gractions               | chantier             | character         | YES
+ eu_va_gractions               | remarque             | character         | YES
+ eu_va_gractions               | lien1gmf             | character         | YES
+ eu_va_gractions               | lien2gmf             | character         | YES
+ eu_va_gractions               | maj_date             | date              | YES
+ eu_va_gractions               | geom                 | USER-DEFINED      | YES
+ eu_va_gretat_last             | gid                  | integer           | YES
+ eu_va_gretat_last             | fk_grille            | uuid              | YES
+ eu_va_gretat_last             | contenu              | character         | YES
+ eu_va_gretat_last             | proprio              | character         | YES
+ eu_va_gretat_last             | etat_constr          | character         | YES
+ eu_va_gretat_last             | necess_ass           | character         | YES
+ eu_va_gretat_last             | etat_date            | date              | YES
+ eu_va_gretat_last             | etat_annee           | double precision  | YES
+ eu_va_gretat_last             | remarque             | character         | YES
+ eu_va_gretat_last             | lien1gmf             | character         | YES
+ eu_va_gretat_last             | lien2gmf             | character         | YES
+ eu_va_gretat_last             | maj_date             | date              | YES
+ eu_va_gretat_last             | geom                 | USER-DEFINED      | YES
+ eu_va_gretats                 | pk_uuid              | uuid              | YES
+ eu_va_gretats                 | gid                  | integer           | YES
+ eu_va_gretats                 | fk_grille            | uuid              | YES
+ eu_va_gretats                 | contenu              | character         | YES
+ eu_va_gretats                 | proprio              | character         | YES
+ eu_va_gretats                 | etat_constr          | character         | YES
+ eu_va_gretats                 | necess_ass           | character         | YES
+ eu_va_gretats                 | etat_date            | date              | YES
+ eu_va_gretats                 | etat_annee           | double precision  | YES
+ eu_va_gretats                 | remarque             | character         | YES
+ eu_va_gretats                 | lien1gmf             | character         | YES
+ eu_va_gretats                 | lien2gmf             | character         | YES
+ eu_va_gretats                 | maj_date             | date              | YES
+ eu_va_gretats                 | geom                 | USER-DEFINED      | YES
+ eu_va_obj_ponct               | id                   | bigint            | YES
+ eu_va_obj_ponct               | pk_uuid              | uuid              | YES
+ eu_va_obj_ponct               | gid                  | integer           | YES
+ eu_va_obj_ponct               | objet                | text              | YES
+ eu_va_obj_ponct               | no_obj               | character         | YES
+ eu_va_obj_ponct               | alt_couv             | double precision  | YES
+ eu_va_obj_ponct               | geom                 | USER-DEFINED      | YES
+ eu_va_ss_surf_impermeable     | pk_uuid              | uuid              | YES
+ eu_va_ss_surf_impermeable     | gid                  | integer           | YES
+ eu_va_ss_surf_impermeable     | no_parc              | character         | YES
+ eu_va_ss_surf_impermeable     | type_surf            | character         | YES
+ eu_va_ss_surf_impermeable     | remarque             | character         | YES
+ eu_va_ss_surf_impermeable     | area                 | double precision  | YES
+ eu_va_ss_surf_impermeable     | maj_date             | date              | YES
+ eu_va_ss_surf_impermeable     | lien1gmf             | character         | YES
+ eu_va_ss_surf_impermeable     | file2                | character         | YES
+ eu_va_ss_surf_impermeable     | lien2qgis            | character         | YES
+ eu_va_ss_surf_impermeable     | lien2gmf             | character         | YES
+ eu_va_ss_surf_impermeable     | geom                 | USER-DEFINED      | YES
+ eu_va_ss_surf_impermeable_par | pk_uuid              | uuid              | YES
+ eu_va_ss_surf_impermeable_par | gid                  | integer           | YES
+ eu_va_ss_surf_impermeable_par | numero               | character         | YES
+ eu_va_ss_surf_impermeable_par | geom                 | USER-DEFINED      | YES
+ eu_va_ss_surf_impermeable_par | total_taxe           | double precision  | YES
+ eu_zone_infiltration          | gid                  | integer           | NO
+ eu_zone_infiltration          | no_obj               | character         | YES
+ eu_zone_infiltration          | no_obj_2             | character         | YES
+ eu_zone_infiltration          | contenu              | character         | YES
+ eu_zone_infiltration          | utilisat             | character         | YES
+ eu_zone_infiltration          | proprio              | character         | YES
+ eu_zone_infiltration          | precis_pl            | character         | YES
+ eu_zone_infiltration          | potent               | character         | YES
+ eu_zone_infiltration          | remarque             | character         | YES
+ eu_zone_infiltration          | maj_date             | date              | YES
+ eu_zone_infiltration          | area                 | double precision  | YES
+ eu_zone_infiltration          | file1                | character         | YES
+ eu_zone_infiltration          | lien1qgis            | character         | YES
+ eu_zone_infiltration          | lien1gmf             | character         | YES
+ eu_zone_infiltration          | file2                | character         | YES
+ eu_zone_infiltration          | lien2qgis            | character         | YES
+ eu_zone_infiltration          | lien2gmf             | character         | YES
+ eu_zone_infiltration          | geom                 | USER-DEFINED      | YES
+ eu_zone_infiltration          | pk_uuid              | uuid              | NO
+ eu_zone_infiltration          | data_owner           | character varying | YES
+ eu_zone_inondable             | gid                  | integer           | NO
+ eu_zone_inondable             | no_obj               | character         | YES
+ eu_zone_inondable             | no_obj_2             | character         | YES
+ eu_zone_inondable             | contenu              | character         | YES
+ eu_zone_inondable             | utilisat             | character         | YES
+ eu_zone_inondable             | proprio              | character         | YES
+ eu_zone_inondable             | precis_pl            | character         | YES
+ eu_zone_inondable             | volume               | double precision  | YES
+ eu_zone_inondable             | remarque             | character         | YES
+ eu_zone_inondable             | maj_date             | date              | YES
+ eu_zone_inondable             | area                 | double precision  | YES
+ eu_zone_inondable             | file1                | character         | YES
+ eu_zone_inondable             | lien1qgis            | character         | YES
+ eu_zone_inondable             | lien1gmf             | character         | YES
+ eu_zone_inondable             | file2                | character         | YES
+ eu_zone_inondable             | lien2qgis            | character         | YES
+ eu_zone_inondable             | lien2gmf             | character         | YES
+ eu_zone_inondable             | geom                 | USER-DEFINED      | YES
+ eu_zone_inondable             | pk_uuid              | uuid              | NO
+ eu_zone_inondable             | data_owner           | character varying | YES
+(1699 lignes)
+

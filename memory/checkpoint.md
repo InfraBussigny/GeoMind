@@ -1,5 +1,16 @@
 # GeoBrain Checkpoints
 
+## CP-20251218-1630
+```
+S:38|P:QGIS-INSPECTION|T:Rapport-Stats-Note-Technique
+F:generate_rapport_inspection.py,generate_note_technique_qgis.py,generate_doc_qgis_inspection.py,v_ass_collecteur_inspection(vue PG)
+W:Vue PostgreSQL créée(date_derniere_inspection,nb_inspections,jours_depuis)|Projet QGIS v2 modifié|Rapport stats v7(graphiques cohérents,bar charts,mise en page)|Doc utilisateur v3|Note technique v3(problème=formules if imbriquées)
+N:Valider docs avec Marc|Copier projet QGIS sur M:|Mettre à jour sessions.md
+X:20 collecteurs dates inversées corrigés|54% réseau inspecté(38.19km/70.71km)|308 avec 2 inspections|Graphiques: bar vertical uniformes, palette Bussigny
+```
+
+---
+
 ## CP-20251218-1430
 ```
 S:38|P:MIGRATION-SDOL|T:Analyse-Excel-HKD-Corrections

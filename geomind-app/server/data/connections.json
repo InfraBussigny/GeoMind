@@ -11,7 +11,7 @@
     "privateKey": null,
     "ssl": false,
     "createdAt": "2025-12-10T12:48:23.626Z",
-    "lastUsed": "2025-12-15T14:30:33.822Z",
+    "lastUsed": "2025-12-18T07:21:37.067Z",
     "updatedAt": "2025-12-12T09:37:47.759Z"
   },
   {
@@ -73,11 +73,11 @@
     "port": 5432,
     "database": "sdol",
     "username": "by_lgr",
-    "password": "U2FsdGVkX1/+0ozsgkNLpU7WzK5mRAelE4sl5ZqKnEI=",
+    "password": "U2FsdGVkX1+dBB1ZmZmbdhCYbrj4vVJb+IsBwk7Vuck=",
     "privateKey": null,
     "ssl": false,
     "createdAt": "2025-12-12T13:20:58.868Z",
     "lastUsed": null,
-    "updatedAt": "2025-12-12T14:43:35.873Z"
+    "updatedAt": "2025-12-16T07:51:53.730Z"
   }
 ]

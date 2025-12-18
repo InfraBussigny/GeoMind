@@ -1,0 +1,1 @@
+psql: erreur : la connexion au serveur sur « postgres.hkd-geomatique.com » (37.0.56.182), port 5432 a échoué : FATAL:  le rôle « by_lgr » n'est pas autorisé à se connecter

@@ -1,0 +1,139 @@
+{
+  "general": {
+    "nb_total": 3209,
+    "km_total": 70.71,
+    "nb_inspectes": 1521,
+    "km_inspectes": 38.19,
+    "nb_non_inspectes": 1688,
+    "km_non_inspectes": 32.52,
+    "pct_km_inspectes": 54.0
+  },
+  "par_annee": [
+    {
+      "annee": 2013,
+      "nb": 63,
+      "km": 2.68
+    },
+    {
+      "annee": 2015,
+      "nb": 31,
+      "km": 0.74
+    },
+    {
+      "annee": 2016,
+      "nb": 40,
+      "km": 1.02
+    },
+    {
+      "annee": 2017,
+      "nb": 387,
+      "km": 10.51
+    },
+    {
+      "annee": 2018,
+      "nb": 86,
+      "km": 2.71
+    },
+    {
+      "annee": 2019,
+      "nb": 89,
+      "km": 2.49
+    },
+    {
+      "annee": 2020,
+      "nb": 99,
+      "km": 2.72
+    },
+    {
+      "annee": 2021,
+      "nb": 73,
+      "km": 0.83
+    },
+    {
+      "annee": 2022,
+      "nb": 115,
+      "km": 3.54
+    },
+    {
+      "annee": 2023,
+      "nb": 96,
+      "km": 3.77
+    },
+    {
+      "annee": 2024,
+      "nb": 204,
+      "km": 3.09
+    },
+    {
+      "annee": 2025,
+      "nb": 238,
+      "km": 4.1
+    }
+  ],
+  "inspections_toutes": [
+    {
+      "annee": 2013,
+      "nb": 101,
+      "km": 3.39
+    },
+    {
+      "annee": 2015,
+      "nb": 31,
+      "km": 0.74
+    },
+    {
+      "annee": 2016,
+      "nb": 40,
+      "km": 1.02
+    },
+    {
+      "annee": 2017,
+      "nb": 428,
+      "km": 11.35
+    },
+    {
+      "annee": 2018,
+      "nb": 100,
+      "km": 3.44
+    },
+    {
+      "annee": 2019,
+      "nb": 107,
+      "km": 2.7
+    },
+    {
+      "annee": 2020,
+      "nb": 121,
+      "km": 3.64
+    },
+    {
+      "annee": 2021,
+      "nb": 131,
+      "km": 2.58
+    },
+    {
+      "annee": 2022,
+      "nb": 121,
+      "km": 3.69
+    },
+    {
+      "annee": 2023,
+      "nb": 123,
+      "km": 4.57
+    },
+    {
+      "annee": 2024,
+      "nb": 288,
+      "km": 4.04
+    },
+    {
+      "annee": 2025,
+      "nb": 238,
+      "km": 4.1
+    }
+  ],
+  "deux_inspections": {
+    "nb": 308,
+    "km": 7.06,
+    "delai_moyen_jours": 1426,
+    "delai_moyen_annees": 
