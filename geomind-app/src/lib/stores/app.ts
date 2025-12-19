@@ -1,7 +1,7 @@
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 
-export type ModuleType = 'chat' | 'canvas' | 'qgls' | 'editor' | 'docgen' | 'settings' | 'connexions' | 'comm' | 'databases' | 'timepro' | 'wip' | 'cad' | 'converter' | 'wakelock' | 'kdrive' | 'intercapi' | 'calage';
+export type ModuleType = 'chat' | 'canvas' | 'qgls' | 'editor' | 'docgen' | 'settings' | 'connexions' | 'comm' | 'databases' | 'timepro' | 'wip' | 'cad' | 'converter' | 'wakelock' | 'kdrive' | 'intercapi' | 'calage' | 'stats';
 
 export const currentModule = writable<ModuleType>('chat');
 export const sidebarCollapsed = writable(false);
@@ -242,6 +242,7 @@ export const ALL_MODULES: { id: ModuleType; label: string; description: string; 
   { id: 'comm', label: 'Communications', description: 'Outlook, Teams, 3CX' },
   { id: 'docgen', label: 'DocGen', description: 'Generation docs' },
   { id: 'intercapi', label: 'Intercapi', description: 'Registre Foncier VD' },
+  { id: 'stats', label: 'Stats', description: 'Statistiques geodonnees' },
   { id: 'settings', label: 'Parametres', description: 'Configuration', alwaysVisible: true },
   { id: 'wip', label: 'WIP', description: 'En developpement' },
   { id: 'cad', label: 'CAD', description: 'Viewer DXF/DWG' },
@@ -251,10 +252,10 @@ export const ALL_MODULES: { id: ModuleType; label: string; description: string; 
 
 // Modules par défaut pour chaque mode (tous configurables maintenant)
 const DEFAULT_MODULE_CONFIG: Record<string, ModuleType[]> = {
-  standard: ['chat', 'canvas', 'qgls', 'cad', 'calage', 'databases', 'converter', 'wakelock', 'connexions', 'settings'],
-  expert: ['chat', 'canvas', 'qgls', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'connexions', 'comm', 'docgen', 'intercapi', 'settings', 'cad', 'kdrive', 'calage'],
-  god: ['chat', 'canvas', 'qgls', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'connexions', 'comm', 'docgen', 'intercapi', 'settings', 'wip', 'cad', 'kdrive', 'calage'],
-  bfsa: ['chat', 'canvas', 'qgls', 'editor', 'databases', 'converter', 'wakelock', 'timepro', 'connexions', 'comm', 'docgen', 'intercapi', 'settings', 'cad', 'kdrive', 'calage']
+  standard: ['chat', 'canvas', 'qgls', 'cad', 'calage', 'databases', 'stats', 'converter', 'wakelock', 'connexions', 'settings'],
+  expert: ['chat', 'canvas', 'qgls', 'editor', 'databases', 'stats', 'converter', 'wakelock', 'timepro', 'connexions', 'comm', 'docgen', 'intercapi', 'settings', 'cad', 'kdrive', 'calage'],
+  god: ['chat', 'canvas', 'qgls', 'editor', 'databases', 'stats', 'converter', 'wakelock', 'timepro', 'connexions', 'comm', 'docgen', 'intercapi', 'settings', 'wip', 'cad', 'kdrive', 'calage'],
+  bfsa: ['chat', 'canvas', 'qgls', 'editor', 'databases', 'stats', 'converter', 'wakelock', 'timepro', 'connexions', 'comm', 'docgen', 'intercapi', 'settings', 'cad', 'kdrive', 'calage']
 };
 
 // Store pour la configuration personnalisée des modules par mode
@@ -348,14 +349,14 @@ export const moduleConfig = createModuleConfigStore();
 
 // Ordre par défaut des modules
 const DEFAULT_MODULE_ORDER: ModuleType[] = [
-  'chat', 'canvas', 'qgls', 'cad', 'calage', 'editor', 'databases', 'converter',
+  'chat', 'canvas', 'qgls', 'cad', 'calage', 'editor', 'databases', 'stats', 'converter',
   'connexions', 'kdrive', 'intercapi', 'wakelock', 'timepro', 'comm', 'docgen',
   'settings', 'wip'
 ];
 
 // Store pour l'ordre personnalisé des modules
 // Version de la config - incrémenter pour forcer un reset
-const MODULE_CONFIG_VERSION = 3; // v3: ajout QGlS dans l'ordre des modules
+const MODULE_CONFIG_VERSION = 4; // v4: ajout module Stats
 
 function createModuleOrderStore() {
   // Vérifier la version et reset si nécessaire

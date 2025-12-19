@@ -17,6 +17,7 @@
   import KDriveModule from '$lib/components/KDrive/KDriveModule.svelte';
   import { IntercapiModule } from '$lib/components/Intercapi';
   import CalageModule from '$lib/components/Calage/CalageModule.svelte';
+  import StatsModule from '$lib/components/Stats/StatsModule.svelte';
 </script>
 
 <div class="module-container">
@@ -54,6 +55,8 @@
     <IntercapiModule />
   {:else if $currentModule === 'calage'}
     <CalageModule />
+  {:else if $currentModule === 'stats'}
+    <StatsModule />
   {/if}
 </div>
 

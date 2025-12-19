@@ -1,5 +1,16 @@
 # GeoBrain Checkpoints
 
+## CP-20251219-1100
+```
+S:39|P:MODULE-STATS|T:Stats-GeoMind-Complet
+F:StatsModule.svelte,AssainissementTab.svelte,CadastreTab.svelte,GeneralTab.svelte,StatsKPI.svelte,StatsChart.svelte,statsStore.ts,server/index.js
+W:Module Stats GeoMind COMPLET|3 onglets(Assainissement,Cadastre,Général)|Chart.js intégré|6 endpoints API(/api/stats/*,/api/databases/schemas-tables-columns)|Requêtes SQL assainissement(collecteurs,états,chambres)|Query builder général
+N:Tester module dans GeoMind|Ajouter export PDF|Améliorer onglet Cadastre
+X:KPIs Bussigny=3209 collecteurs(70.71km)|EC 39.28km EU 30.31km EM 1.11km|7 états inspection|10 genres chambres(1419 visites,854 grilles)|svelte-chartjs incompatible Svelte5→wrapper custom
+```
+
+---
+
 ## CP-20251218-1630
 ```
 S:38|P:QGIS-INSPECTION|T:Rapport-Stats-Note-Technique

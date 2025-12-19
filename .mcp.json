@@ -1,15 +1,15 @@
-﻿{
+{
   "mcpServers": {
     "postgres-bussigny": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-postgres"],
       "env": {
-        "DATABASE_URL": "postgresql://USER:PASSWORD@srv-fme:5432/Prod"
+        "DATABASE_URL": "postgresql://postgres:dsg#6hY95!@srv-fme:5432/Prod"
       }
     },
     "filesystem": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "C:\Users\zema\GeoBrain", "C:\Users\zema\GeoBrain\scripts"]
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "C:/Users/zema/GeoBrain", "C:/Users/zema/GeoBrain/scripts"]
     }
   }
 }

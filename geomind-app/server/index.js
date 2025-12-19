@@ -4232,6 +4232,427 @@ app.post('/api/pyqgis/process', async (req, res) => {
 });
 
 // ============================================
+// STATS MODULE API
+// ============================================
+
+/**
+ * GET /api/databases/:connectionId/schemas
+ * Liste tous les schémas de la base de données
+ */
+app.get('/api/databases/:connectionId/schemas', async (req, res) => {
+  try {
+    const { connectionId } = req.params;
+    const conn = connections.getConnection(connectionId);
+    if (!conn || conn.type !== 'postgresql') {
+      return res.status(400).json({ error: 'Connexion PostgreSQL non trouvée' });
+    }
+
+    await connections.connect(connectionId);
+
+    const query = `
+      SELECT schema_name
+      FROM information_schema.schemata
+      WHERE schema_name NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
+      ORDER BY schema_name
+    `;
+    const result = await connections.executeSQL(connectionId, query);
+    res.json({ schemas: result.rows.map(r => r.schema_name) });
+  } catch (error) {
+    console.error('[Stats] Error loading schemas:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * GET /api/databases/:connectionId/schema/:schema/tables
+ * Liste les tables d'un schéma
+ */
+app.get('/api/databases/:connectionId/schema/:schema/tables', async (req, res) => {
+  try {
+    const { connectionId, schema } = req.params;
+    const conn = connections.getConnection(connectionId);
+    if (!conn || conn.type !== 'postgresql') {
+      return res.status(400).json({ error: 'Connexion PostgreSQL non trouvée' });
+    }
+
+    await connections.connect(connectionId);
+
+    // Échapper le schéma pour éviter injection SQL
+    const safeSchema = schema.replace(/'/g, "''");
+    const query = `
+      SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema = '${safeSchema}'
+        AND table_type IN ('BASE TABLE', 'VIEW')
+      ORDER BY table_name
+    `;
+    const result = await connections.executeSQL(connectionId, query);
+    res.json({ tables: result.rows.map(r => r.table_name) });
+  } catch (error) {
+    console.error('[Stats] Error loading tables:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * GET /api/databases/:connectionId/schema/:schema/table/:table/columns
+ * Liste les colonnes d'une table
+ */
+app.get('/api/databases/:connectionId/schema/:schema/table/:table/columns', async (req, res) => {
+  try {
+    const { connectionId, schema, table } = req.params;
+    const conn = connections.getConnection(connectionId);
+    if (!conn || conn.type !== 'postgresql') {
+      return res.status(400).json({ error: 'Connexion PostgreSQL non trouvée' });
+    }
+
+    await connections.connect(connectionId);
+
+    // Échapper les valeurs pour éviter injection SQL
+    const safeSchema = schema.replace(/'/g, "''");
+    const safeTable = table.replace(/'/g, "''");
+    const query = `
+      SELECT column_name as name, data_type as type
+      FROM information_schema.columns
+      WHERE table_schema = '${safeSchema}' AND table_name = '${safeTable}'
+      ORDER BY ordinal_position
+    `;
+    const result = await connections.executeSQL(connectionId, query);
+    res.json({ columns: result.rows });
+  } catch (error) {
+    console.error('[Stats] Error loading columns:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * GET /api/stats/assainissement/:connectionId
+ * Statistiques pré-calculées pour l'assainissement
+ */
+app.get('/api/stats/assainissement/:connectionId', async (req, res) => {
+  try {
+    const { connectionId } = req.params;
+    const conn = connections.getConnection(connectionId);
+    if (!conn || conn.type !== 'postgresql') {
+      return res.status(400).json({ error: 'Connexion PostgreSQL non trouvée' });
+    }
+
+    await connections.connect(connectionId);
+
+    // 1. KPIs principaux
+    const kpisQuery = `
+      SELECT
+        COUNT(*) FILTER (WHERE proprietaire = 'Bussigny - Publique') as nb_collecteurs_publics,
+        ROUND(SUM(ST_Length(geom)) FILTER (WHERE proprietaire = 'Bussigny - Publique')::numeric / 1000, 2) as km_collecteurs_publics,
+        COUNT(DISTINCT CASE WHEN proprietaire = 'Bussigny - Publique' THEN genre_utilisation END) as nb_types
+      FROM assainissement.by_ass_collecteur
+    `;
+    const kpisResult = await connections.executeSQL(connectionId, kpisQuery);
+    const kpiRow = kpisResult.rows[0];
+
+    // 2. Collecteurs par type d'eau
+    const typeQuery = `
+      SELECT
+        COALESCE(genre_utilisation, 'Non renseigné') as type_eau,
+        COUNT(*) as nb_troncons,
+        ROUND(SUM(ST_Length(geom))::numeric / 1000, 2) as km
+      FROM assainissement.by_ass_collecteur
+      WHERE proprietaire = 'Bussigny - Publique'
+      GROUP BY genre_utilisation
+      ORDER BY km DESC
+    `;
+    const typeResult = await connections.executeSQL(connectionId, typeQuery);
+
+    // 3. Collecteurs par état d'inspection
+    const etatQuery = `
+      SELECT
+        COALESCE(etat_derniere_inspection, 'Non inspecté') as etat,
+        COUNT(*) as nb,
+        ROUND(SUM(ST_Length(geom))::numeric / 1000, 2) as km
+      FROM assainissement.v_ass_collecteur_inspection
+      WHERE proprietaire = 'Bussigny - Publique'
+      GROUP BY etat_derniere_inspection, id_etat_derniere_inspection
+      ORDER BY COALESCE(id_etat_derniere_inspection, 99)
+    `;
+    let etatResult = { rows: [] };
+    try {
+      etatResult = await connections.executeSQL(connectionId, etatQuery);
+    } catch (e) {
+      console.log('[Stats] Vue inspection non disponible:', e.message);
+    }
+
+    // 4. Chambres par genre
+    const chambresQuery = `
+      SELECT
+        COALESCE(genre_chambre, 'Non renseigné') as type,
+        COUNT(*) as nb
+      FROM assainissement.by_ass_chambre
+      WHERE proprietaire LIKE '%Bussigny%'
+      GROUP BY genre_chambre
+      ORDER BY nb DESC
+      LIMIT 10
+    `;
+    let chambresResult = { rows: [] };
+    try {
+      chambresResult = await connections.executeSQL(connectionId, chambresQuery);
+    } catch (e) {
+      console.log('[Stats] Table chambres non disponible:', e.message);
+    }
+
+    // Construire la réponse
+    const kpis = [
+      {
+        label: 'Collecteurs publics',
+        value: parseInt(kpiRow.nb_collecteurs_publics) || 0,
+        unit: 'tronçons'
+      },
+      {
+        label: 'Linéaire total',
+        value: parseFloat(kpiRow.km_collecteurs_publics) || 0,
+        unit: 'km'
+      },
+      {
+        label: 'Types de réseau',
+        value: parseInt(kpiRow.nb_types) || 0,
+        unit: 'types'
+      }
+    ];
+
+    const collecteursParType = {
+      labels: typeResult.rows.map(r => r.type_eau),
+      datasets: [{
+        label: 'Kilomètres',
+        data: typeResult.rows.map(r => parseFloat(r.km))
+      }]
+    };
+
+    const collecteursParEtat = {
+      labels: etatResult.rows.map(r => r.etat),
+      datasets: [{
+        label: 'Kilomètres',
+        data: etatResult.rows.map(r => parseFloat(r.km))
+      }]
+    };
+
+    const chambresParType = {
+      labels: chambresResult.rows.map(r => r.type),
+      datasets: [{
+        label: 'Nombre',
+        data: chambresResult.rows.map(r => parseInt(r.nb))
+      }]
+    };
+
+    res.json({
+      kpis,
+      collecteursParType,
+      collecteursParEtat,
+      chambresParType,
+      rawData: {
+        types: typeResult.rows,
+        etats: etatResult.rows,
+        chambres: chambresResult.rows
+      }
+    });
+
+  } catch (error) {
+    console.error('[Stats] Error loading assainissement stats:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * GET /api/stats/cadastre/:connectionId
+ * Statistiques pré-calculées pour le cadastre
+ */
+app.get('/api/stats/cadastre/:connectionId', async (req, res) => {
+  try {
+    const { connectionId } = req.params;
+    const conn = connections.getConnection(connectionId);
+    if (!conn || conn.type !== 'postgresql') {
+      return res.status(400).json({ error: 'Connexion PostgreSQL non trouvée' });
+    }
+
+    await connections.connect(connectionId);
+
+    // 1. KPIs principaux
+    const kpisQuery = `
+      SELECT
+        COUNT(*) as nb_parcelles,
+        ROUND(SUM(ST_Area(geom))::numeric, 0) as surface_totale_m2,
+        COUNT(DISTINCT proprietaire) as nb_proprietaires
+      FROM bdco.parcelles
+    `;
+    let kpisResult = { rows: [{}] };
+    try {
+      kpisResult = await connections.executeSQL(connectionId, kpisQuery);
+    } catch (e) {
+      console.log('[Stats] Table parcelles non disponible:', e.message);
+    }
+    const kpiRow = kpisResult.rows[0] || {};
+
+    // 2. Parcelles par type
+    const typeQuery = `
+      SELECT
+        COALESCE(type_propriete, 'Non renseigné') as type,
+        COUNT(*) as nb_parcelles,
+        ROUND(SUM(ST_Area(geom))::numeric, 0) as surface_m2
+      FROM bdco.parcelles
+      GROUP BY type_propriete
+      ORDER BY surface_m2 DESC
+      LIMIT 10
+    `;
+    let typeResult = { rows: [] };
+    try {
+      typeResult = await connections.executeSQL(connectionId, typeQuery);
+    } catch (e) {
+      console.log('[Stats] Statistiques parcelles non disponibles:', e.message);
+    }
+
+    // 3. Surfaces par propriétaire (top 10)
+    const propQuery = `
+      SELECT
+        COALESCE(proprietaire, 'Non renseigné') as proprietaire,
+        COUNT(*) as nb_parcelles,
+        ROUND(SUM(ST_Area(geom))::numeric, 0) as surface_m2
+      FROM bdco.parcelles
+      GROUP BY proprietaire
+      ORDER BY surface_m2 DESC
+      LIMIT 10
+    `;
+    let propResult = { rows: [] };
+    try {
+      propResult = await connections.executeSQL(connectionId, propQuery);
+    } catch (e) {
+      console.log('[Stats] Statistiques propriétaires non disponibles:', e.message);
+    }
+
+    // Construire la réponse
+    const kpis = [
+      {
+        label: 'Parcelles',
+        value: parseInt(kpiRow.nb_parcelles) || 0,
+        unit: ''
+      },
+      {
+        label: 'Surface totale',
+        value: Math.round((parseFloat(kpiRow.surface_totale_m2) || 0) / 10000),
+        unit: 'ha'
+      },
+      {
+        label: 'Propriétaires',
+        value: parseInt(kpiRow.nb_proprietaires) || 0,
+        unit: ''
+      }
+    ];
+
+    const parcellesParType = typeResult.rows.length > 0 ? {
+      labels: typeResult.rows.map(r => r.type),
+      datasets: [{
+        label: 'Parcelles',
+        data: typeResult.rows.map(r => parseInt(r.nb_parcelles))
+      }]
+    } : null;
+
+    const surfacesParProprietaire = propResult.rows.length > 0 ? {
+      labels: propResult.rows.map(r => r.proprietaire?.substring(0, 20) || 'N/A'),
+      datasets: [{
+        label: 'Surface (m²)',
+        data: propResult.rows.map(r => parseInt(r.surface_m2))
+      }]
+    } : null;
+
+    res.json({
+      kpis,
+      parcellesParType,
+      surfacesParProprietaire,
+      rawData: {
+        types: typeResult.rows,
+        proprietaires: propResult.rows
+      }
+    });
+
+  } catch (error) {
+    console.error('[Stats] Error loading cadastre stats:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * POST /api/stats/query
+ * Requête statistique ad-hoc (onglet Général)
+ */
+app.post('/api/stats/query', async (req, res) => {
+  try {
+    const { connectionId, schema, table, groupBy, aggregation, aggregationColumn } = req.body;
+
+    if (!connectionId || !schema || !table || !groupBy) {
+      return res.status(400).json({ error: 'Paramètres manquants' });
+    }
+
+    const conn = connections.getConnection(connectionId);
+    if (!conn || conn.type !== 'postgresql') {
+      return res.status(400).json({ error: 'Connexion PostgreSQL non trouvée' });
+    }
+
+    await connections.connect(connectionId);
+
+    // Construire la requête selon l'agrégation
+    let aggExpression;
+    let valueColumn = 'valeur';
+    switch (aggregation) {
+      case 'SUM':
+        if (!aggregationColumn) {
+          return res.status(400).json({ error: 'Colonne requise pour SUM' });
+        }
+        aggExpression = `SUM("${aggregationColumn}")`;
+        valueColumn = `sum_${aggregationColumn}`;
+        break;
+      case 'AVG':
+        if (!aggregationColumn) {
+          return res.status(400).json({ error: 'Colonne requise pour AVG' });
+        }
+        aggExpression = `ROUND(AVG("${aggregationColumn}")::numeric, 2)`;
+        valueColumn = `avg_${aggregationColumn}`;
+        break;
+      default:
+        aggExpression = 'COUNT(*)';
+        valueColumn = 'count';
+    }
+
+    const query = `
+      SELECT
+        COALESCE("${groupBy}"::text, 'Non renseigné') as "${groupBy}",
+        ${aggExpression} as "${valueColumn}"
+      FROM "${schema}"."${table}"
+      GROUP BY "${groupBy}"
+      ORDER BY "${valueColumn}" DESC
+      LIMIT 20
+    `;
+
+    const result = await connections.executeSQL(connectionId, query);
+
+    // Construire les données pour le graphique
+    const chartData = {
+      labels: result.rows.map(r => String(r[groupBy])?.substring(0, 30) || 'N/A'),
+      datasets: [{
+        label: valueColumn,
+        data: result.rows.map(r => parseFloat(r[valueColumn]) || 0)
+      }]
+    };
+
+    res.json({
+      results: result.rows,
+      columns: [groupBy, valueColumn],
+      chartData
+    });
+
+  } catch (error) {
+    console.error('[Stats] Error executing query:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ============================================
 // START SERVER
 // ============================================
 

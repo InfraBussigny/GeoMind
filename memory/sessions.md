@@ -1,4 +1,46 @@
-## Session 38 (en cours) - 18 décembre 2025
+## Session 39 (en cours) - 19 décembre 2025
+**Thème** : Module Stats GeoMind
+
+### Travail effectué
+
+#### Module Statistiques GeoMind - COMPLET
+Infrastructure complète pour statistiques interactives dans GeoMind.
+
+**Architecture :**
+- Module avec 3 onglets : Assainissement, Cadastre, Général
+- Chart.js pour graphiques interactifs (bar, pie, line, doughnut)
+- Sélecteur de connexion PostgreSQL
+
+**Fichiers créés :**
+| Fichier | Description |
+|---------|-------------|
+| `src/lib/components/Stats/StatsModule.svelte` | Module principal avec header/onglets |
+| `src/lib/components/Stats/tabs/AssainissementTab.svelte` | Stats assainissement |
+| `src/lib/components/Stats/tabs/CadastreTab.svelte` | Stats cadastre |
+| `src/lib/components/Stats/tabs/GeneralTab.svelte` | Query builder personnalisé |
+| `src/lib/components/Stats/widgets/StatsKPI.svelte` | Cards indicateurs |
+| `src/lib/components/Stats/widgets/StatsChart.svelte` | Wrapper Chart.js |
+| `src/lib/stores/statsStore.ts` | Store Svelte pour état |
+
+**Endpoints API créés :**
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/databases/:id/schemas` | Liste schémas |
+| `GET /api/databases/:id/schema/:schema/tables` | Liste tables |
+| `GET /api/databases/:id/schema/:schema/table/:table/columns` | Liste colonnes |
+| `GET /api/stats/assainissement/:connId` | Stats assainissement pré-calculées |
+| `GET /api/stats/cadastre/:connId` | Stats cadastre pré-calculées |
+| `POST /api/stats/query` | Requête ad-hoc générale |
+
+**Données assainissement Bussigny (testées) :**
+- KPIs : 3209 collecteurs publics, 70.71 km, 3 types
+- Collecteurs par type : EC (39.28 km), EU (30.31 km), EM (1.11 km)
+- Collecteurs par état : 7 états (Bon état 20.92 km, Non inspecté 32.52 km...)
+- Chambres par genre : 10 types (1419 chambres visite, 854 grilles...)
+
+---
+
+## Session 38 (terminée) - 18 décembre 2025
 **Thème** : Migration SDOL - Analyse complète
 
 ### EN SUSPENS - À reprendre

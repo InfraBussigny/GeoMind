@@ -384,6 +384,11 @@
               <path d="M21 5v6c0 1.66-4 3-9 3s-9-1.34-9-3V5"/>
               <path d="M21 11v6c0 1.66-4 3-9 3s-9-1.34-9-3v-6"/>
             </svg>
+          <!-- Stats -->
+          {:else if module.id === 'stats'}
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M18 20V10M12 20V4M6 20v-6"/>
+            </svg>
           <!-- TimePro -->
           {:else if module.id === 'timepro'}
             <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
