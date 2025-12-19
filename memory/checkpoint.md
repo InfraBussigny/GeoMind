@@ -1,5 +1,16 @@
 # GeoBrain Checkpoints
 
+## CP-20251219-1545
+```
+S:41|P:MAXTOOLS-FIXES|T:Migration-QGIS3-Manuel
+F:MaxTools/(6 tools,geometry_v2,finder),docs/generate_manual.py,docs/MaxTools_Manuel_Utilisateur.pdf,scripts/python/geomind_pdf.py
+W:Corrections API QGIS 3.x(setBorderColor→setStrokeColor,layerDeleted→willBeDeleted,setSelectedFeatures→selectByIds,old_div,setMode,calcCanvasTolerance)|Support MultiLineStringZ(asPolyline+GeometryV2.asLineV2)|Manuel PDF GeoMind(13 outils documentés)|Template geomind_pdf.py créé
+N:Test complet plugin Max|Vérifier inspections collecteurs|Ajouter champs vue PostgreSQL
+X:Commits ce10a49+a4a3570+69067e2|Max Francken=BFSA|Auteur original=Christophe Gusthiot(VDL)|Logo=GeoMind_Logo_tsp2.png|GitHub=MarcZermatten/MaxTools
+```
+
+---
+
 ## CP-20251219-1430
 ```
 S:40|P:MAXTOOLS-REPO|T:Fork-VDLTools-pour-Max

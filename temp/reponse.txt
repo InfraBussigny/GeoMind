@@ -1,0 +1,39 @@
+═══════════════════════════════════════════════════════════════════
+                         RÉPONSE GEOBRAIN
+═══════════════════════════════════════════════════════════════════
+
+PROJET INSPECTION COLLECTEURS - CE QUI EXISTE
+───────────────────────────────────────────────────────────────────
+
+Oui ! D'après mes sessions, on avait travaillé sur ça.
+
+CE QUI A ÉTÉ FAIT :
+───────────────────────────────────────────────────────────────────
+
+✅ Vue PostgreSQL : assainissement.v_ass_collecteur_inspection
+
+   Champs calculés :
+   • date_derniere_inspection
+   • date_premiere_inspection
+   • nb_inspections
+   • jours_depuis_inspection
+   • annee_derniere_inspection
+
+✅ Scripts Python :
+   • scripts/python/generate_rapport_inspection.py
+   • scripts/python/generate_doc_qgis_inspection.py
+
+✅ Projet QGIS mentionné :
+   M:\...\703211_Projets\Ass_Collecteurs_inspection_v2.qgz
+
+───────────────────────────────────────────────────────────────────
+CE QUI MANQUE (selon toi) :
+───────────────────────────────────────────────────────────────────
+
+→ Le champ "etat_derniere_inspection" ?
+→ D'autres champs de la note ?
+
+Tu veux que je regarde la vue actuelle sur srv-fme pour voir
+ce qu'il faut ajouter ?
+
+═══════════════════════════════════════════════════════════════════
