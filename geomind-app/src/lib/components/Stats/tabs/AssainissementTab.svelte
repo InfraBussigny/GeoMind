@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { assainissementData, isLoading, statsError, type StatsKPI as KPIType } from '$lib/stores/statsStore';
+  import { assainissementData, isLoading, statsError } from '$lib/stores/statsStore';
   import StatsKPI from '../widgets/StatsKPI.svelte';
   import StatsChart from '../widgets/StatsChart.svelte';
 
@@ -8,17 +7,13 @@
 
   let dataLoaded = false;
 
-  onMount(() => {
-    if (connectionId && !dataLoaded) {
-      loadData();
-    }
-  });
-
   $: if (connectionId && !dataLoaded) {
     loadData();
   }
 
   async function loadData() {
+    if (!connectionId) return;
+
     $isLoading = true;
     $statsError = null;
 
@@ -62,42 +57,52 @@
       {/each}
     </div>
 
-    <!-- Graphiques -->
-    <div class="charts-grid">
+    <!-- Graphiques - Row 1 -->
+    <div class="charts-row">
       {#if $assainissementData.collecteursParType}
         <div class="chart-card">
           <h3>Linéaire par type d'eau</h3>
-          <StatsChart
-            type="bar"
-            data={$assainissementData.collecteursParType}
-            options={{ indexAxis: 'y' }}
-          />
+          <StatsChart type="bar" data={$assainissementData.collecteursParType} />
         </div>
       {/if}
 
       {#if $assainissementData.collecteursParEtat}
         <div class="chart-card">
-          <h3>État des collecteurs</h3>
-          <StatsChart
-            type="bar"
-            data={$assainissementData.collecteursParEtat}
-          />
+          <h3>État d'inspection</h3>
+          <StatsChart type="bar" data={$assainissementData.collecteursParEtat} />
+        </div>
+      {/if}
+    </div>
+
+    <!-- Graphiques - Row 2 -->
+    <div class="charts-row">
+      {#if $assainissementData.collecteursParMateriau}
+        <div class="chart-card">
+          <h3>Linéaire par matériau</h3>
+          <StatsChart type="bar" data={$assainissementData.collecteursParMateriau} options={{ indexAxis: 'y' }} />
         </div>
       {/if}
 
+      {#if $assainissementData.collecteursParHierarchie}
+        <div class="chart-card">
+          <h3>Par fonction hiérarchique</h3>
+          <StatsChart type="pie" data={$assainissementData.collecteursParHierarchie} />
+        </div>
+      {/if}
+    </div>
+
+    <!-- Graphiques - Row 3: Chambres -->
+    <div class="charts-row single">
       {#if $assainissementData.chambresParType}
         <div class="chart-card">
-          <h3>Chambres par type</h3>
-          <StatsChart
-            type="doughnut"
-            data={$assainissementData.chambresParType}
-          />
+          <h3>Chambres par genre</h3>
+          <StatsChart type="doughnut" data={$assainissementData.chambresParType} />
         </div>
       {/if}
     </div>
   {:else if !$isLoading && !$statsError}
     <div class="no-data">
-      <p>Cliquez sur "Actualiser" pour charger les données</p>
+      <p>Chargement des données...</p>
     </div>
   {/if}
 </div>
@@ -144,14 +149,19 @@
 
   .kpis-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 16px;
   }
 
-  .charts-grid {
+  .charts-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 24px;
+  }
+
+  .charts-row.single {
+    grid-template-columns: 1fr;
+    max-width: 500px;
   }
 
   .chart-card {

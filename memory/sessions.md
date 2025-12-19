@@ -1,4 +1,35 @@
-## Session 39 (en cours) - 19 décembre 2025
+## Session 40 (en cours) - 19 décembre 2025
+**Thème** : MaxTools - Fork VDLTools pour Max Francken
+
+### Travail effectué
+
+#### Création repo MaxTools
+- Fork de VDLTools (plugin QGIS Ville de Lausanne) renommé MaxTools
+- Repo public : https://github.com/MarcZermatten/MaxTools
+- 53 fichiers renommés (VDLTools → MaxTools, VDL Tools → Max Tools)
+
+#### Corrections crédits
+- Auteur original : Christophe Gusthiot (Ville de Lausanne)
+- Migration QGIS 3.x : Marc Zermatten via GeoMind (2025)
+- Pour : Max Francken
+
+#### GitHub auth
+- Switch compte InfraBussigny → MarcZermatten
+- Repo créé sous MarcZermatten/MaxTools
+
+### Fichiers modifiés
+- 51 fichiers Python (.py)
+- metadata.txt (crédits, URLs)
+- README.md (crédits, description)
+- max_tools.py (ex vdl_tools.py)
+
+### Prochaines étapes
+- Ajouter easter eggs dans le plugin
+- Tester le plugin dans QGIS
+
+---
+
+## Session 39 (terminée) - 19 décembre 2025
 **Thème** : Module Stats GeoMind
 
 ### Travail effectué

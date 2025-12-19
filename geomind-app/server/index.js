@@ -4327,7 +4327,7 @@ app.get('/api/databases/:connectionId/schema/:schema/table/:table/columns', asyn
 
 /**
  * GET /api/stats/assainissement/:connectionId
- * Statistiques pré-calculées pour l'assainissement
+ * Statistiques complètes pour l'assainissement (basé sur plugin QGIS)
  */
 app.get('/api/stats/assainissement/:connectionId', async (req, res) => {
   try {
@@ -4339,118 +4339,121 @@ app.get('/api/stats/assainissement/:connectionId', async (req, res) => {
 
     await connections.connect(connectionId);
 
-    // 1. KPIs principaux
-    const kpisQuery = `
-      SELECT
-        COUNT(*) FILTER (WHERE proprietaire = 'Bussigny - Publique') as nb_collecteurs_publics,
-        ROUND(SUM(ST_Length(geom)) FILTER (WHERE proprietaire = 'Bussigny - Publique')::numeric / 1000, 2) as km_collecteurs_publics,
-        COUNT(DISTINCT CASE WHEN proprietaire = 'Bussigny - Publique' THEN genre_utilisation END) as nb_types
-      FROM assainissement.by_ass_collecteur
-    `;
-    const kpisResult = await connections.executeSQL(connectionId, kpisQuery);
-    const kpiRow = kpisResult.rows[0];
+    // Exécuter toutes les requêtes en parallèle pour optimiser
+    const queries = {
+      // 1. KPIs principaux
+      kpis: `
+        SELECT
+          COUNT(*) FILTER (WHERE proprietaire = 'Bussigny - Publique') as nb_collecteurs_publics,
+          ROUND(SUM(ST_Length(geom)) FILTER (WHERE proprietaire = 'Bussigny - Publique')::numeric / 1000, 2) as km_collecteurs_publics,
+          COUNT(*) FILTER (WHERE proprietaire LIKE '%Bussigny%') as nb_chambres_publiques
+        FROM assainissement.by_ass_collecteur
+      `,
+      // 2. Collecteurs par type d'eau
+      parType: `
+        SELECT
+          COALESCE(genre_utilisation, 'Non renseigné') as label,
+          COUNT(*) as nb,
+          ROUND(SUM(ST_Length(geom))::numeric / 1000, 2) as km
+        FROM assainissement.by_ass_collecteur
+        WHERE proprietaire = 'Bussigny - Publique'
+        GROUP BY genre_utilisation
+        ORDER BY km DESC
+      `,
+      // 3. Collecteurs par matériau
+      parMateriau: `
+        SELECT
+          COALESCE(materiau, 'Non renseigné') as label,
+          COUNT(*) as nb,
+          ROUND(SUM(ST_Length(geom))::numeric / 1000, 2) as km
+        FROM assainissement.by_ass_collecteur
+        WHERE proprietaire = 'Bussigny - Publique'
+        GROUP BY materiau
+        ORDER BY km DESC
+        LIMIT 10
+      `,
+      // 4. Collecteurs par hiérarchie
+      parHierarchie: `
+        SELECT
+          COALESCE(fonction_hierarchique, 'Non renseigné') as label,
+          COUNT(*) as nb,
+          ROUND(SUM(ST_Length(geom))::numeric / 1000, 2) as km
+        FROM assainissement.by_ass_collecteur
+        WHERE proprietaire = 'Bussigny - Publique'
+        GROUP BY fonction_hierarchique
+        ORDER BY km DESC
+      `,
+      // 5. Collecteurs par état d'inspection
+      parEtat: `
+        SELECT
+          COALESCE(etat_derniere_inspection, 'Non inspecté') as label,
+          COUNT(*) as nb,
+          ROUND(SUM(ST_Length(geom))::numeric / 1000, 2) as km
+        FROM assainissement.v_ass_collecteur_inspection
+        WHERE proprietaire = 'Bussigny - Publique'
+        GROUP BY etat_derniere_inspection, id_etat_derniere_inspection
+        ORDER BY COALESCE(id_etat_derniere_inspection, 99)
+      `,
+      // 6. Chambres par genre
+      chambresGenre: `
+        SELECT
+          COALESCE(genre_chambre, 'Non renseigné') as label,
+          COUNT(*) as nb
+        FROM assainissement.by_ass_chambre
+        WHERE proprietaire LIKE '%Bussigny%'
+        GROUP BY genre_chambre
+        ORDER BY nb DESC
+        LIMIT 10
+      `,
+      // 7. Comptage chambres
+      chambresKpi: `
+        SELECT COUNT(*) as nb FROM assainissement.by_ass_chambre WHERE proprietaire LIKE '%Bussigny%'
+      `
+    };
 
-    // 2. Collecteurs par type d'eau
-    const typeQuery = `
-      SELECT
-        COALESCE(genre_utilisation, 'Non renseigné') as type_eau,
-        COUNT(*) as nb_troncons,
-        ROUND(SUM(ST_Length(geom))::numeric / 1000, 2) as km
-      FROM assainissement.by_ass_collecteur
-      WHERE proprietaire = 'Bussigny - Publique'
-      GROUP BY genre_utilisation
-      ORDER BY km DESC
-    `;
-    const typeResult = await connections.executeSQL(connectionId, typeQuery);
-
-    // 3. Collecteurs par état d'inspection
-    const etatQuery = `
-      SELECT
-        COALESCE(etat_derniere_inspection, 'Non inspecté') as etat,
-        COUNT(*) as nb,
-        ROUND(SUM(ST_Length(geom))::numeric / 1000, 2) as km
-      FROM assainissement.v_ass_collecteur_inspection
-      WHERE proprietaire = 'Bussigny - Publique'
-      GROUP BY etat_derniere_inspection, id_etat_derniere_inspection
-      ORDER BY COALESCE(id_etat_derniere_inspection, 99)
-    `;
-    let etatResult = { rows: [] };
-    try {
-      etatResult = await connections.executeSQL(connectionId, etatQuery);
-    } catch (e) {
-      console.log('[Stats] Vue inspection non disponible:', e.message);
-    }
-
-    // 4. Chambres par genre
-    const chambresQuery = `
-      SELECT
-        COALESCE(genre_chambre, 'Non renseigné') as type,
-        COUNT(*) as nb
-      FROM assainissement.by_ass_chambre
-      WHERE proprietaire LIKE '%Bussigny%'
-      GROUP BY genre_chambre
-      ORDER BY nb DESC
-      LIMIT 10
-    `;
-    let chambresResult = { rows: [] };
-    try {
-      chambresResult = await connections.executeSQL(connectionId, chambresQuery);
-    } catch (e) {
-      console.log('[Stats] Table chambres non disponible:', e.message);
-    }
-
-    // Construire la réponse
-    const kpis = [
-      {
-        label: 'Collecteurs publics',
-        value: parseInt(kpiRow.nb_collecteurs_publics) || 0,
-        unit: 'tronçons'
-      },
-      {
-        label: 'Linéaire total',
-        value: parseFloat(kpiRow.km_collecteurs_publics) || 0,
-        unit: 'km'
-      },
-      {
-        label: 'Types de réseau',
-        value: parseInt(kpiRow.nb_types) || 0,
-        unit: 'types'
+    // Exécuter les requêtes
+    const results = {};
+    for (const [key, query] of Object.entries(queries)) {
+      try {
+        results[key] = await connections.executeSQL(connectionId, query);
+      } catch (e) {
+        console.log(`[Stats] Requête ${key} échouée:`, e.message);
+        results[key] = { rows: [] };
       }
+    }
+
+    const kpiRow = results.kpis.rows[0] || {};
+    const chambresKpiRow = results.chambresKpi.rows[0] || {};
+
+    // Construire les KPIs
+    const kpis = [
+      { label: 'Collecteurs', value: parseInt(kpiRow.nb_collecteurs_publics) || 0, unit: 'tronçons' },
+      { label: 'Linéaire', value: parseFloat(kpiRow.km_collecteurs_publics) || 0, unit: 'km' },
+      { label: 'Chambres', value: parseInt(chambresKpiRow.nb) || 0, unit: 'ouvrages' }
     ];
 
-    const collecteursParType = {
-      labels: typeResult.rows.map(r => r.type_eau),
+    // Helper pour créer les données de graphique
+    const toChartData = (rows, valueField = 'km') => ({
+      labels: rows.map(r => r.label),
       datasets: [{
-        label: 'Kilomètres',
-        data: typeResult.rows.map(r => parseFloat(r.km))
+        label: valueField === 'km' ? 'Kilomètres' : 'Nombre',
+        data: rows.map(r => parseFloat(r[valueField]) || 0)
       }]
-    };
-
-    const collecteursParEtat = {
-      labels: etatResult.rows.map(r => r.etat),
-      datasets: [{
-        label: 'Kilomètres',
-        data: etatResult.rows.map(r => parseFloat(r.km))
-      }]
-    };
-
-    const chambresParType = {
-      labels: chambresResult.rows.map(r => r.type),
-      datasets: [{
-        label: 'Nombre',
-        data: chambresResult.rows.map(r => parseInt(r.nb))
-      }]
-    };
+    });
 
     res.json({
       kpis,
-      collecteursParType,
-      collecteursParEtat,
-      chambresParType,
+      collecteursParType: toChartData(results.parType.rows),
+      collecteursParMateriau: toChartData(results.parMateriau.rows),
+      collecteursParHierarchie: toChartData(results.parHierarchie.rows),
+      collecteursParEtat: toChartData(results.parEtat.rows),
+      chambresParType: toChartData(results.chambresGenre.rows, 'nb'),
       rawData: {
-        types: typeResult.rows,
-        etats: etatResult.rows,
-        chambres: chambresResult.rows
+        types: results.parType.rows,
+        materiaux: results.parMateriau.rows,
+        hierarchies: results.parHierarchie.rows,
+        etats: results.parEtat.rows,
+        chambres: results.chambresGenre.rows
       }
     });
 
@@ -4462,7 +4465,7 @@ app.get('/api/stats/assainissement/:connectionId', async (req, res) => {
 
 /**
  * GET /api/stats/cadastre/:connectionId
- * Statistiques pré-calculées pour le cadastre
+ * Statistiques parcelles BDCO (basé sur note_parcelles.py)
  */
 app.get('/api/stats/cadastre/:connectionId', async (req, res) => {
   try {
@@ -4474,100 +4477,96 @@ app.get('/api/stats/cadastre/:connectionId', async (req, res) => {
 
     await connections.connect(connectionId);
 
-    // 1. KPIs principaux
-    const kpisQuery = `
-      SELECT
-        COUNT(*) as nb_parcelles,
-        ROUND(SUM(ST_Area(geom))::numeric, 0) as surface_totale_m2,
-        COUNT(DISTINCT proprietaire) as nb_proprietaires
-      FROM bdco.parcelles
-    `;
-    let kpisResult = { rows: [{}] };
-    try {
-      kpisResult = await connections.executeSQL(connectionId, kpisQuery);
-    } catch (e) {
-      console.log('[Stats] Table parcelles non disponible:', e.message);
-    }
-    const kpiRow = kpisResult.rows[0] || {};
+    const queries = {
+      // 1. KPIs principaux (toutes parcelles Bussigny)
+      kpis: `
+        SELECT
+          COUNT(*) as nb_parcelles,
+          ROUND(SUM(ST_Area(geom))::numeric / 10000, 2) as surface_ha
+        FROM bdco.bdco
+      `,
+      // 2. Parcelles par type de propriété (privé, communal, cantonal)
+      parType: `
+        SELECT
+          CASE
+            WHEN proprietaire ILIKE '%COMMUNE%' OR proprietaire ILIKE '%BUSSIGNY%' THEN 'DP Communal'
+            WHEN proprietaire ILIKE '%CANTON%' OR proprietaire ILIKE '%VAUD%' OR proprietaire ILIKE '%ÉTAT%' THEN 'DP Cantonal'
+            ELSE 'Privé'
+          END AS label,
+          COUNT(*) as nb,
+          ROUND(SUM(ST_Area(geom))::numeric / 10000, 2) as surface_ha
+        FROM bdco.bdco
+        GROUP BY label
+        ORDER BY nb DESC
+      `,
+      // 3. Top 10 propriétaires par surface
+      topProprietaires: `
+        SELECT
+          COALESCE(proprietaire, 'Non renseigné') as label,
+          COUNT(*) as nb,
+          ROUND(SUM(ST_Area(geom))::numeric / 10000, 2) as surface_ha
+        FROM bdco.bdco
+        GROUP BY proprietaire
+        ORDER BY surface_ha DESC
+        LIMIT 10
+      `,
+      // 4. Parcelles par affectation/genre
+      parAffectation: `
+        SELECT
+          COALESCE(genre, affectation, 'Non renseigné') as label,
+          COUNT(*) as nb,
+          ROUND(SUM(ST_Area(geom))::numeric / 10000, 2) as surface_ha
+        FROM bdco.bdco
+        GROUP BY label
+        ORDER BY surface_ha DESC
+        LIMIT 10
+      `
+    };
 
-    // 2. Parcelles par type
-    const typeQuery = `
-      SELECT
-        COALESCE(type_propriete, 'Non renseigné') as type,
-        COUNT(*) as nb_parcelles,
-        ROUND(SUM(ST_Area(geom))::numeric, 0) as surface_m2
-      FROM bdco.parcelles
-      GROUP BY type_propriete
-      ORDER BY surface_m2 DESC
-      LIMIT 10
-    `;
-    let typeResult = { rows: [] };
-    try {
-      typeResult = await connections.executeSQL(connectionId, typeQuery);
-    } catch (e) {
-      console.log('[Stats] Statistiques parcelles non disponibles:', e.message);
-    }
-
-    // 3. Surfaces par propriétaire (top 10)
-    const propQuery = `
-      SELECT
-        COALESCE(proprietaire, 'Non renseigné') as proprietaire,
-        COUNT(*) as nb_parcelles,
-        ROUND(SUM(ST_Area(geom))::numeric, 0) as surface_m2
-      FROM bdco.parcelles
-      GROUP BY proprietaire
-      ORDER BY surface_m2 DESC
-      LIMIT 10
-    `;
-    let propResult = { rows: [] };
-    try {
-      propResult = await connections.executeSQL(connectionId, propQuery);
-    } catch (e) {
-      console.log('[Stats] Statistiques propriétaires non disponibles:', e.message);
-    }
-
-    // Construire la réponse
-    const kpis = [
-      {
-        label: 'Parcelles',
-        value: parseInt(kpiRow.nb_parcelles) || 0,
-        unit: ''
-      },
-      {
-        label: 'Surface totale',
-        value: Math.round((parseFloat(kpiRow.surface_totale_m2) || 0) / 10000),
-        unit: 'ha'
-      },
-      {
-        label: 'Propriétaires',
-        value: parseInt(kpiRow.nb_proprietaires) || 0,
-        unit: ''
+    // Exécuter les requêtes
+    const results = {};
+    for (const [key, query] of Object.entries(queries)) {
+      try {
+        results[key] = await connections.executeSQL(connectionId, query);
+      } catch (e) {
+        console.log(`[Stats Cadastre] Requête ${key} échouée:`, e.message);
+        results[key] = { rows: [] };
       }
+    }
+
+    const kpiRow = results.kpis.rows[0] || {};
+
+    // Construire les KPIs
+    const parTypeRows = results.parType.rows;
+    const nbPrive = parTypeRows.find(r => r.label === 'Privé')?.nb || 0;
+    const nbCommunal = parTypeRows.find(r => r.label === 'DP Communal')?.nb || 0;
+    const nbCantonal = parTypeRows.find(r => r.label === 'DP Cantonal')?.nb || 0;
+
+    const kpis = [
+      { label: 'Total parcelles', value: parseInt(kpiRow.nb_parcelles) || 0, unit: '' },
+      { label: 'Surface totale', value: parseFloat(kpiRow.surface_ha) || 0, unit: 'ha' },
+      { label: 'Privées', value: parseInt(nbPrive), unit: 'parcelles' },
+      { label: 'Communales', value: parseInt(nbCommunal), unit: 'parcelles' }
     ];
 
-    const parcellesParType = typeResult.rows.length > 0 ? {
-      labels: typeResult.rows.map(r => r.type),
+    // Helper pour créer les données de graphique
+    const toChartData = (rows, valueField = 'nb') => ({
+      labels: rows.map(r => r.label?.substring(0, 25) || 'N/A'),
       datasets: [{
-        label: 'Parcelles',
-        data: typeResult.rows.map(r => parseInt(r.nb_parcelles))
+        label: valueField === 'nb' ? 'Nombre' : 'Surface (ha)',
+        data: rows.map(r => parseFloat(r[valueField]) || 0)
       }]
-    } : null;
-
-    const surfacesParProprietaire = propResult.rows.length > 0 ? {
-      labels: propResult.rows.map(r => r.proprietaire?.substring(0, 20) || 'N/A'),
-      datasets: [{
-        label: 'Surface (m²)',
-        data: propResult.rows.map(r => parseInt(r.surface_m2))
-      }]
-    } : null;
+    });
 
     res.json({
       kpis,
-      parcellesParType,
-      surfacesParProprietaire,
+      parcellesParType: toChartData(results.parType.rows),
+      surfacesParProprietaire: toChartData(results.topProprietaires.rows, 'surface_ha'),
+      parcellesParAffectation: results.parAffectation.rows.length > 0 ? toChartData(results.parAffectation.rows) : null,
       rawData: {
-        types: typeResult.rows,
-        proprietaires: propResult.rows
+        types: results.parType.rows,
+        proprietaires: results.topProprietaires.rows,
+        affectations: results.parAffectation.rows
       }
     });
 

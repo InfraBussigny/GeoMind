@@ -54,18 +54,29 @@
       {/each}
     </div>
 
-    <div class="charts-grid">
+    <!-- Row 1: Types -->
+    <div class="charts-row">
       {#if $cadastreData.parcellesParType}
         <div class="chart-card">
-          <h3>Parcelles par type</h3>
-          <StatsChart type="pie" data={$cadastreData.parcellesParType} />
+          <h3>Parcelles par type de propriété</h3>
+          <StatsChart type="doughnut" data={$cadastreData.parcellesParType} />
         </div>
       {/if}
 
-      {#if $cadastreData.surfacesParProprietaire}
+      {#if $cadastreData.parcellesParAffectation}
         <div class="chart-card">
-          <h3>Surfaces par propriétaire</h3>
-          <StatsChart type="bar" data={$cadastreData.surfacesParProprietaire} />
+          <h3>Parcelles par affectation</h3>
+          <StatsChart type="pie" data={$cadastreData.parcellesParAffectation} />
+        </div>
+      {/if}
+    </div>
+
+    <!-- Row 2: Top propriétaires -->
+    <div class="charts-row single">
+      {#if $cadastreData.surfacesParProprietaire}
+        <div class="chart-card wide">
+          <h3>Top 10 propriétaires par surface (ha)</h3>
+          <StatsChart type="bar" data={$cadastreData.surfacesParProprietaire} options={{ indexAxis: 'y' }} />
         </div>
       {/if}
     </div>
@@ -115,14 +126,18 @@
 
   .kpis-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
   }
 
-  .charts-grid {
+  .charts-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 24px;
+  }
+
+  .charts-row.single {
+    grid-template-columns: 1fr;
   }
 
   .chart-card {
@@ -132,9 +147,14 @@
     border: 1px solid var(--border-color, #2d3748);
   }
 
+  .chart-card.wide {
+    max-width: 800px;
+  }
+
   .chart-card h3 {
     margin: 0 0 16px 0;
     font-size: 1rem;
+    font-weight: 600;
     color: var(--text-secondary, #a0aac0);
   }
 

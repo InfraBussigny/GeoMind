@@ -34,6 +34,7 @@
     { id: 'calage', label: 'Calage', description: 'Géoréférencement' },
     { id: 'editor', label: 'Editeur', description: 'SQL & Python' },
     { id: 'databases', label: 'Databases', description: 'Schema & ERD' },
+    { id: 'stats', label: 'Stats', description: 'Statistiques' },
     { id: 'converter', label: 'Convertisseur', description: 'Formats fichiers' },
     { id: 'wakelock', label: 'Anti-veille', description: 'Empeche la veille' },
     { id: 'timepro', label: 'TimePro', description: 'Pointage' },

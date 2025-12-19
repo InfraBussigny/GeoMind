@@ -1,5 +1,16 @@
 # GeoBrain Checkpoints
 
+## CP-20251219-1430
+```
+S:40|P:MAXTOOLS-REPO|T:Fork-VDLTools-pour-Max
+F:MaxTools/*,metadata.txt,README.md,max_tools.py,__init__.py,51 fichiers Python
+W:Repo MaxTools créé(MarcZermatten/MaxTools)|Fork VDLTools→MaxTools|Renommage global(53 fichiers)|Credits corrigés(Gusthiot=original,Marc=migration via GeoMind,pour Max Francken)|GitHub auth switch(InfraBussigny→MarcZermatten)
+N:Ajouter easter eggs|Tester plugin QGIS|Publier sur plugins.qgis.org
+X:URL=github.com/MarcZermatten/MaxTools|Public|VDLTools=Ville Lausanne|MaxTools=Max Francken|Migration=Marc Zermatten via GeoMind(pas GeoBrain!)
+```
+
+---
+
 ## CP-20251219-1100
 ```
 S:39|P:MODULE-STATS|T:Stats-GeoMind-Complet
