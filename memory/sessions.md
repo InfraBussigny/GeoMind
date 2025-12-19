@@ -1,31 +1,38 @@
 ## Session 40 (en cours) - 19 décembre 2025
-**Thème** : MaxTools - Fork VDLTools pour Max Francken
+**Thème** : MaxTools - Migration QGIS 3.x + Thème UI
 
 ### Travail effectué
 
 #### Création repo MaxTools
-- Fork de VDLTools (plugin QGIS Ville de Lausanne) renommé MaxTools
-- Repo public : https://github.com/MarcZermatten/MaxTools
-- 53 fichiers renommés (VDLTools → MaxTools, VDL Tools → Max Tools)
+- Fork de VDLTools renommé MaxTools
+- Repo : https://github.com/MarcZermatten/MaxTools
 
-#### Corrections crédits
-- Auteur original : Christophe Gusthiot (Ville de Lausanne)
-- Migration QGIS 3.x : Marc Zermatten via GeoMind (2025)
-- Pour : Max Francken
+#### Bugs corrigés (migration PyQt4→PyQt5/6)
+| Bug | Fichier | Correction |
+|-----|---------|------------|
+| QDoubleValidator | duplicate_distance_dialog.py | QtWidgets → QtGui |
+| Parenthèses manquantes | 6 fichiers (setToGeometry) | Ajout ) |
+| QgsWKBTypes | 6 fichiers | → QgsWkbTypes |
+| QPrinter | profile_dock_widget.py | QtGui → QtPrintSupport |
+| resources.py strings | resources.py | str → bytes (b"...") |
+| is 0 | drawndown_tool.py | → == 0 |
+| Icônes Qt resources | 14 fichiers tools/ | Chemins directs via core/icons.py |
 
-#### GitHub auth
-- Switch compte InfraBussigny → MarcZermatten
-- Repo créé sous MarcZermatten/MaxTools
+#### Thème UI Dark Neon
+- Créé ui/styles/dark_neon.qss (noir #1a1a1a, vert néon #00ff88)
+- Créé ui/theme.py (apply_theme, add_geomind_footer)
+- Appliqué aux 20 dialogues
+- Branding "Powered by GeoMind"
 
-### Fichiers modifiés
-- 51 fichiers Python (.py)
-- metadata.txt (crédits, URLs)
-- README.md (crédits, description)
-- max_tools.py (ex vdl_tools.py)
+### Bugs restants à corriger
+1. `HTTPError` non défini → profile_dock_widget.py:393
+2. `'NoneType' has no attribute 'reset'` → subprofile_tool.py:144
+3. JSONDecodeError → requête MNT qui échoue
+4. Boutons grisés → normal (dépend couche sélectionnée)
 
-### Prochaines étapes
-- Ajouter easter eggs dans le plugin
-- Tester le plugin dans QGIS
+### Fichiers clés
+- `C:\Users\zema\GeoBrain\MaxTools\` - Source
+- `C:\Users\zema\AppData\Roaming\QGIS\QGIS3\profiles\default\python\plugins\MaxTools\` - Installé
 
 ---
 
