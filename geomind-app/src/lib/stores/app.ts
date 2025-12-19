@@ -356,7 +356,7 @@ const DEFAULT_MODULE_ORDER: ModuleType[] = [
 
 // Store pour l'ordre personnalisé des modules
 // Version de la config - incrémenter pour forcer un reset
-const MODULE_CONFIG_VERSION = 4; // v4: ajout module Stats
+const MODULE_CONFIG_VERSION = 5; // v5: force reset pour Stats
 
 function createModuleOrderStore() {
   // Vérifier la version et reset si nécessaire

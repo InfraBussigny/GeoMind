@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { assainissementData, isLoading, statsError, type StatsKPI, type ChartData } from '$lib/stores/statsStore';
+  import { assainissementData, isLoading, statsError, type StatsKPI as KPIType } from '$lib/stores/statsStore';
   import StatsKPI from '../widgets/StatsKPI.svelte';
   import StatsChart from '../widgets/StatsChart.svelte';
 
