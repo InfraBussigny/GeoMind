@@ -10,6 +10,7 @@
 - [ ] **NE JAMAIS utiliser** `taskkill /F /IM node.exe` sans filtrage - TUE CLAUDE CODE AUSSI
 - [ ] **TOUJOURS utiliser** la méthode ciblée par PID : `netstat -ano | findstr :<PORT>` puis `taskkill /F /PID <pid>`
 - [ ] **TOUJOURS utiliser les unités SI** : mètres (m) pour les longueurs, mètres carrés (m²) pour les surfaces - JAMAIS km, ha, ou autres conversions automatiques
+- [ ] **NE JAMAIS lire certaines images PNG** avec l'outil Read - peut provoquer une erreur API 400 "Could not process image" qui bloque la conversation (voir section dédiée ci-dessous)
 
 ## CHECKLIST - Ajout d'un nouveau module
 > **OBLIGATOIRE** : Suivre TOUTES ces étapes lors de la création d'un nouveau module
@@ -342,3 +343,42 @@ export const visibleModules = derived([appMode, moduleConfig], ([$mode, $config]
 - `server/index.js` (backend - endpoint upload)
 
 **Statut** : ✅ Corrigé
+
+---
+
+### 2025-12-22 | Erreur API Claude "Could not process image" (CRITIQUE)
+
+**Problème** : L'API Claude retourne une erreur 400 lors de la lecture de certaines images PNG avec l'outil Read, ce qui bloque complètement la conversation.
+
+**Message d'erreur** :
+```
+API Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Could not process image"}}
+```
+
+**Contexte** :
+- Projet : Smash Tournament Tracker
+- Fichier problématique : `public/assets/melee/stock-icons.png`
+- L'erreur se produit même si on réessaie (`> re`)
+
+**Cause probable** :
+- Format PNG non standard (palette indexée, profondeur de couleur inhabituelle)
+- Dimensions ou encodage non supporté par l'API Claude Vision
+- Certains assets de jeux vidéo utilisent des formats PNG optimisés/spéciaux
+
+**Impact** :
+- La conversation devient inutilisable après l'erreur
+- L'utilisateur doit relancer une nouvelle session Claude Code
+
+**Solution de contournement** :
+1. **NE JAMAIS utiliser Read() sur des images d'assets de jeux vidéo** (sprites, icons, textures)
+2. Si on doit travailler avec des images :
+   - Utiliser Bash pour lister les fichiers : `ls -la public/assets/`
+   - Utiliser Bash pour obtenir les infos : `file image.png` ou `identify image.png`
+   - Référencer les images par leur chemin dans le code CSS/HTML sans les ouvrir
+3. Si on a besoin de voir une image, demander à l'utilisateur de la décrire ou de fournir un screenshot
+
+**Images connues problématiques** :
+- `stock-icons.png` (Smash Bros assets)
+- Potentiellement d'autres sprites/icons de jeux
+
+**Statut** : ⚠️ Contournement documenté (pas de fix possible côté utilisateur)

@@ -1,212 +1,51 @@
-## Session 40 (en cours) - 19 décembre 2025
-**Thème** : MaxTools - Migration QGIS 3.x + Thème UI
+## Session 37 - 22 décembre 2025
+**Thème** : Smash Tournament Tracker - Sauvegarde et reprise
 
-### Travail effectué
+### Contexte
+Projet personnel de Marc : tracker pour tournois Super Smash Bros Ultimate entre amis.
+Reproduction fidèle du menu de Super Smash Bros Melee avec assets officiels.
 
-#### Création repo MaxTools
-- Fork de VDLTools renommé MaxTools
-- Repo : https://github.com/MarcZermatten/MaxTools
+### Joueurs du tournoi
+- Marc, Max, Flo, Boris, Daniel (occasionnel)
 
-#### Bugs corrigés (migration PyQt4→PyQt5/6)
-| Bug | Fichier | Correction |
-|-----|---------|------------|
-| QDoubleValidator | duplicate_distance_dialog.py | QtWidgets → QtGui |
-| Parenthèses manquantes | 6 fichiers (setToGeometry) | Ajout ) |
-| QgsWKBTypes | 6 fichiers | → QgsWkbTypes |
-| QPrinter | profile_dock_widget.py | QtGui → QtPrintSupport |
-| resources.py strings | resources.py | str → bytes (b"...") |
-| is 0 | drawndown_tool.py | → == 0 |
-| Icônes Qt resources | 14 fichiers tools/ | Chemins directs via core/icons.py |
+### Modes de jeu
+- 1v1 avec rotation
+- FFA (4 joueurs) - points: 5/3/1/0
+- 2v2 Friendly Fire / No FF - +3 pts pour victoire
+- Casual (2-8 joueurs)
 
-#### Thème UI Dark Neon
-- Créé ui/styles/dark_neon.qss (noir #1a1a1a, vert néon #00ff88)
-- Créé ui/theme.py (apply_theme, add_geomind_footer)
-- Appliqué aux 20 dialogues
-- Branding "Powered by GeoMind"
+### Stack technique
+- **Frontend** : React + Vite (localhost:5173)
+- **Style** : CSS reproduisant le menu Melee (grille bleue, boutons dorés trapézoïdaux)
+- **Assets** : Images officielles depuis Spriters Resource
 
-### Bugs restants à corriger
-1. `HTTPError` non défini → profile_dock_widget.py:393
-2. `'NoneType' has no attribute 'reset'` → subprofile_tool.py:144
-3. JSONDecodeError → requête MNT qui échoue
-4. Boutons grisés → normal (dépend couche sélectionnée)
+### Travail effectué (session précédente crashée)
+- Structure projet créée
+- CSS style Melee (fond grille, boutons jaunes, panneau cyan)
+- Assets téléchargés : title-screen.png, stage-select.png, stock-icons.png, in-game-text.png
+- Pages : Home, 1v1, FFA, Team modes, Leaderboard, Options
 
-### Fichiers clés
-- `C:\Users\zema\GeoBrain\MaxTools\` - Source
-- `C:\Users\zema\AppData\Roaming\QGIS\QGIS3\profiles\default\python\plugins\MaxTools\` - Installé
+### Travail effectué (cette session)
+- **Récupération contexte** depuis historique Claude Code (`~/.claude/history.jsonl`)
+- **Initialisation Git** : repo créé avec commit initial (ce684c9)
+- **Documentation erreur API** : éviter de lire certaines images avec Read
 
----
+### Fichiers du projet
+- **Emplacement** : `C:\Users\Marc\smash-tournament-tracker\`
+- **Commit initial** : ce684c9 (34 fichiers, 7704 insertions)
 
-## Session 39 (terminée) - 19 décembre 2025
-**Thème** : Module Stats GeoMind
+### Erreur rencontrée (session précédente)
+L'API Claude a planté sur `Read(stock-icons.png)` :
+```
+API Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Could not process image"}}
+```
+→ Documenté dans corrections.md pour éviter de reproduire
 
-### Travail effectué
-
-#### Module Statistiques GeoMind - COMPLET
-Infrastructure complète pour statistiques interactives dans GeoMind.
-
-**Architecture :**
-- Module avec 3 onglets : Assainissement, Cadastre, Général
-- Chart.js pour graphiques interactifs (bar, pie, line, doughnut)
-- Sélecteur de connexion PostgreSQL
-
-**Fichiers créés :**
-| Fichier | Description |
-|---------|-------------|
-| `src/lib/components/Stats/StatsModule.svelte` | Module principal avec header/onglets |
-| `src/lib/components/Stats/tabs/AssainissementTab.svelte` | Stats assainissement |
-| `src/lib/components/Stats/tabs/CadastreTab.svelte` | Stats cadastre |
-| `src/lib/components/Stats/tabs/GeneralTab.svelte` | Query builder personnalisé |
-| `src/lib/components/Stats/widgets/StatsKPI.svelte` | Cards indicateurs |
-| `src/lib/components/Stats/widgets/StatsChart.svelte` | Wrapper Chart.js |
-| `src/lib/stores/statsStore.ts` | Store Svelte pour état |
-
-**Endpoints API créés :**
-| Endpoint | Description |
-|----------|-------------|
-| `GET /api/databases/:id/schemas` | Liste schémas |
-| `GET /api/databases/:id/schema/:schema/tables` | Liste tables |
-| `GET /api/databases/:id/schema/:schema/table/:table/columns` | Liste colonnes |
-| `GET /api/stats/assainissement/:connId` | Stats assainissement pré-calculées |
-| `GET /api/stats/cadastre/:connId` | Stats cadastre pré-calculées |
-| `POST /api/stats/query` | Requête ad-hoc générale |
-
-**Données assainissement Bussigny (testées) :**
-- KPIs : 3209 collecteurs publics, 70.71 km, 3 types
-- Collecteurs par type : EC (39.28 km), EU (30.31 km), EM (1.11 km)
-- Collecteurs par état : 7 états (Bon état 20.92 km, Non inspecté 32.52 km...)
-- Chambres par genre : 10 types (1419 chambres visite, 854 grilles...)
-
----
-
-## Session 38 (terminée) - 18 décembre 2025
-**Thème** : Migration SDOL - Analyse complète
-
-### EN SUSPENS - À reprendre
-
-#### Question ouverte : Type d'eau pour les chambres
-- `by_ass_collecteur.genre_utilisation` → mapping direct vers `contenu` SDOL ✅
-- `by_ass_chambre` → **PAS d'attribut direct** pour le type d'eau ⚠️
-- `no_troncon_entree/sortie` = compteurs, pas des FK
-
-**Options à explorer :**
-1. Jointure spatiale chambre ↔ collecteur (ST_Intersects)
-2. Valeur par défaut selon `genre_chambre`
-3. Regarder comment c'est fait dans les workbenches FME existants
-
-#### Valeurs découvertes (base Prod srv-fme)
-| Table | Attribut | Valeurs |
-|-------|----------|---------|
-| by_ass_collecteur | genre_utilisation | Eaux claires (9818), Eaux usées (5062), Eaux mixtes (151) |
-| by_ass_chambre | fonction_hydro | (vide) 6801, Collecte eaux surface 1213 |
-| by_ass_chambre | genre_chambre | Chambre visite 3872, Cheneau 1923, Sac-Grille 1709... |
-
-#### Rapport PDF
-- Version actuelle : **v5** (sans mentions HKD)
-- KeepTogether sur tableaux annexe ✅
-
----
-
-### Travail effectué
-
-#### 0. Projet QGIS Inspection Collecteurs (après-midi)
-**Problème** : Dates d'inspection sans ordre garanti (date_2 pas toujours > date_1), formules QGIS complexes avec if imbriqués.
-
-**Solution** : Vue PostgreSQL `assainissement.v_ass_collecteur_inspection`
-- Champs calculés : `date_derniere_inspection`, `nb_inspections`, `jours_depuis_inspection`, `annee_derniere_inspection`
-- Projet QGIS v2 modifié pour utiliser la vue
-- 20 collecteurs avec dates inversées corrigés automatiquement
-
-**Documents générés** :
-| Document | Version | Contenu |
-|----------|---------|---------|
-| Rapport statistiques | v7 | Graphiques bar charts cohérents, mise en page structurée |
-| Documentation utilisateur | v3 | Guide pour non-spécialistes |
-| Note technique | v3 | Explication du problème (formules if imbriquées) |
-
-**Scripts créés** :
-- `scripts/python/generate_rapport_inspection.py`
-- `scripts/python/generate_doc_qgis_inspection.py`
-- `scripts/python/generate_note_technique_qgis.py`
-
-**Stats clés** : 70.71 km réseau total, 38.19 km inspectés (54%), 308 collecteurs avec 2 inspections
-
-#### 1. Convention télétravail
-- Création demande PDF avec template Bussigny
-- Signature intégrée, format professionnel
-
-#### 2. Commande /look screenshots
-- Script PowerShell `scripts/get_screenshots.ps1`
-- Copie dernières captures dans `temp/`
-- Commande sans slash : `look1`, `look 2`, etc.
-
-#### 3. Migration SDOL - Analyse complète
-- **Fichier Excel source** : `docs/Mapping/Copie de PR24-0281-contenu-geoportail.xlsx`
-- **Découverte majeure** : Tables tc_swisscom_* réservées à Swisscom !
-- **Fibre optique BLOQUÉE** : Pas de table pour fibre communale
-- **POI BLOQUÉ** : Pas de table pti_* existante
-
-#### 4. Documents créés/mis à jour
-- `00_reference_sdol_excel.md` : Extraction complète Excel HKD (tables, domaines)
-- `RAPPORT_MIGRATION_SDOL.md` : Corrigé avec vraies infos SDOL
-- `RAPPORT_MIGRATION_SDOL_v2.pdf` : PDF corrigé avec annexes
-
-#### 5. Corrections mappings
-- Fibre optique : Marquée BLOQUÉE (demander tc_fo_conduite, tc_fo_elemontage)
-- Volumétrie : Séparée migrable (~32'650) vs en attente (~5'200)
-- Questions HKD : Ajout question prioritaire création tables fibre
-
-### Fichiers créés
-- `projets/Migration_SDOL/00_reference_sdol_excel.md`
-- `projets/Migration_SDOL/RAPPORT_MIGRATION_SDOL_v2.pdf`
-- `scripts/get_screenshots.ps1`
-
-### Fichiers modifiés
-- `projets/Migration_SDOL/RAPPORT_MIGRATION_SDOL.md`
-- `scripts/python/generate_rapport_sdol.py`
-- `CLAUDE.md` (commande look)
-
-### Points sensibles identifiés
-| Thématique | Statut | Action |
-|------------|--------|--------|
-| Assainissement | ✅ OK | 23+ tables EU disponibles |
-| Routes | ✅ OK | 14 tables MOB disponibles |
-| Nature | ✅ OK | 10 tables EN disponibles |
-| TP | ✅ OK | 4 tables TP disponibles |
-| Ouvrages | ✅ OK | 2 tables OA disponibles |
-| **Fibre optique** | ⚠️ BLOQUÉ | Demander création tc_fo_* |
-| **POI** | ⚠️ BLOQUÉ | Demander création pti_* |
-
-### Prochaine étape
-Envoyer rapport à HKD pour obtenir création des tables manquantes
-
----
-
-## Session 37 - 18 décembre 2025
-**Thème** : Correction fichiers settings Claude Code
-
-### Travail effectué
-
-#### 1. Diagnostic erreurs settings au démarrage
-- `.claude/settings.json` : JSON invalide (BOM UTF-8 + backslashes non échappés)
-- `.claude/settings.local.json` : ~207 patterns Bash malformés (commandes complètes au lieu de patterns)
-
-#### 2. Corrections appliquées
-- **settings.json** : Supprimé BOM, échappé backslashes (`C:\` → `C:\\`)
-- **settings.local.json** : Nettoyé 207 → 60 patterns génériques (`Bash(git:*)`, `Bash(python:*)`, etc.)
-
-#### 3. Git
-- Commit `6d4473c` : fix settings.json
-- Remote URL mis à jour : `InfraBussigny/GeoMind.git` (ancien: geobrain-bussigny)
-
-### Rappel optimisation Claude Code (session précédente)
-Commit `e51643d` contenait :
-- 3 agents spécialisés : `spatial-analyst`, `fme-specialist`, `qgis-automation`
-- MCP servers : `postgres-bussigny`, `filesystem`
-- Slash commands : `/checkpoint`, `/memorise`, `/recap`
-- Documentation : `docs/CLAUDE_CODE_OPTIMISATION.md`
-
-### Prochaine étape
-Relancer Claude Code et tester que les erreurs settings sont résolues.
+### Prochaines étapes
+- [ ] Lancer le serveur et voir l'état actuel
+- [ ] Intégrer les assets dans le CSS (sans les ouvrir comme images)
+- [ ] Reproduire plus fidèlement le menu Melee
+- [ ] Ajouter les fonctionnalités de tracking
 
 ---
 
