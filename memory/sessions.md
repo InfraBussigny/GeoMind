@@ -1,3 +1,27 @@
+## Session 42 - 24 décembre 2025
+**Thème** : Smash Tournament Tracker - Conversion Tauri (app standalone)
+
+### Travail effectué
+- **Ajout Tauri** pour transformer l'app React en application desktop standalone
+- Installation `@tauri-apps/cli` et `@tauri-apps/api`
+- Configuration `tauri.conf.json` :
+  - Fenêtre 1280x720 (min 1024x600)
+  - Identifiant : `ch.smash.tournament.tracker`
+  - Centrage automatique
+- Scripts npm ajoutés : `tauri:dev`, `tauri:build`
+- Première compilation Rust réussie (475 packages)
+
+### Commit
+- **372b75c** : Smash Tournament Tracker: ajout Tauri pour app standalone (26 fichiers, 5291 insertions)
+
+### Prochaines étapes
+- [ ] Builder l'exe standalone (`npm run tauri:build`)
+- [ ] Ajouter easter eggs (demande de Marc)
+- [ ] Remplacer icône par smash-logo.png
+- [ ] Tester sur d'autres machines
+
+---
+
 ## Session 41 - 22 décembre 2025
 **Thème** : Smash Tournament Tracker - Sauvegarde et reprise
 
@@ -15,37 +39,13 @@ Reproduction fidèle du menu de Super Smash Bros Melee avec assets officiels.
 - Casual (2-8 joueurs)
 
 ### Stack technique
-- **Frontend** : React + Vite (localhost:5173)
+- **Frontend** : React + Vite + Tauri (localhost:5173)
 - **Style** : CSS reproduisant le menu Melee (grille bleue, boutons dorés trapézoïdaux)
 - **Assets** : Images officielles depuis Spriters Resource
 
-### Travail effectué (session précédente crashée)
-- Structure projet créée
-- CSS style Melee (fond grille, boutons jaunes, panneau cyan)
-- Assets téléchargés : title-screen.png, stage-select.png, stock-icons.png, in-game-text.png
-- Pages : Home, 1v1, FFA, Team modes, Leaderboard, Options
-
-### Travail effectué (cette session)
-- **Récupération contexte** depuis historique Claude Code (`~/.claude/history.jsonl`)
-- **Initialisation Git** : repo créé avec commit initial (ce684c9)
-- **Documentation erreur API** : éviter de lire certaines images avec Read
-
 ### Fichiers du projet
 - **Emplacement** : `C:\Users\Marc\smash-tournament-tracker\`
-- **Commit initial** : ce684c9 (34 fichiers, 7704 insertions)
-
-### Erreur rencontrée (session précédente)
-L'API Claude a planté sur `Read(stock-icons.png)` :
-```
-API Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Could not process image"}}
-```
-→ Documenté dans corrections.md pour éviter de reproduire
-
-### Prochaines étapes
-- [ ] Lancer le serveur et voir l'état actuel
-- [ ] Intégrer les assets dans le CSS (sans les ouvrir comme images)
-- [ ] Reproduire plus fidèlement le menu Melee
-- [ ] Ajouter les fonctionnalités de tracking
+- **Repo** : https://github.com/MarcZermatten/smash-tournament-tracker
 
 ---
 

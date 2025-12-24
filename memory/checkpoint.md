@@ -1,5 +1,16 @@
 # GeoBrain Checkpoints
 
+## CP-20251224-1115
+```
+S:42|P:TAURI-SETUP|T:Smash-Tracker-Standalone
+F:smash-tournament-tracker/(src-tauri/*,package.json,tauri.conf.json)
+W:Tauri ajouté au projet|Config fenêtre 1280x720|Scripts npm tauri:dev/build|Compilation Rust 475 packages OK
+N:Build exe standalone|Easter eggs|Icône custom smash-logo.png
+X:Commit 372b75c|React+Vite+Tauri|Repo github.com/MarcZermatten/smash-tournament-tracker
+```
+
+---
+
 ## CP-20251219-1545
 ```
 S:41|P:MAXTOOLS-FIXES|T:Migration-QGIS3-Manuel
