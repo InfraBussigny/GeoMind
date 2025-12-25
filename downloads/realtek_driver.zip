@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en-gb" dir="ltr">
+
+<head>
+    <meta charset="utf-8">
+	<meta name="rights" content="Station-Drivers 2025">
+	<meta name="keywords" content="Realtek Ethernet Controller All-In-One Drivers Version NC With DASH">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Windows 10/11">
+	<meta name="generator" content="Joomla! - Open Source Content Management">
+	<title>Realtek Ethernet Controller All-In-One Drivers Version NC With DASH</title>
+	<link href="https://www.station-drivers.com/index.php/en/component/finder/search?format=opensearch&amp;Itemid=101" rel="search" title="OpenSearch Station-Drivers" type="application/opensearchdescription+xml">
+	<link href="https://gstatic.com/" rel="dns-preconnect">
+	<link href="/favicon.ico" rel="icon" type="image/vnd.microsoft.icon">
+
+    <link href="/media/system/css/joomla-fontawesome.min.css?cda972" rel="lazy-stylesheet"><noscript><link href="/media/system/css/joomla-fontawesome.min.css?cda972" rel="stylesheet"></noscript>
+	<link href="/media/templates/site/cassiopeia/css/template.min.css?cda972" rel="stylesheet">
+	<link href="/media/templates/site/cassiopeia/css/global/colors_standard.min.css?cda972" rel="stylesheet">
+	<link href="/media/templates/site/cassiopeia_extended/css/global/colors.min.css?cda972" rel="stylesheet">
+	<link href="/media/templates/site/cassiopeia_extended/css/global/fonts.min.css?cda972" rel="stylesheet">
+	<link href="/media/templates/site/cassiopeia/css/vendor/joomla-custom-elements/joomla-alert.min.css?0.4.1" rel="stylesheet">
+	<link href="/media/templates/site/cassiopeia/css/user.css?cda972" rel="stylesheet">
+	<link href="https://www.station-drivers.com/components/com_remository/remository.css" rel="stylesheet">
+	<style>:root {
+		--hue: 214;
+		--template-bg-light: #f0f4fb;
+		--template-text-dark: #495057;
+		--template-text-light: #ffffff;
+		--template-link-color: var(--link-color);
+		--template-special-color: #001B4C;
+		
+	}</style>
+	<style>:root {
+        --body-bg: rgb(254, 254, 254);
+        --body-color: rgb(23, 23, 23);
+        --btnbg: rgb(206, 60, 55);
+        --btnbgh: rgb(131, 35, 32);
+        --btncolor: rgb(254, 254, 254);
+        --btncolorh: rgb(254, 254, 254);
+        --footerbg: rgb(29, 121, 137);
+        --footercolor: rgb(254, 254, 254);
+        --headerbg: rgb(193, 205, 207);
+        --headercolor: rgb(23, 23, 23);
+        --link-color: rgb(29, 121, 137);
+        --link-hover-color: rgb(14, 59, 67);
+    }</style>
+	<style>:root {
+        --body-font-size: 1rem;
+        --h1size: 2rem;
+        --h2size: 1.7rem;
+        --h3size: 1.5rem;
+    }</style>
+
+    <script src="/media/vendor/metismenujs/js/metismenujs.min.js?1.4.0" defer></script>
+	<script src="/media/vendor/jquery/js/jquery.min.js?3.7.1"></script>
+	<script src="/media/vendor/jquery/js/jquery-noconflict.min.js?3.7.1"></script>
+	<script src="/media/templates/site/cassiopeia/js/mod_menu/menu-metismenu.min.js?cda972" defer></script>
+	<script type="application/json" class="joomla-script-options new">{"joomla.jtext":{"MOD_FINDER_SEARCH_VALUE":"Search &hellip;","ERROR":"Error","MESSAGE":"Message","NOTICE":"Notice","WARNING":"Warning","JCLOSE":"Close","JOK":"OK","JOPEN":"Open"},"system.paths":{"root":"","rootFull":"https:\/\/www.station-drivers.com\/","base":"","baseFull":"https:\/\/www.station-drivers.com\/"},"csrf.token":"e02b4f35e31c0a47d706e228a43a4308"}</script>
+	<script src="/media/system/js/core.min.js?a3d8f8"></script>
+	<script src="/media/templates/site/cassiopeia/js/template.min.js?cda972" type="module"></script>
+	<script src="/media/vendor/bootstrap/js/alert.min.js?5.3.8" type="module"></script>
+	<script src="/media/vendor/bootstrap/js/button.min.js?5.3.8" type="module"></script>
+	<script src="/media/vendor/bootstrap/js/carousel.min.js?5.3.8" type="module"></script>
+	<script src="/media/vendor/bootstrap/js/collapse.min.js?5.3.8" type="module"></script>
+	<script src="/media/vendor/bootstrap/js/dropdown.min.js?5.3.8" type="module"></script>
+	<script src="/media/vendor/bootstrap/js/modal.min.js?5.3.8" type="module"></script>
+	<script src="/media/vendor/bootstrap/js/offcanvas.min.js?5.3.8" type="module"></script>
+	<script src="/media/vendor/bootstrap/js/popover.min.js?5.3.8" type="module"></script>
+	<script src="/media/vendor/bootstrap/js/scrollspy.min.js?5.3.8" type="module"></script>
+	<script src="/media/vendor/bootstrap/js/tab.min.js?5.3.8" type="module"></script>
+	<script src="/media/vendor/bootstrap/js/toast.min.js?5.3.8" type="module"></script>
+	<script src="/media/com_finder/js/finder.min.js?755761" type="module"></script>
+	<script src="/media/system/js/messages.min.js?9a4811" type="module"></script>
+	<script src="/components/com_remository/comment.js"></script>
+	<script>
+		jQuery(document).ready(function (){
+			jQuery('select').jchosen({"disable_search_threshold":10,"search_contains":true,"allow_single_deselect":true,"placeholder_text_multiple":"Type or select some options","placeholder_text_single":"Select an option","no_results_text":"No results match"});
+		});
+	</script>
+	<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","@id":"https://www.station-drivers.com/#/schema/BreadcrumbList/17","itemListElement":[{"@type":"ListItem","position":1,"item":{"@id":"https://www.station-drivers.com/index.php/en/","name":"Accueil"}}]}</script>
+	<meta name="robots" content="noindex, nofollow" />
+	<style type='text/css'>
+/* Remository specific CSS requiring variables */
+		
+div#remositorypageheading {
+        background-image:       url(/components/com_remository/images/header.gif) ;
+        height:                 auto;
+}
+div#remositorypageheading h2, div#remositorypageheading h3 {
+        margin-left:       72px;
+}
+		
+.remositoryonethumb {
+	width: 120px;
+}
+.remositorydelthumb {
+	height:		150px;
+}
+div.remositoryfilesummary {
+	padding-right: 120px;
+	min-height: 100px;
+}
+#remository h3.remositoryfileleft {
+	padding-left: 42px;
+	height: 36px;
+}
+#remository h3.remositoryfileright {
+	padding-right: 42px;
+	height: 36px;
+}
+/* End of variable Remository CSS */
+</style>
+	<base href="https://www.station-drivers.com" />
+	<!-- BEGIN IAB STUB FOR CMP -->
+<script type="text/javascript">
+  "use strict";!function(){var e=function(){var e,t="__tcfapiLocator",a=[],n=window;for(;n;){try{if(n.frames[t]){e=n;break}}catch(e){}if(n===window.top)break;n=n.parent}e||(!function e(){var a=n.document,r=!!n.frames[t];if(!r)if(a.body){var s=a.createElement("iframe");s.style.cssText="display:none",s.name=t,a.body.appendChild(s)}else setTimeout(e,5);return!r}(),n.__tcfapi=function(){for(var e,t=arguments.length,n=new Array(t),r=0;r<t;r++)n[r]=arguments[r];if(!n.length)return a;if("setGdprApplies"===n[0])n.length>3&&2===parseInt(n[1],10)&&"boolean"==typeof n[3]&&(e=n[3],"function"==typeof n[2]&&n[2]("set",!0));else if("ping"===n[0]){var s={gdprApplies:e,cmpLoaded:!1,cmpStatus:"stub"};"function"==typeof n[2]&&n[2](s)}else a.push(n)},n.addEventListener("message",(function(e){var t="string"==typeof e.data,a={};try{a=t?JSON.parse(e.data):e.data}catch(e){}var n=a.__tcfapiCall;n&&window.__tcfapi(n.command,n.version,(function(a,r){var s={__tcfapiReturn:{returnValue:a,success:r,callId:n.callId}};t&&(s=JSON.stringify(s)),e&&e.source&&e.source.postMessage&&e.source.postMessage(s,"*")}),n.parameter)}),!1))};"undefined"!=typeof module?module.exports=e:e()}();
+</script>
+<!-- END IAB STUB -->
+
+
+<script async src="https://ads.sportslocalmedia.com/slm.prebid.stationdrivers.js"></script>
+
+<style>
+    .akcelo-wrapper {
+        display: grid;
+        place-items: center;
+        grid-template-columns: 1fr;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .akcelo-wrapper.akcelo-wrapper-label:before {
+        content: attr(data-ad-text);
+        color: #777777;
+        font-size: 11px;
+        text-align: center;
+        position: absolute;
+        width: 100%;
+        top: 2px;
+    }
+    .akcelo-wrapper.akcelo-wrapper-label {
+        box-sizing: content-box;
+        padding: 20px 0 0;
+    }
+    .akcelo-placeholder:not(.akcelo-loaded) {
+        background-color: #f9f9f9;
+        background-clip: content-box;
+    }
+    .akcelo-placeholder:not(.akcelo-loaded)::after {
+        border: 1px solid #696969;
+        border-radius: 2px;
+        color: #696969;
+        content: attr(data-placeholder-text);
+        font-size: 11px;
+        line-height: 1;
+        padding: 3px 4px 1px;
+        position: absolute;
+        background-color: transparent;
+        font-family: Arial,sans-serif;
+    }
+    .akcelo-video > div:first-child {
+        width: 100%;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0
+    }
+    .akcelo-video.akcelo-wrapper-label > div:first-child {
+        top: 20px;
+    }
+    @media (pointer:coarse) {
+        .akcelo-wrapper.akcelo-desktop {
+            display: none;
+        }
+    }
+    @media (pointer:fine) {
+        .akcelo-wrapper.akcelo-mobile {
+            display: none;
+        }
+    }
+</style>
+	<link href="https://fonts.googleapis.com/css?family=Kanit:300" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Roboto:700" rel="stylesheet">
+	<link href="/images/sd2024b.jpg#joomlaImage://local-images/sd2024b.jpg?width=34&height=33" rel="icon" type="image/svg+xml">
+	<link href="/images/sd2024b.jpg#joomlaImage://local-images/sd2024b.jpg?width=34&height=33" rel="alternate icon" type="image/vnd.microsoft.icon">
+	<link rel="apple-touch-icon" sizes="180x180" href="https://www.station-drivers.com/images/sd2024b.jpg#joomlaImage://local-images/sd2024b.jpg?width=34&height=33">
+	<meta name="msapplication-TileColor" content="#ffffff">
+	<meta name="theme-color" content="#ffffff">
+
+</head>
+
+<body class="site com_remository wrapper-static view- no-layout no-task">
+    <header class="header container-header full-width">
+
+                    <div class="container-topbar">
+                <script type="text/javascript" src="https://cdn.appconsent.io/loader.js" defer async></script>
+<script type="text/javascript">
+  __tcfapi('init', 2, function() {__tcfapi('show', 2, console.log, {jumpAt: 'banner',lazy: true})}, {appKey: 'e2bea431-39e1-467b-8239-36ed482935bb'})
+</script>
+<script type='text/javascript'>
+  var pageUrl=encodeURIComponent(window.location.href),pageTitle=encodeURIComponent(document.title);function shareFacebook(){window.open("https://www.facebook.com/sharer/sharer.php?u="+pageUrl)}function shareTwitter(){window.open("https://twitter.com/intent/tweet?url="+pageUrl+"&text="+pageTitle)}function shareLinkedIn(){window.open("https://www.linkedin.com/shareArticle?url="+pageUrl+"&title="+pageTitle)}function shareWhatsApp(){window.open("https://wa.me/?text="+pageUrl+" - "+pageTitle)}function shareTelegram(){window.open("https://telegram.me/share/url?url="+pageUrl+"&text="+pageTitle)}function shareEmail() { var emailSubject = "Check out this webpage!";var emailBody = "I found this webpage and thought you might be interested: " + pageUrl;window.location.href = "mailto:?subject=" + emailSubject + "&body=" + emailBody;}
+</script>
+<style>
+/* KC-CSS section */
+.social-share { position: fixed; top: 40%;transform: translateY(-40%);left: 0;z-index: 999;display: flex;flex-direction: column;align-items: center;}
+.social-share a {display: inline-block;	font-size: 18px;color: #fff;padding-left: 12px;padding-right: 5px; padding-top: 5px;  width: 40px;  height: 40px; transition: all 0.3s ease;}
+.social-share a:hover {	color: #fff;background: #ff0000;	transform: scale(1.4); border-radius: 10px; }
+.linkfacebook {background-color:#4267b2 }
+.linktwitter {background-color:#55acee }
+.linklinkedin {background-color: #0077b5}
+.linkwa {background-color: #1ec53f}
+.linkemail {background-color:#7d7d7d;}
+.linkprint {background-color: #999999}
+@media print {body * { visibility: hidden;}	 .container-component * { visibility: visible;	}	.container-component {  position: absolute;  left: 0;  top: 0;} }
+</style>
+<div class="social-share">
+        <div class="linkfacebook"><a href="#" onclick="shareFacebook();"><i class=" fab fa-facebook-f"></i></a></div>
+        <div class="linktwitter"><a href="#" onclick="shareTwitter();"><i class=" fab fa-twitter"></i></a></div>
+        <div class="linklinkedin"><a href="#" onclick="shareLinkedIn();"><i class=" fab fa-linkedin-in"></i></a></div>     <div class="linkwa"><a href="#" onclick="shareWhatsApp();"><i class=" fab fa-whatsapp"></i></a></div>
+        <div class="linkemail"><a href="#" onclick="shareEmail();"><i class="fas fa-envelope"></i></a></div>
+                <div class="linkprint"><a href="#" onclick="printDiv('container-component')"><i title="Print page" class="fas fa-print"></i></a>
+            </div>
+
+            <script>
+    function printDiv(className) {
+        var printContents = document.getElementsByClassName(className);
+        if (printContents.length > 0) {
+            var printContent = printContents[0].innerHTML; // Get inner HTML of the first element with the class
+            var originalContents = document.body.innerHTML;
+
+            // Create a temporary element to hold the content to be printed
+            var tempElement = document.createElement('div');
+            tempElement.innerHTML = printContent;
+
+            // Append the temporary element to the body and print its contents
+            document.body.appendChild(tempElement);
+            window.print();
+
+            // Remove the temporary element and restore the original content
+            document.body.removeChild(tempElement);
+            document.body.innerHTML = originalContents;
+        } else {
+            console.error('Element with class name "' + className + '" not found.');
+        }
+    }
+</script>
+        </div>
+
+
+
+<style>
+    /* KC-CSS section */
+     .navbar-brand {display:none !important;}         .navbar-brand {display:none !important;}     .navbar-brand {margin-left:auto;}     .site-grid>.full-width {grid-column: 2/6;}
+         .header {border-bottom: 1px solid #eaeaea;}      .mod-menu, .mod-menu__heading{text-transform:uppercase} 
+            .site-grid{grid-template-columns: [full-start] minmax(0,1fr) [main-start] repeat(4,minmax(0,16.875rem)) [main-end] minmax(0,1fr) [full-end];}
+        .header .grid-child {max-width: 70em;}
+        .footer .grid-child {max-width: 70em;}
+        .topbar .grid-child {max-width: 70em;}
+         .topbar {max-width: 70em;}         :root{
+        --cassiopeia-color-primary:#ff0000;
+        --cassiopeia-color-link:#000000 ;
+        --link-color:#000000 ;
+        --cassiopeia-color-hover:#00aaff ;
+                --cassiopeia-font-family-body: "Kanit" ;
+        --cassiopeia-font-family-headings: "Roboto" ;
+        --cassiopeia-font-weight-headings: 700 ;
+        --cassiopeia-font-weight-normal: 300 ;
+            }
+    .container-component {margin-top: 15px; border: 1px solid #dfe3e7}
+    html {background: url("https://www.station-drivers.com/");background-repeat: no-repeat; background-position: center center; background-size: cover;  background-attachment: fixed; }
+    h1,h2,h3,h4,h5,h6 {color: #003461}
+    p,li,ul,td,table {font-size: 1rem !important}
+    .atss {top: 40%}
+    body {background-color: rgba(13, 31, 51, 1); color: #000000 }
+    .brand-logo {font-family: "Roboto"}
+    .btn-primary{color: #ffffff ; background-color: #003461; border-color: #000000}
+    .btn-secondary{color: #353b41 ; background-color: #ffffff; border-color: #ced4da}
+    .btn-info{color: #ffffff ; background-color: #003461; border-color: #000000}
+    .btn-success{color: #ffffff ; background-color: #448344; border-color: #448344}
+    .btn-warning{color: #ffffff ; background-color: #ad6200; border-color: #ad6200}
+    .btn-danger{color: #ffffff ; background-color: #a51f18; border-color: }
+    .blog-item {background-color: rgba(255, 255, 255, 1)}
+    .btn, .badge {border-radius: 1rem}
+    .card-header{background-color: rgba(0, 52, 97, 1) }
+    .card, .mm-collapse, .breadcrumb, .item-content, .blog-item, .item-image, .item-page, .card-header, .left.item-image img, .category-list, .reset, .remind, .pagination,.page-link, .login, .list-group-item, .finder, .no-card .newsflash-horiz li, .container-component {border-radius: 1em !Important}
+    .close_button {float:right; bottom: 5px; border-radius: 1rem; padding: 5px;}
+    .container-header .metismenu>li.active>a:after, .container-header .metismenu>li.active>button:before, .container-header .metismenu>li>a:hover:after, .container-header .metismenu>li>button:hover:before {background: #ff0000; opacity: 1}
+    .container-banner .banner-overlay .overlay, {background-color: rgba(255, 255, 255, 0);}
+    .container-bottom-a>*, .container-bottom-b>*, .container-top-a>*, .container-top-b>* {margin: 0em;}
+     .container-top-a{ background-color:rgba(255, 255, 255, 0)  !important;border: 0px !important;box-shadow: 0 0 0 100vmax rgba(255, 255, 255, 0);clip-path: inset(0 -100vmax); padding-top: 30px; padding-bottom: 30px;}
+     .container-top-b{ background-color:rgba(255, 255, 255, 0)  !important;border: 0px !important;box-shadow: 0 0 0 100vmax rgba(255, 255, 255, 0);clip-path: inset(0 -100vmax); padding-top: 30px; padding-bottom: 30px;}
+     .container-bottom-a{ background-color:rgba(255, 255, 255, 0)  !important;border: 0px !important;box-shadow: 0 0 0 100vmax rgba(255, 255, 255, 0);clip-path: inset(0 -100vmax); padding-top: 30px; padding-bottom: 30px;}
+     .container-bottom-b{ background-color:rgba(255, 255, 255, 0)  !important;border: 0px !important;box-shadow: 0 0 0 100vmax rgba(255, 255, 255, 0);clip-path: inset(0 -100vmax); padding-top: 30px; padding-bottom: 30px;}
+
+     .metismenu.mod-menu .mm-collapse {	background-color: rgba(0, 0, 0, 0)}
+     .metismenu.mod-menu .parent>ul a {color: rgba(0, 0, 0, 1) }
+     .metismenu.mod-menu .parent>ul a:hover {color: rgba(0, 0, 0, 1) }
+
+    .container-banner .banner-overlay {height:0vh }
+    .container-header .metismenu>li.level-1>ul {min-width: 0rem;}
+    .container-header .mod-menu, .container-header .navbar-toggler {color: #ffffff}
+    .card-header {color: #ffffff;}
+    .container-header {background: url(https://www.station-drivers.com/) ; box-shadow: inset 0 0 0 5000px  rgba(13, 30, 51, 0); background-size: cover; background-repeat: no-repeat; background-attachment:fixed; background-position:top,50%; }
+    .footer {background: url(https://www.station-drivers.com/) ; box-shadow: inset 0 0 0 5000px  rgba(13, 30, 51, 0);background-size: 100% auto; background-repeat: no-repeat; }
+    .footer .grid-child {align-items:flex-start}
+    .h1, h1 {font-size:1rem }
+    .h2, h2 {font-size:1rem }
+    .h3, h3 {font-size:1rem }
+    .h4, h4 {font-size:1rem }
+    .h5, h5 {font-size:1rem }
+    .item-page, .com-users, .com-users-reset, .com-users-remind, .com-users-profile, .com-content-category, .card, .mod-articlesnews-horizontal li, .breadcrumb, .finder, .login, .container-component{background-color: rgba(255, 255, 255, 1) !important; padding: 15px;}
+    .item-content {padding: 15px; }
+    .metismenu.mod-menu .metismenu-item {flex-wrap: wrap !Important; padding: 0px;}
+    .navbar-brand {font-family: Roboto;padding-top: 0rem; padding-bottom: 0rem;}
+    .result__title-text {font-size: 1.286rem; font-size: 1.5rem; color: #ff0000}
+    .result__item>*+* {margin-left: 1em; margin-bottom: 1em;  }
+        @supports (display: grid) {
+@media (min-width: 768px) {
+.site-grid {
+grid-template-columns: [full-start] minmax(0,1fr) [main-start] minmax(0,15.875rem) minmax(0,15.875rem) minmax(0,45.875rem) minmax(0,15.875rem) [main-end] minmax(0,1fr) [full-end]
+}
+}        @media (min-width:200px) and (max-width:768px){.footer .grid-child {display:flex; flex: 1 1 300px; flex-direction: column} }
+        @media (min-width:768px) {
+
+        
+        
+        
+        
+        
+
+        .bottombar{display:none;}
+            }
+
+</style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-S9V9N89HD2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-S9V9N89HD2');
+</script>
+
+
+            </div>
+        
+                    <div class="grid-child container-below-top">
+                
+<div id="mod-custom429" class="mod-custom custom">
+    <p>                           <a href="http://www.paypal.me/stationdrivers" target="_blank" rel="noopener"><img src="/images/paypalDonate.png" loading="lazy" width="307" height="105" data-path="local-images:/paypalDonate.png" style="float: right; margin-top: 30px; margin-bottom: 30px;" class="mx-auto d-block" role="presentation" alt=""></a><a href="https://www.station-drivers.com/"><img src="/images/logo2022final3.png" loading="lazy" width="335" height="147" data-path="local-images:/logo2022final3.png" style="float: left;" class="mx-auto d-block" role="presentation" alt=""></a></p></div>
+
+            </div>
+        
+                    <div class="grid-child">
+                <div class="navbar-brand">
+                    <a class="brand-logo" href="/">
+                        <img class="logo d-inline-block" loading="eager" decoding="async" src="/media/templates/site/cassiopeia/images/logo.svg" alt="Station-Drivers">                    </a>
+                                    </div>
+            </div>
+        
+                    <div class="grid-child container-nav">
+                                    
+<nav class="navbar navbar-expand-lg" aria-label="menu">
+    <button class="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse" data-bs-target="#navbar425" aria-controls="navbar425" aria-expanded="false" aria-label="Toggle Navigation">
+        <span class="icon-menu" aria-hidden="true"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbar425">
+        <ul class="mod-menu mod-menu_dropdown-metismenu metismenu mod-list ">
+<li class="metismenu-item item-101 level-1 default current active"><a href="/index.php/en/" title="Listes des derniers News" aria-current="location"><span class="p-2 fa-solid fa-house" aria-hidden="true"></span>NEWS</a></li><li class="metismenu-item item-867 level-1"><a href="/index.php/en/forum" title="Un Forum pour vos problèmes ou vos solutions"><span class="p-2 fa-sharp fa-solid fa-comments" aria-hidden="true"></span>FORUM</a></li><li class="metismenu-item item-1810 level-1"><a href="/index.php/en/bios-news" title="Bios &amp; Drivers pour cartes mères"><span class="p-2 fa-solid fa-microchip" aria-hidden="true"></span>BIOS</a></li><li class="metismenu-item item-353 level-1"><a href="/index.php/en/driverss/5/view,containers/sort_order,0/lang,en-gb/" title="Download Drivers, Bios, Firmwares, ..."><span class="p-2 fa-solid fa-compact-disc" aria-hidden="true"></span>DRIVERS</a></li><li class="metismenu-item item-352 level-1"><a href="/index.php/en/outils/155/view,containers/sort_order,3/lang,en-gb/" title="Utilities"><span class="p-2 fa-solid fa-tools" aria-hidden="true"></span>UTILITAIRES</a></li><li class="metismenu-item item-171 level-1"><a href="/index.php/en/guide-de-mise-a-jour-instruction-information" title="Listes des articles sur les News"><span class="p-2 fa-solid fa-newspaper" aria-hidden="true"></span>ARTICLES</a></li><li class="metismenu-item item-170 level-1"><a href="/index.php/en/les-dossiers-comment-faire" title="Dossiers &quot; Comment faire &quot;"><span class="p-2 fa-solid fa-folder-open" aria-hidden="true"></span>DOSSIERS</a></li><li class="metismenu-item item-628 level-1"><a href="/index.php/en/a-propos" title="A propos de Station-Drivers"><span class="p-2 fa-solid fa-envelope" aria-hidden="true"></span>A PROPOS</a></li></ul>
+    </div>
+</nav>
+
+                                                    <div class="container-search">
+                        
+<search>
+    <form class="mod-finder js-finder-searchform form-search" action="/index.php/en/component/finder/search?Itemid=101" method="get" aria-label="search">
+        <label for="mod-finder-searchword643" class="visually-hidden finder">Search</label><div class="mod-finder__search input-group"><input type="text" name="q" id="mod-finder-searchword643" class="js-finder-search-query form-control" value="" placeholder="Search &hellip;"><button class="btn btn-primary" type="submit"><span class="icon-search icon-white" aria-hidden="true"></span> Search</button></div>
+                        <input type="hidden" name="Itemid" value="101">    </form>
+</search>
+
+                    </div>
+                            </div>
+            </header>
+
+    <div class="site-grid">
+                    <div class="container-banner full-width">
+                <div class="mod-banners bannergroup">
+
+    <div class="mod-banners__item banneritem">
+                                        <div id="Stationdrivers_CornerVideo"></div>
+<script type="application/javascript">
+    var slmadshb = slmadshb || {};
+    slmadshb.que = slmadshb.que || [];
+    slmadshb.que.push(function() {
+        slmadshb.display("Stationdrivers_CornerVideo");
+    });
+</script>            </div>
+
+</div>
+<div class="mod-banners bannergroup">
+
+    <div class="mod-banners__item banneritem">
+                                        <div id="Stationdrivers_Habillage"></div>
+<script type="application/javascript">
+    var slmadshb = slmadshb || {};
+    slmadshb.que = slmadshb.que || [];
+    slmadshb.que.push(function() {
+        slmadshb.display("Stationdrivers_Habillage");
+    });
+</script>            </div>
+
+</div>
+
+            </div>
+        
+        
+        
+        
+        <div class="grid-child container-component">
+            <nav class="mod-breadcrumbs__wrapper" aria-label="Fil de navigation">
+    <ol class="mod-breadcrumbs breadcrumb px-3 py-2">
+                    <li class="mod-breadcrumbs__here float-start">
+                You are here: &#160;
+            </li>
+        
+        <li class="mod-breadcrumbs__item breadcrumb-item active"><span>Accueil</span></li>    </ol>
+    </nav>
+<div class="mod-banners bannergroup">
+
+    <div class="mod-banners__item banneritem">
+                                        <style>
+    .akcelo-adunit-547 {
+        width:100%;
+        height:90px;
+    }
+    @media (pointer:coarse) {
+        .akcelo-adunit-547 {
+            width:100%;
+            height:50px;
+        }
+    }
+</style>
+<div class="akcelo-wrapper akcelo-wrapper-label akcelo-placeholder akcelo-adunit-547" data-ad-text="PUBLICITE" data-placeholder-text="Ad">
+    <div id="StationdriversHB_ATF_728x90"></div>
+</div>
+<script type="application/javascript">
+    var slmadshb = slmadshb || {};
+    slmadshb.que = slmadshb.que || [];
+    slmadshb.que.push(function() {
+        slmadshb.display("StationdriversHB_ATF_728x90");
+    });
+</script>            </div>
+
+</div>
+
+            
+            <div id="system-message-container" aria-live="polite"></div>
+
+            <main>
+                
+<!-- Start of Remository HTML -->
+<div id='remository'>
+		<div id="remositorypathway">
+			<a href="/index.php/en/component/remository/lang,en-gb/">		
+			<img src="https://www.station-drivers.com/components/com_remository/images/gohome.gif" width="32" height="32" style="border:0;"  alt="" />
+		 Main Repository Page</a>
+			
+				
+			<img src="https://www.station-drivers.com/components/com_remository/images/arrow.png" width="9" height="9" style="border:0;"  alt="" />
+		
+		<a href="/index.php/en/component/remository/Drivers/lang,en-gb/">
+			Drivers
+		</a>
+
+				
+			<img src="https://www.station-drivers.com/components/com_remository/images/arrow.png" width="9" height="9" style="border:0;"  alt="" />
+		
+		<a href="/index.php/en/component/remository/Drivers/Realtek/lang,en-gb/">
+			Realtek
+		</a>
+
+				
+			<img src="https://www.station-drivers.com/components/com_remository/images/arrow.png" width="9" height="9" style="border:0;"  alt="" />
+		
+		<a href="/index.php/en/component/remository/Drivers/Realtek/Lan/lang,en-gb/">
+			Lan
+		</a>
+
+				
+			<img src="https://www.station-drivers.com/components/com_remository/images/arrow.png" width="9" height="9" style="border:0;"  alt="" />
+		
+		<a href="/index.php/en/component/remository/Drivers/Realtek/Lan/RTL-81xx-84xx-Ethernet-Controller/lang,en-gb/">
+			RTL-81xx/84xx Ethernet Controller
+		</a>
+
+				
+			<img src="https://www.station-drivers.com/components/com_remository/images/arrow.png" width="9" height="9" style="border:0;"  alt="" />
+		
+		<a href="/index.php/en/component/remository/Drivers/Realtek/Lan/RTL-81xx-84xx-Ethernet-Controller/All-In-One-Windows/lang,en-gb/">
+			All-In-One Windows
+		</a>
+
+		<!-- End of remositorypathway-->
+		</div>
+
+	<div id='remositoryfileinfo'>
+    <script type="text/javascript">
+        /* <![CDATA[ */
+        function download() {
+            window.location = '/index.php/en/component/remository/func-download/6450/chk,1a9c77e53432e1a7fdd0fdefde804324/no_html,1/lang,en-gb/'        }
+        /* ]]> */
+    </script>
+    <script type="text/javascript"> window.onload=download; </script>
+		<h2>Realtek Ethernet Controller All-In-One Drivers Version NC With DASH <a href="/index.php/en/component/remository/func-download/6450/chk,1a9c77e53432e1a7fdd0fdefde804324/no_html,1/lang,en-gb/" rel="nofollow"><br />		
+			<img src="https://www.station-drivers.com/components/com_remository/images/download_trans.gif" width="32" height="32" style="border:0;"  alt="" />
+		<strong id="remositoryinfodown"> Download</strong></a><br /></h2><h3>Thank you for downloading Realtek Ethernet Controller All-In-One Drivers Version NC With DASH</h3><h4>If your download does not start automatically after a few seconds, please click on the Download link above</h4>
+		    <div>
+		    	To thank you a donation here would be very much appreciated, thank you for your generosity see you soon
+		    </div>
+
+		<div id='remositorythumbbox'>
+			<div id='remositorycmdbox'>
+			<p>Thumbnails:</p></div>
+			<div class='remositorythumbset'><div>
+			<div class='remositorythumbnail'>
+				<a href="javascript:void(0)" onclick="window.open('https://www.station-drivers.com/components/com_remository_files/file_image_6450/img_6450_01.jpg','FullSize','width=120,height=113,toolbar=0,location=0,directories=0,status=0,menubar=0,scrollbars=0,resizable=0,copyhistory=0')">
+				<img width="100" height="93" alt="View Full Sized Screenshot" src='https://www.station-drivers.com/components/com_remository_files/file_image_6450/th_6450_01.jpg' /></a>
+			<!-- End of remositorythumbnail -->
+			</div></div>
+			<!-- End of remositorythumbset -->
+			</div>
+		<!-- End of remositorythumbbox -->
+		</div>
+		<dl>		<dt>Submitted On:</dt>
+		<dd>
+		  02 Dec 2024
+		</dd>		<dt>Description:</dt>
+		<dd>
+		  <p><span style='color: rgb(35, 111, 161);'><strong>Realtek Ethernet Controller All-In-One Drivers Version NC With DASH</strong></span></p>
+<p><span style='color: rgb(0, 0, 0);'><strong>Date & Version: 07/29/2024,1126.020.0729.2024 <span style='color: rgb(132, 63, 161);'>(RT26CX)</span> </strong></span></p>
+<p><strong>Date & Version: 07/29/2024,1125.020.0729.2024 </strong><span style='color: #843fa1;'><strong>(RT25CX) </strong></span></p>
+<p><span style='color: rgb(0, 0, 0);'><strong>Date & Version: 07/29/2024,1124.020.0729.2024<span style='color: rgb(132, 63, 161);'> (RT25DC)</span> </strong></span></p>
+<p><span style='color: rgb(0, 0, 0);'><strong>Date & Version</strong>:<strong> 07/29/2024,1168.020.0729.2024<span style='color: rgb(132, 63, 161);'> (RT68CX)</span> </strong></span></p>
+<p><span style='color: rgb(0, 0, 0);'><strong>Date & Version: 07/29/2024,1166.020.0729.2024<span style='color: rgb(22, 145, 121);'> </span><span style='color: rgb(132, 63, 161);'>(RT68DCX)</span> </strong></span></p>
+<p><span style='color: rgb(0, 0, 0);'><strong>Date & Version: 05/24/2024,10.072.0524.2024<span style='color: rgb(22, 145, 121);'> </span><span style='color: rgb(132, 63, 161);'>(RTOTS)</span> </strong></span></p>
+<p><span style='color: rgb(0, 0, 0);'><strong>Date & Version: 05/24/2024,10.072.0524.2024<span style='color: rgb(132, 63, 161);'> (Win10 64bits)</span></strong></span></p>
+<p><strong>Pack Version:</strong>  <span style='color: #e67e23;'><b>NC</b></span></p>
+<p><strong>WHQL:</strong> <span style='color: #000000;'>oui </span></p>
+<p><strong>Officiel:</strong> No</p>
+<p><strong>Sous:</strong> <strong><span style='color: rgb(132, 63, 161);'>Windows 11/10 (64-bit version)</span></strong></p>
+<p><strong>Pour:</strong></p>
+<p>RTL8168 Realtek PCIe GbE Family Controller'<br />RTL8118 Realtek Gaming GbE Family Controller'<br />RTL8136 Realtek PCIe FE Family Controller'<br />RTL8125 Realtek PCIe 2.5GbE Family Controller'<br />RTL8125AG Realtek Gaming 2.5GbE Family Controller'<br />RTL8126. Realtek PCIe 5GbE Family Controller'<br />RTL8126AG Realtek Gaming 5GbE Family Controller'<br />RTL8127 Realtek PCIe 10GbE Family Controller'<br />RTL81xx. Realtek(R) PCI(e) Ethernet Controller'</p>
+<p>ASUS 2.5G PCI-E Network Adapter'<br />Allied Telesis AT-2715FX 100Mb Fiber Ethernet'<br />Allied Telesis AT-2915SP Fiber Ethernet'<br />Allied Telesis AT-29M2aBA Fiber Ethernet'<br />Allied Telesis AT-2915GP POE Fiber Ethernet'<br />2.5 Gigabit Ethernet PCI Express Adapter'</p>
+<p><strong>Code IDs:</strong></p>
+<p>PCI\VEN_10EC&DEV_8125</p>
+<p>PCI\VEN_10EC&DEV_8125</p>
+<p>PCI\VEN_10EC&DEV_8225</p>
+<p>PCI\VEN_10EC&DEV_8162</p>
+<p>....</p>
+<p><span style='color: #e03e2d;'><strong>Release note :</strong> </span></p>
+<p>//!2024/09/03<br />win11 driver:    11.020 whql<br />win10 driver:    10.072 whql -24H2 -202408OEMID</p>
+<p>//!2024/08/12<br />Update ClientTool to 5.1.2.2404<br />1. Fix ModernStandby power consumption issue.</p>
+<p>//!2024/07/18<br />win11 driver:    11.019 whql<br />win10 driver:    10.072 whql -24H2<br />Update ClientTool to 5.1.2.2403<br />1. Fix Incorrect information of OS enumerated</p>
+<p>//!2024/05/18<br />Update ClientTool to 5.1.2.2402<br />1. Update windows SDK<br />2. Fixed Localization Admin string issue.<br />3. Fixed task scheduler register failed in non English region.</p>
+<p>//!2024/05/16<br />virtual driver win10: 10.007.0406.2023 whql - 24H2</p>
+<p>//!2024/04/08<br />win11 driver:    11.018 whql<br />win10 driver:    10.071 whql</p>
+<p>//!2024/03/06<br />Update ClientTool to 5.1.2.2401<br />1. Solve MSB issue in some platform.</p>
+<p>//!2024/01/08<br />win11 driver:    11.016 whql<br />win10 driver:    10.069 whql</p>
+<p>//!2023/09/25<br />win11 driver:    11.015 whql<br />win10 driver:    10.068 whql<br />virtual driver win10: 10.007.0406.2023 whql</p>
+<p>Update ClientTool to 5.1.2.2303<br />1. Fixed Control Device occupied by dash client tool issue.<br />2. Update AIO package to IS2022</p>
+<p><strong>Inclus:</strong></p>
+<p><strong>Lien Officiel: </strong><a href='http://www.realtek.com/'>http://www.realtek.com/</a></p>
+<p><strong>Forum:</strong> R<a href='index.php/forum/lan/228-realtek-pci-e-ethernet-lan-drivers-for-windows-7-11?start=102'>ealtek Ethernet Drivers</a></p>
+		</dd>		<dt>Submitted By:</dt>
+		<dd>
+		  Fdrsoft (admin)
+		</dd>		<dt>Submitted On:</dt>
+		<dd>
+		  02 Dec 2024
+		</dd>		<dt>File Size:</dt>
+		<dd>
+		  25,424.08 Kb
+		</dd>		<dt>Downloads:</dt>
+		<dd>
+		  531
+		</dd>		<dt>File Version:</dt>
+		<dd>
+		  NC
+		</dd>		<dt>File Author:</dt>
+		<dd>
+		  Fdrsoft
+		</dd>        
+        <div>
+            Log in to cast your vote
+        </div>
+                
+	</dl></div>
+	<!-- End of remositoryfileinfo -->
+	</div>
+		<div id='remositoryfooter'></div>
+</div>
+<!-- End of Remository HTML -->
+            </main>
+            
+        </div>
+
+        
+        
+            </div>
+
+            <footer class="container-footer footer full-width">
+            <div class="grid-child">
+                <div class="mod-banners bannergroup">
+
+    <div class="mod-banners__item banneritem">
+                                        <style>
+    .akcelo-adunit-548 {
+        width:100%;
+        height:90px;
+    }
+    @media (pointer:coarse) {
+        .akcelo-adunit-548 {
+            width:100%;
+            height:50px;
+        }
+    }
+</style>
+<div class="akcelo-wrapper akcelo-wrapper-label akcelo-placeholder akcelo-adunit-548" data-ad-text="PUBLICITE" data-placeholder-text="Ad">
+    <div id="StationdriversHB_BTF_728x90"></div>
+</div>
+<script type="application/javascript">
+    var slmadshb = slmadshb || {};
+    slmadshb.que = slmadshb.que || [];
+    slmadshb.que.push(function() {
+        slmadshb.display("StationdriversHB_BTF_728x90");
+    });
+</script>            </div>
+
+</div>
+
+            </div>
+        </footer>
+    
+    
+    
+</body>
+
+</html>

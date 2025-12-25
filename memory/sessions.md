@@ -56,10 +56,18 @@ lib/
 └── main.dart (SharedPreferences init)
 ```
 
-### À faire
-- [ ] Icône app : attendre logo sans fond de Marc
-- [ ] Harmoniser quantités/unités pour suggestions pertinentes
-- [ ] Intégrer sélection plats depuis congélo dans planning
+### Icônes app
+- Génération avec ImageMagick depuis `assets/logo_transparent.png`
+- Toutes tailles Android : mdpi (48), hdpi (72), xhdpi (96), xxhdpi (144), xxxhdpi (192)
+
+### Git
+- **Commit** : `c73c275` - "Session 43: Refonte majeure UX et architecture"
+- **Fichiers** : 24 modifiés, 2280 insertions, 188 suppressions
+- **Push** : OK sur `origin/master`
+
+### Build release
+- **APK** : `build\app\outputs\flutter-apk\app-release.apk` (56.0MB)
+- Tree-shaking icônes : CupertinoIcons 99.7%, MaterialIcons 99.3%
 
 ---
 
