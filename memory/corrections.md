@@ -382,3 +382,32 @@ API Error: 400 {"type":"error","error":{"type":"invalid_request_error","message"
 - Potentiellement d'autres sprites/icons de jeux
 
 **Statut** : ⚠️ Contournement documenté (pas de fix possible côté utilisateur)
+
+---
+
+### 2025-12-24 | Ethernet déconnecté au démarrage Windows (CORRIGÉ)
+
+**Problème** : L'adaptateur Ethernet Realtek Gaming 2.5GbE nécessite un redémarrage manuel après chaque boot Windows
+
+**Carte** : Realtek Gaming 2.5GbE Family Controller (RTL8125)
+
+**Cause** : Windows avait l'autorisation de désactiver l'adaptateur pour économiser l'énergie (PnPCapabilities = 0)
+
+**Corrections appliquées** :
+
+1. **Paramètres carte réseau** (déjà faits précédemment) :
+   - Power Saving Mode → Désactivé
+   - Ethernet vert → Désactivé
+   - Gigabit Lite → Désactivé
+
+2. **Wake-on-LAN désactivé** (24/12/2025) :
+   - Réveil sur Magic Packet → Désactivé
+   - Avertir lors de correspondance de motif → Désactivé
+
+3. **Gestion d'alimentation Windows** (24/12/2025) - **LE FIX PRINCIPAL** :
+   - Clé registre : `HKLM:\SYSTEM\CurrentControlSet\Enum\PCI\VEN_10EC&DEV_8125&...\Device Parameters`
+   - PnPCapabilities = 24 (désactive "Autoriser l'ordinateur à éteindre ce périphérique")
+
+**Script** : `scripts/disable_ethernet_power.ps1`
+
+**Statut** : ✅ Corrigé - À vérifier au prochain redémarrage

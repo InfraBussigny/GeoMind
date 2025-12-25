@@ -1,3 +1,68 @@
+## Session 43 - 25 décembre 2025
+**Thème** : Miam Planning - Refonte majeure UX et architecture
+
+### Travail effectué
+
+#### 1. Amélioration UI/UX
+- **Contraste texte** : Couleurs `primaryDark` (#00796B) et `secondaryDark` (#0277BD) plus foncées pour meilleure lisibilité
+- **Mode sombre** : Toggle complet dans les paramètres (3 options : clair/système/sombre), persistance avec SharedPreferences
+- **Planning** : Nouveau design des slots de repas avec icônes par type, meilleure visibilité des états
+
+#### 2. Refonte architecture données
+Nouvelle hiérarchie : **Journée → Repas → Plat(s) → Recette(s) → Ingrédients**
+
+- **Dish** (nouveau modèle) : `lib/features/dishes/domain/dish.dart`
+  - Catégories nutritionnelles multiples : protéine, féculent, légume, laitier, fruit, dessert, sauce, plat complet
+  - Support congélateur intégré (isFrozen, frozenPortions, frozenAt)
+  - Photos personnalisables
+
+- **Recipe** : Ajout `dishId` et `variantName` pour lier recettes aux plats
+
+- **MealAssignment** : Refonte pour multi-plats
+  - `DishAssignment` : dishId, dishName, recipeId, recipeName, fromFreezer, portionsUsed
+  - Rétrocompatibilité avec ancien format (recipeId/recipeTitle)
+
+#### 3. Module Congélateur
+- Nouvel onglet "Congélo" dans Frigo (3 onglets : Ingrédients / Congélo / Idées)
+- Ajout de plats congelés avec nombre de portions
+- Gestion +/- portions avec feedback visuel
+- Affichage jours depuis congélation
+
+#### 4. Services ajoutés
+- `ImagePickerService` : Caméra, galerie, URL pour photos de plats
+- `ThemeModeNotifier` : Gestion thème avec persistance
+
+#### 5. Dépendances ajoutées
+- `shared_preferences: ^2.3.4`
+- `image_picker: ^1.1.2`
+
+### Build
+- **APK release** : `build\app\outputs\flutter-apk\app-release.apk` (56.0MB)
+
+### Fichiers créés/modifiés
+```
+lib/
+├── core/
+│   ├── providers/theme_provider.dart (nouveau)
+│   ├── services/image_picker_service.dart (nouveau)
+│   └── theme/app_theme.dart (refonte couleurs + thème sombre)
+├── features/
+│   ├── dishes/ (nouveau module)
+│   │   ├── domain/dish.dart
+│   │   └── data/dish_repository.dart
+│   ├── meal_plan/domain/meal_plan.dart (DishAssignment, multi-plats)
+│   ├── pantry/presentation/pantry_screen.dart (onglet Congélo)
+│   └── family/presentation/screens/family_settings_screen.dart (toggle thème)
+└── main.dart (SharedPreferences init)
+```
+
+### À faire
+- [ ] Icône app : attendre logo sans fond de Marc
+- [ ] Harmoniser quantités/unités pour suggestions pertinentes
+- [ ] Intégrer sélection plats depuis congélo dans planning
+
+---
+
 ## Session 42 - 24 décembre 2025
 **Thème** : Smash Tournament Tracker - Conversion Tauri (app standalone)
 
