@@ -1,3 +1,50 @@
+## Session 44 - 28 décembre 2025
+**Thème** : Popote v1.3.1 à v1.3.3 - UX, Stats et Mode sombre
+
+### Travail effectué
+
+#### 1. Nouvelles fonctionnalités (v1.3.1)
+- **Plats rapides** : 3ème onglet dans sélecteur repas pour condiments/accompagnements simples
+  - Modèle `QuickDish` + repository Firestore
+  - Sauvegarde et réutilisation avec compteur d'usage
+- **Accompagnements** : Champ optionnel à la planification (Pâtes, Riz, Ébly, etc.)
+- **Statistiques accueil** : Widget `MealStatsCard` avec :
+  - Taux de complétion semaine
+  - Top 3 plats favoris du mois
+  - Alertes variété (accompagnement surreprésenté, plat oublié)
+
+#### 2. Corrections bugs (v1.3.1)
+- Restauration portions congélateur à la déplanification (dialog confirmation)
+- Images Marmiton (srcset + URLs relatives)
+- Renommage menu "Frigo" → "Stock", onglet "Ingrédients" → "Frigo"
+
+#### 3. Améliorations UX (v1.3.2)
+- **Logo** Popote dans AppBar accueil
+- **Stats** repositionnées au-dessus des suggestions frigo
+- **Accompagnement** affiché dans repas du jour ("Poulet + Riz")
+- **Swipe navigation** entre les 5 menus principaux (PageView)
+- **Swipe semaines** dans le planning (GestureDetector)
+
+#### 4. Mode sombre (v1.3.2 + v1.3.3)
+- Corrections couleurs adaptatives dans 6 fichiers
+- Cartes suggestions frigo adaptées au mode sombre
+
+### Fichiers créés
+```
+lib/features/dishes/domain/quick_dish.dart
+lib/features/dishes/data/quick_dish_repository.dart
+lib/features/meal_plan/domain/meal_statistics.dart
+lib/features/meal_plan/data/meal_statistics_provider.dart
+lib/features/meal_plan/presentation/widgets/meal_stats_card.dart
+```
+
+### Releases GitHub
+- v1.3.1-popote : Plats rapides & Statistiques
+- v1.3.2-popote : UX & Mode sombre
+- v1.3.3-popote : Fix mode sombre suggestions
+
+---
+
 ## Session 43 - 25 décembre 2025
 **Thème** : Miam Planning - Refonte majeure UX et architecture
 
