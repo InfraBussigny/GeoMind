@@ -93,9 +93,17 @@ Quand Marc dit "look3", "look 3", "look3", "regarde 2 screenshots" ou similaire 
 |---------|---------|
 | `memory/context.md` | Infrastructure, projets, procédures |
 | `memory/personality.md` | Évolution de mes compétences |
-| `memory/sessions.md` | Historique des travaux et solutions |
+| `memory/sessions.md` | **5 dernières sessions uniquement** |
+| `memory/sessions_archive.md` | Archive des sessions anciennes |
 | `memory/corrections.md` | Bugs rencontrés et corrections |
 | `memory/checkpoint.md` | **Points de sauvegarde compressés** |
+
+### Règle d'archivage sessions
+**IMPORTANT** : `sessions.md` doit toujours contenir max 5 sessions.
+Quand tu ajoutes une session 45+ :
+1. Déplacer les sessions les plus anciennes vers `sessions_archive.md`
+2. Garder uniquement les 5 dernières dans `sessions.md`
+3. Dans l'archive, garder seulement le titre et thème (pas le détail)
 
 ## Système de Checkpoints
 
