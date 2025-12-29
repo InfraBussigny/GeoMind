@@ -385,29 +385,37 @@ API Error: 400 {"type":"error","error":{"type":"invalid_request_error","message"
 
 ---
 
-### 2025-12-24 | Ethernet déconnecté au démarrage Windows (CORRIGÉ)
+### 2025-12-24 → 2025-12-29 | Ethernet déconnecté au démarrage Windows (FIX ROBUSTE v3)
 
 **Problème** : L'adaptateur Ethernet Realtek Gaming 2.5GbE nécessite un redémarrage manuel après chaque boot Windows
 
 **Carte** : Realtek Gaming 2.5GbE Family Controller (RTL8125)
 
-**Cause** : Windows avait l'autorisation de désactiver l'adaptateur pour économiser l'énergie (PnPCapabilities = 0)
+**Historique des tentatives** :
+- 24/12/2025 : Registre PnPCapabilities = 24 + paramètres driver → NON PERSISTANT
+- 29/12/2025 : Solution robuste avec tâche planifiée
 
-**Corrections appliquées** :
+**Root cause** : Le driver Realtek et/ou Windows ignore `PnPCapabilities` et `AllowComputerToTurnOffDevice` reste `Enabled` malgré les modifications registre.
 
-1. **Paramètres carte réseau** (déjà faits précédemment) :
-   - Power Saving Mode → Désactivé
-   - Ethernet vert → Désactivé
-   - Gigabit Lite → Désactivé
+**Solution finale (v3)** : Tâche planifiée qui force Enable de la carte au démarrage
 
-2. **Wake-on-LAN désactivé** (24/12/2025) :
-   - Réveil sur Magic Packet → Désactivé
-   - Avertir lors de correspondance de motif → Désactivé
+**Scripts** :
+- `scripts/fix_ethernet_startup.ps1` - Script de fix (vérifie et force Enable si nécessaire)
+- `scripts/install_ethernet_fix_task.ps1` - Installe la tâche planifiée (NÉCESSITE ADMIN)
 
-3. **Gestion d'alimentation Windows** (24/12/2025) - **LE FIX PRINCIPAL** :
-   - Clé registre : `HKLM:\SYSTEM\CurrentControlSet\Enum\PCI\VEN_10EC&DEV_8125&...\Device Parameters`
-   - PnPCapabilities = 24 (désactive "Autoriser l'ordinateur à éteindre ce périphérique")
+**Installation** (une seule fois, avec droits admin) :
+```powershell
+# Shift+clic droit sur PowerShell > Exécuter en tant qu'autre utilisateur > admin_user_zema
+powershell.exe -ExecutionPolicy Bypass -File "C:\Users\Marc\GeoBrain\scripts\install_ethernet_fix_task.ps1"
+```
 
-**Script** : `scripts/disable_ethernet_power.ps1`
+**Tâche planifiée créée** :
+- Nom : `GeoBrain_Ethernet_Fix`
+- Trigger 1 : Au démarrage système (délai 60 sec)
+- Trigger 2 : À la connexion utilisateur (délai 10 sec)
+- Exécution : Compte SYSTEM (pour droits admin)
+- Retry : 3 tentatives, intervalle 1 minute
 
-**Statut** : ✅ Corrigé - À vérifier au prochain redémarrage
+**Logs** : `C:\Users\Marc\GeoBrain\logs\ethernet_fix.log`
+
+**Statut** : ⏳ En attente installation tâche + test au prochain redémarrage
