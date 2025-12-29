@@ -1,5 +1,16 @@
 # GeoBrain Checkpoints
 
+## CP-20251229-2140
+```
+S:45|P:FIX-ETHERNET|T:Tâche-planifiée-robuste
+F:scripts/fix_ethernet_startup.ps1,scripts/install_ethernet_fix_task.ps1,memory/corrections.md
+W:Fix Ethernet v3|Tâche planifiée GeoBrain_Ethernet_Fix|Triggers boot(60s)+logon(10s)|SYSTEM account|3 retries|Script force Enable si Down
+N:Vérifier au prochain reboot|Consulter logs\ethernet_fix.log
+X:PnPCapabilities=24 ignoré par driver Realtek|Solution=force Enable au boot|Commit d999f93|Tâche installée par Marc
+```
+
+---
+
 ## CP-20251224-1115
 ```
 S:42|P:TAURI-SETUP|T:Smash-Tracker-Standalone
