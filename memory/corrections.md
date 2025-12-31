@@ -419,3 +419,45 @@ powershell.exe -ExecutionPolicy Bypass -File "C:\Users\Marc\GeoBrain\scripts\ins
 **Logs** : `C:\Users\Marc\GeoBrain\logs\ethernet_fix.log`
 
 **Statut** : ⏳ En attente installation tâche + test au prochain redémarrage
+
+---
+
+### 2025-12-31 | Bug Write tool - Contenu corrompu "sketches_sketcher" (Claude Code)
+
+**Problème** : Lors de l'écriture d'un fichier plan (PLAN_MAXTOOLS_V2.md), le contenu généré a été corrompu avec le mot "sketches_sketcher" répété des milliers de fois en boucle, remplaçant complètement le contenu prévu.
+
+**Contexte** :
+- Projet : MaxTools v2 (réécriture plugin QGIS)
+- Tâche : Écrire un plan d'architecture détaillé
+- Le fichier devait contenir une structure de dossiers, des exemples de code Python, des tableaux markdown
+
+**Manifestation** :
+```
+├── core/
+│   ├── sketches_sketcher.py          # Au lieu de "sketcher.py"
+│   ├── sketches_sketcher.py          # Au lieu de "geometry.py"
+...
+class sketches_sketcherSource:        # Au lieu de "DataSource"
+    def sketches_sketcher(...):       # Au lieu de noms de méthodes
+```
+
+**Cause probable** :
+- Bug de génération du modèle LLM (Opus 4.5)
+- Possible corruption de la mémoire contextuelle après longue session
+- Le mot "sketches" apparaissait dans le contexte (Sketching Tools dans metadata.txt)
+- Le modèle a peut-être "halluciné" ce terme de façon répétitive
+
+**Ce que j'aurais dû faire différemment** :
+1. **Écrire en plusieurs petites parties** au lieu d'un gros fichier d'un coup
+2. **Vérifier le contenu** avant d'appeler Write (prévisualiser dans la réponse)
+3. **Sauvegarder un checkpoint** avant les opérations d'écriture longues
+4. **Relire le contexte** si la session est longue pour éviter la dérive
+
+**Solution de contournement** :
+- Marc a refusé l'écriture (tool use rejected)
+- Recommencer l'écriture avec un contenu plus court et vérifié
+- Possiblement démarrer une nouvelle conversation si le bug persiste
+
+**Impact** : Aucun (fichier non écrit grâce à l'intervention de Marc)
+
+**Statut** : ⚠️ Bug documenté - surveiller si récurrence

@@ -1,5 +1,16 @@
 # GeoBrain Checkpoints
 
+## CP-20251231-2215
+```
+S:46|P:MAXTOOLS-V2-PLAN|T:Reecriture-plugin-QGIS
+F:MaxTools/PLAN_MAXTOOLS_V2.md,MaxTools/PROMPT_REPRISE.md,memory/corrections.md
+W:Analyse VDLTools complete(14 outils,6 core,20 UI)|Plan architecture valide|MNT=raster local|PostgreSQL=optionnel|PyQtGraph|Bug generation detecte(mot sketch repete en boucle)
+N:Nouvelle conversation pour implementation|Creer squelette plugin|Puis core+tools
+X:Bug Claude Opus 4.5=generation corrompue avec mot sketch|Code original dans C:/Users/Marc/AppData/Local/Temp/MaxTools_analysis/|Prompt reprise dans PROMPT_REPRISE.md
+```
+
+---
+
 ## CP-20251229-2140
 ```
 S:45|P:FIX-ETHERNET|T:Tâche-planifiée-robuste
