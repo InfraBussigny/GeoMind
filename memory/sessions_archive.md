@@ -1,6 +1,11 @@
-# Archive Sessions 1-39
+# Archive Sessions 1-40
 
-*Sessions archivées le 28 décembre 2025*
+*Sessions archivées le 28 décembre 2025, mise à jour 1er janvier 2026*
+
+---
+
+## Session 40 - 19 décembre 2025
+**Thème** : MaxTools - Migration QGIS 3.x + Thème UI Dark Neon
 
 ---
 

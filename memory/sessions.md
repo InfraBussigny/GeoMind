@@ -1,3 +1,42 @@
+## Session 45 - 31 décembre 2025 → 1er janvier 2026
+**Thème** : Léon v1.0.0 → v1.0.9 - Release et corrections
+
+### Travail effectué
+
+#### 1. Première release Léon v1.0.0
+- GUI pour Claude Code CLI (Tauri 2 + SvelteKit 5)
+- Terminal PTY natif, multi-onglets
+- Mode planification interactif pour nouveaux projets
+- Import de projets existants
+- Configuration Claude Code automatique (11 agents, commandes, règles)
+
+#### 2. Corrections v1.0.1 → v1.0.9
+| Version | Bug corrigé |
+|---------|-------------|
+| 1.0.1 | `prompt()` → modal Tauri |
+| 1.0.2 | Terminal ne s'ouvre pas (dépendance circulaire) |
+| 1.0.3 | `confirm()`/`alert()` → composants dialog |
+| 1.0.4 | Permissions filesystem ($HOME/**) |
+| 1.0.5 | Chemin template (`resolveResource`) |
+| 1.0.6 | Backslashes JSON non échappés |
+| 1.0.7 | Syntaxe permissions Claude Code |
+| 1.0.8 | Règles Bash avec parenthèses, alertes erreur |
+| 1.0.9 | Timing terminal: `waitForTerminalReady()` + `isReady()` PTY |
+
+#### 3. Composants créés
+- `ConfirmDialog.svelte`, `InputDialog.svelte`, `AlertDialog.svelte`
+- `dialogs.ts` - Store Svelte pour dialogues globaux
+
+#### 4. Architecture corrigée (v1.0.9)
+- `TerminalTabs.waitForTerminalReady()` : attend binding Svelte + PTY prêt
+- `Terminal.isReady()` : vérifie si le PTY est démarré
+- `createNewProject()` : attend terminal prêt avant git init + prompt
+
+### Releases GitHub
+- v1.0.0 à v1.0.9 sur https://github.com/MarcZermatten/leon
+
+---
+
 ## Session 44 - 28 décembre 2025
 **Thème** : Popote v1.3.1 à v1.3.3 - UX, Stats et Mode sombre
 
@@ -85,17 +124,4 @@ Nouvelle hiérarchie : **Journée → Repas → Plat(s) → Recette(s) → Ingr�
 
 ---
 
-## Session 40 - 19 décembre 2025
-**Thème** : MaxTools - Migration QGIS 3.x + Thème UI
-
-#### Bugs corrigés (migration PyQt4→PyQt5/6)
-- QDoubleValidator, parenthèses, QgsWKBTypes, QPrinter, resources.py, icônes Qt
-
-#### Thème UI Dark Neon
-- dark_neon.qss (noir #1a1a1a, vert néon #00ff88)
-- Appliqué aux 20 dialogues
-- Branding "Powered by GeoMind"
-
----
-
-*Sessions 1-39 archivées dans `memory/sessions_archive.md`*
+*Sessions 1-40 archivées dans `memory/sessions_archive.md`*
